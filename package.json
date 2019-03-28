@@ -1,0 +1,22 @@
+{
+  "name": "hackmdir",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "install": "scripts/install-git-hooks"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afcidk/HackMDir.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/afcidk/HackMDir/issues"
+  },
+  "homepage": "https://github.com/afcidk/HackMDir#readme",
+  "devDependencies": {
+    "standard": "^12.0.1"
+  }
+}
