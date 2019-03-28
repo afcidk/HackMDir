@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "install": "scripts/install-git-hooks"
+    "install": "scripts/install-git-hooks",
+    "postinstall": "ln -s node_modules/.bin/standard ."
   },
   "repository": {
     "type": "git",
