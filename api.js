@@ -62,23 +62,25 @@ async function getHistory () {
  * @returns Boolean Whether delete success or not
  */
 async function delNote (noteId) {
+  const socket = await connect(noteId)
+  socket.on('connect', () => {
+    socket.emit('delete')
+  })
+}
+
+async function connect (noteId) {
   // Register realtime server
   var server = await fetch('/realtime-reg/realtime?noteId=' + noteId)
   server = await server.text()
   var url = JSON.parse(server)['url']
-  url = url.substring(url.indexOf('hackmd.io') + 9)
+  url = url.substring(url.indexOf('hackmd.io') + 9) + '/socket.io/'
 
   /* global io */
-  var socket = io()
-  socket.on('connect', () => {
-    socket.emit('delete')
-  })
-  socket.connect({
+  return io('https://hackmd.io', {
     path: url,
     query: {
       noteId: noteId
     },
-    timeout: 5000,
     reconnectionAttempts: 20
   })
 }
