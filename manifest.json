@@ -1,0 +1,28 @@
+{
+  "name": "HackMDir",
+  "version": "1.0",
+  "description": "Build an Extension!",
+  "permissions": ["activeTab", "declarativeContent", "storage", "tabs"],
+  
+  "content_scripts": [
+    {
+      "matches": ["https://hackmd.io/"],
+      "css": ["style.css"],
+      "js": ["content_script.js"]
+    }
+  ],
+  "page_action": {
+    
+    "default_icon": {
+      "16": "images/icon_16.png",
+      "32": "images/icon_32.png",
+      "48": "images/icon_48.png"
+    }
+  },
+  "icons": {
+    "16": "images/icon_16.png",
+    "32": "images/icon_32.png",
+    "48": "images/icon_48.png"
+  },
+  "manifest_version": 2
+}
