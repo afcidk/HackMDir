@@ -1,0 +1,14 @@
+.hmdir_operation_button {
+  position: absolute;
+  display: block;
+  width: 64px;
+  height: 64px;
+  top: 60px;
+  z-index: 999;
+
+  border: none;
+  background-color: transparent;
+  background-image: url("https://i.imgur.com/WK3AOms.png");
+  background-position: 50% 50%;
+  background-size: contain;
+}

@@ -7,8 +7,8 @@
   "content_scripts": [
     {
       "matches": ["https://hackmd.io/"],
-      "css": ["style.css"],
-      "js": ["content_script.js"]
+      "css": ["./src/css/style.css"],
+      "js": ["./src/js/main.js"]
     }
   ],
   "page_action": {
