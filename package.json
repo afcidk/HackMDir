@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/afcidk/HackMDir#readme",
   "devDependencies": {
-    "standard": "^12.0.1"
+    "standard": "^12.0.1",
+    "webpack-chrome-extension-reloader": "^1.2.2"
   },
   "dependencies": {
     "pre-commit": "^1.2.2",
