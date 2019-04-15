@@ -85,7 +85,47 @@ async function connect (noteId) {
   })
 }
 
+async function getConfig () {
+  var doc = await getDOM('/profile?q=hackmdir-config')
+  const page = doc.querySelector('.content a')
+  if (page === null) {
+    newConfig()
+    return {}
+  }
+
+  const href = page.href + '/publish'
+  doc = await getDOM(href)
+  const info = doc.querySelector('#doc').innerHTML
+  console.log(info)
+}
+
+async function newConfig () {
+  const newPage = (await fetch('/new')).url
+
+  setTimeout(function () {
+    writeConfig(newPage.substring(newPage.indexOf('hackmd.io') + 10),
+      ':::info\nThis is test config\n:::')
+  }, 5000)
+}
+
+function writeConfig (noteId, data) {
+  console.log('noteId: ' + noteId)
+  console.log('data: ' + data)
+  var element = document.createElement('iframe')
+  element.style.display = 'none'
+  element.onload = (function () {
+    return function () {
+      element.contentWindow.editor.setValue(data)
+      console.log('write OK')
+    }
+  }())
+  element.src = '/' + noteId
+  document.body.appendChild(element)
+}
+
 module.export = {
+  writeConfig: writeConfig,
+  getConfig: getConfig,
   getHistory: getHistory,
   getNote: getNote,
   isLoggedIn: isLoggedIn,
