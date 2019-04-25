@@ -1,5 +1,5 @@
 /* The section for import style */
-const style = require('./style/theme.scss')
+require('./style/theme.scss')
 
 /* The section for defination of all variables */
 const store = require('./store')
@@ -8,10 +8,10 @@ const store = require('./store')
 
 const showDetail = function () {
   // remove the root element when the root exist
-  if (store.ui.displayRoot) {
+  if (store.ui.state.displayRoot) {
     const root = document.body.querySelector('.hmdir_root')
     root.remove()
-    store.ui.displayRoot = false
+    store.ui.state.displayRoot = false
     return
   }
   const root = document.createElement('div')
@@ -19,7 +19,7 @@ const showDetail = function () {
   root.style.cssText = 'background-color: rgba(255, 255, 255, 0.8); position: absolute; z-index: 998; height: 1000px; width: 300px; top: 0px;'
 
   document.body.appendChild(root)
-  store.ui.displayRoot = true
+  store.ui.state.displayRoot = true
 }
 
 /* main function */

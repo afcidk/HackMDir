@@ -3,5 +3,5 @@ const state = {
 }
 
 module.exports = {
-  state
+  state: state
 }
