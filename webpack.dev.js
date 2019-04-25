@@ -1,11 +1,11 @@
 const path = require('path')
 const webpack = require('webpack')
 const ChromeExtensionReloader = require('webpack-reload-extension')
-const CopyWebpackPlugin = require("copy-webpack-plugin")
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   devtool: 'inline-source-map',
-  mode: "development",
+  mode: 'development',
   watch: true,
   entry: {
     content: ['babel-polyfill', path.resolve('src', 'content.js')],
@@ -15,7 +15,7 @@ module.exports = {
     path: path.resolve('dist'),
     filename: '[name].js',
     publicPath: './',
-    libraryTarget: "umd"
+    libraryTarget: 'umd'
   },
   plugins: [
     new ChromeExtensionReloader({
@@ -49,4 +49,3 @@ module.exports = {
     ]
   }
 }
-
