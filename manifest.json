@@ -6,9 +6,8 @@
   
   "content_scripts": [
     {
-      "matches": ["https://hackmd.io/"],
-      "css": ["./src/css/style.css"],
-      "js": ["./src/js/main.js"]
+      "matches": ["https://hackmd.io/*"],
+      "js": ["./dist/background.js"]
     }
   ],
   "page_action": {
