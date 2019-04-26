@@ -41,6 +41,8 @@ const constructor = async function () {
       button.style.left = state.displayRoot ? '220px' : '0px'
       button.style.transform = state.displayRoot ? 'scaleX(-1)' : 'scaleX(1)'
     }
+    // config observer
+    observerConfig()
     // render the root element
     render()
   } catch (error) {
@@ -50,16 +52,53 @@ const constructor = async function () {
 
 const render = function () {
   const root = components.root
-  // insert ul element
-  const ul = document.createElement('ul')
-  ul.style.cssText = 'color: black;'
-  root.appendChild(ul)
-  // config list component
-  components.list = ul
+  let ul
+  if (components.list === null) {
+    // insert ul element
+    ul = document.createElement('ul')
+    ul.class = 'hmdir_list_root'
+    ul.style.cssText = 'color: black;'
+    // config list element to components
+    components.list = ul
+    root.appendChild(components.list)
+  } else {
+    ul = components.list
+  }
+  // use fragment to update the list content
+  const fragment = document.createDocumentFragment()
+  // loop all element in list
   state.list.forEach(note => {
     const li = document.createElement('li')
     li.textContent = note.title
-    ul.appendChild(li)
+    li.onclick = function () {
+      const target = window.open(note.href, '_blank')
+      target.focus()
+    }
+    fragment.appendChild(li)
+  })
+  // use replacement to refresh the list
+  const temp = ul.cloneNode(false)
+  temp.appendChild(fragment)
+  root.replaceChild(temp, components.list)
+  // update components list reference
+  components.list = temp
+}
+
+const observerConfig = function () {
+  // config state list proxy
+  state.list = new Proxy(state.list, {
+    apply: function (target, thisArg, argumentsList) {
+      return thisArg[target].apply(this, argumentsList)
+    },
+    deleteProperty: function (target, property) {
+      render()
+      return true
+    },
+    set: function (target, property, value, receiver) {
+      target[property] = value
+      render()
+      return true
+    }
   })
 }
 

@@ -8,6 +8,10 @@ const store = require('./store')
 
 /* main function */
 const main = async function () {
+  if (!('Proxy' in window)) {
+    console.warn('Your browser doesn\'t support Proxies.')
+    return
+  }
   // construct all element to the page
   await store.ui.constructor()
 }
