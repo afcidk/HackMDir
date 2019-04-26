@@ -6,6 +6,8 @@ const store = require('./store')
 
 /* The section for defination of all functions */
 
+
+
 /* main function */
 const main = async function () {
   // construct all element to the page
