@@ -1,0 +1,40 @@
+.hmdir_operation_button {
+  position: fixed;
+  display: block;
+  width: 64px;
+  height: 64px;
+  top: 60px;
+  z-index: 999;
+
+  border: none;
+  background-color: transparent;
+  background-image: url("https://i.imgur.com/WK3AOms.png");
+  background-position: 50% 50%;
+  background-size: contain;
+}
+
+.hmdir_root {
+  background-color: rgba(255, 255, 255, 1);
+  position: fixed;
+  z-index: 998;
+  height: 600px;
+  width: 300px;
+  top: 50px;
+  overflow: auto;
+}
+
+.hmdir_list_root {
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  li {
+    a {
+      text-decoration: none;
+      color: black;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    
+  }
+}
