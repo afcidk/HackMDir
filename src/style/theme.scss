@@ -1,9 +1,10 @@
 .hmdir_operation_button {
   position: fixed;
   display: block;
-  width: 64px;
-  height: 64px;
+  width: 32px;
+  height: 32px;
   top: 60px;
+  left: 10px;
   z-index: 999;
 
   border: none;
@@ -18,23 +19,111 @@
   position: fixed;
   z-index: 998;
   height: 600px;
-  width: 300px;
+  max-height: 600px;
+  width: 235px;
   top: 50px;
-  overflow: auto;
+
+  color: #707070;
 }
 
-.hmdir_list_root {
-  padding: 0;
-  margin: 0;
-  text-align: left;
-  li {
-    a {
-      text-decoration: none;
-      color: black;
+.hmdir_grid_section {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 40px 40px 500px;
+  grid-template-areas: "info"
+    "tab"
+    "list";
+  grid-row-gap: 10px;
+  justify-content: center;
+  justify-items: center;
+  align-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+
+  .hmdir_info_root {
+    grid-area: info;
+  }
+
+  .hmdir_tab_root {
+    grid-area: tab;
+    .hmdir_type_button {
+      width: 65px;
+      height: 25px;
+      background-color: white;
+      border: none;
+      border: 1px solid #AAAAAA;
+      border-radius: 4px;
+    
+      color: #707070;
+    
       &:hover {
-        text-decoration: underline;
+        background-color: darken(white, 10%);
       }
     }
-    
+  }
+
+  .hmdir_list_root {
+    grid-area: list;
+    align-self: flex-start;
+
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    overflow: auto;
+    ul {
+      li {
+        a {
+          text-decoration: none;
+          color: black;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+        
+      }
+    }
+  }
+}
+
+
+.lds-ring {
+  display: inline-block;
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+.lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 51px;
+  height: 51px;
+  margin: 6px;
+  border: 6px solid #cef;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #cef transparent transparent transparent;
+}
+.lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+.lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }

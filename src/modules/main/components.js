@@ -5,7 +5,13 @@ const getters = require('./store.js').getters
 const components = {
   button: null,
   root: null,
-  list: null
+  grid: null,
+  list: null,
+  typeButton: {
+    recent: null,
+    personal: null,
+    dir: null
+  }
 }
 
 const constructor = async function () {
@@ -28,14 +34,51 @@ const constructor = async function () {
     root.style.display = 'none'
     // config root element reference to the components
     components.root = root
+    const grid = document.createElement('section')
+    grid.classList.add('hmdir_grid_section')
+    root.appendChild(grid)
+    components.grid = grid
+    // append type button to the root
+    const tabContainer = document.createElement('div')
+    tabContainer.classList.add('hmdir_tab_root')
+    const type = ['Recent', 'Personal', 'Dir']
+    type.forEach(target => {
+      const button = document.createElement('button')
+      button.classList.add('hmdir_type_button')
+      button.textContent = target
+      tabContainer.appendChild(button)
+      // config type button reference to the components
+      components.typeButton[target.toLocaleLowerCase()] = button
+      // config tab switch event
+      button.onclick = async function () {
+        try {
+          mutations.setType(target.toLocaleLowerCase())
+          if (target === 'Recent') {
+            mutations.setList(await API.getHistory())
+          } else if (target === 'Personal') {
+            mutations.setList(await API.getNote())
+          } else if (target === 'Dir') {
+            // TODO: fetch dir infomation and set list
+          }
+          render()
+        } catch (error) {
+          console.log(error)
+        }
+      }
+    })
+    grid.appendChild(tabContainer)
     // add button click event to display the root
     button.onclick = function () {
       mutations.setDisplay(!getters.getDisplayRoot())
       root.style.display = getters.getDisplayRoot() ? 'block' : 'none'
-      button.style.left = getters.getDisplayRoot() ? '220px' : '0px'
+      button.style.left = getters.getDisplayRoot() ? '180px' : '10px'
       button.style.transform = getters.getDisplayRoot() ? 'scaleX(-1)' : 'scaleX(1)'
     }
     mutations.setList(await API.getHistory())
+    // append list container
+    const div = document.createElement('div')
+    div.classList.add('hmdir_list_root')
+    grid.appendChild(div)
     render()
   } catch (error) {
     console.log(error)
@@ -44,15 +87,14 @@ const constructor = async function () {
 
 // the render function to update the screen
 const render = function () {
-  const root = components.root
+  const root = components.grid
   let ul
   if (components.list === null) {
     // insert ul element
     ul = document.createElement('ul')
-    ul.classList.add('hmdir_list_root')
     // config list element to components
     components.list = ul
-    root.appendChild(components.list)
+    root.querySelector('.hmdir_list_root').appendChild(components.list)
   } else {
     ul = components.list
   }
@@ -72,7 +114,7 @@ const render = function () {
   const temp = ul.cloneNode(false)
   temp.appendChild(fragment)
   console.log(root)
-  root.replaceChild(temp, components.list)
+  root.querySelector('.hmdir_list_root').replaceChild(temp, components.list)
   // update components list reference
   components.list = temp
 }

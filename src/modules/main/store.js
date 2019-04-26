@@ -35,7 +35,6 @@ const mutations = {
       return
     }
     state.list = newList.slice()
-    state.list.sort((a, b) => a.time < b.time ? 1 : -1)
   }
 }
 
