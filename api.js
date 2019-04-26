@@ -21,22 +21,19 @@ async function getNote () {
   const doc = await getDOM('/profile')
   const maxPage = doc.querySelector('.pagination >li:last-child a').innerText
 
-  var result = []
+  let result = []
   for (var i = 1; i <= maxPage; ++i) {
-    getDOM('/profile?page=' + i)
-      .then((doc) => {
-        const element = Array.from(doc.querySelectorAll('.content a'))
+    const doc = await getDOM('/profile?page=' + i)
+    const element = doc.querySelectorAll('.content a')
 
-        element.forEach(ele => {
-          result.push({
-            href: ele.href,
-            title: ele.innerHTML
-          })
-        })
+    element.forEach(ele => {
+      result.push({
+        href: ele.href,
+        title: ele.innerHTML
       })
+    })
   }
 
-  console.log(result)
   return result
 }
 
@@ -53,7 +50,12 @@ async function getDOM (url) {
  */
 async function getHistory () {
   var history = await fetch('/history')
-  return JSON.parse(await history.text())
+  return JSON.parse(await history.text()).history.map(target => ({
+    title: target.text,
+    href: `https://hackmd.io/${target.id}`,
+    tags: target.tags,
+    time: target.time
+  }))
 }
 
 /**
@@ -123,7 +125,7 @@ function writeConfig (noteId, data) {
   document.body.appendChild(element)
 }
 
-module.export = {
+module.exports = {
   writeConfig: writeConfig,
   getConfig: getConfig,
   getHistory: getHistory,
