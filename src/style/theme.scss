@@ -23,5 +23,18 @@
   overflow: auto;
 }
 
-.hackmdir_list_root {
+.hmdir_list_root {
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  li {
+    a {
+      text-decoration: none;
+      color: black;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    
+  }
 }

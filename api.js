@@ -50,7 +50,12 @@ async function getDOM (url) {
  */
 async function getHistory () {
   var history = await fetch('/history')
-  return JSON.parse(await history.text())
+  return JSON.parse(await history.text()).history.map(target => ({
+    title: target.text,
+    href: `https://hackmd.io/${target.id}`,
+    tags: target.tags,
+    time: target.time
+  }))
 }
 
 /**

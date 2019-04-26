@@ -2,7 +2,7 @@
 require('./style/theme.scss')
 
 /* The section for defination of all variables */
-const store = require('./store')
+const module = require('./modules')
 
 /* The section for defination of all functions */
 
@@ -13,7 +13,7 @@ const main = async function () {
     return
   }
   // construct all element to the page
-  await store.ui.constructor()
+  await module.main.components.initialize()
 }
 
 main()

@@ -1,10 +1,6 @@
 const API = require('../../../api.js')
-
-const state = {
-  displayRoot: false,
-  list: [],
-  isLogin: false
-}
+const mutations = require('./store.js').mutations
+const getters = require('./store.js').getters
 
 const components = {
   button: null,
@@ -14,9 +10,8 @@ const components = {
 
 const constructor = async function () {
   try {
-    state.isLogin = API.isLoggedIn()
-    state.list = await API.getNote()
-    if (!state.isLogin) {
+    mutations.setLoginStatus(API.isLoggedIn())
+    if (!getters.getLoginStatus()) {
       return
     }
     // initialize the operation button
@@ -35,28 +30,26 @@ const constructor = async function () {
     components.root = root
     // add button click event to display the root
     button.onclick = function () {
-      state.displayRoot = !state.displayRoot
-      root.style.display = state.displayRoot ? 'block' : 'none'
-      button.style.left = state.displayRoot ? '220px' : '0px'
-      button.style.transform = state.displayRoot ? 'scaleX(-1)' : 'scaleX(1)'
+      mutations.setDisplay(!getters.getDisplayRoot())
+      root.style.display = getters.getDisplayRoot() ? 'block' : 'none'
+      button.style.left = getters.getDisplayRoot() ? '220px' : '0px'
+      button.style.transform = getters.getDisplayRoot() ? 'scaleX(-1)' : 'scaleX(1)'
     }
-    // config observer
-    observerConfig()
-    // render the root element
+    mutations.setList(await API.getHistory())
     render()
   } catch (error) {
     console.log(error)
   }
 }
 
+// the render function to update the screen
 const render = function () {
   const root = components.root
   let ul
   if (components.list === null) {
     // insert ul element
     ul = document.createElement('ul')
-    ul.class = 'hmdir_list_root'
-    ul.style.cssText = 'color: black;'
+    ul.classList.add('hmdir_list_root')
     // config list element to components
     components.list = ul
     root.appendChild(components.list)
@@ -66,43 +59,26 @@ const render = function () {
   // use fragment to update the list content
   const fragment = document.createDocumentFragment()
   // loop all element in list
-  state.list.forEach(note => {
+  getters.getList().forEach(note => {
     const li = document.createElement('li')
-    li.textContent = note.title
-    li.onclick = function () {
-      const target = window.open(note.href, '_blank')
-      target.focus()
-    }
+    const a = document.createElement('a')
+    a.textContent = note.title
+    a.href = note.href
+    a.target = '_blank'
+    li.appendChild(a)
     fragment.appendChild(li)
   })
   // use replacement to refresh the list
   const temp = ul.cloneNode(false)
   temp.appendChild(fragment)
+  console.log(root)
   root.replaceChild(temp, components.list)
   // update components list reference
   components.list = temp
 }
 
-const observerConfig = function () {
-  // config state list proxy
-  state.list = new Proxy(state.list, {
-    apply: function (target, thisArg, argumentsList) {
-      return thisArg[target].apply(this, argumentsList)
-    },
-    deleteProperty: function (target, property) {
-      render()
-      return true
-    },
-    set: function (target, property, value, receiver) {
-      target[property] = value
-      render()
-      return true
-    }
-  })
-}
-
 module.exports = {
-  constructor: constructor,
-  state: state,
-  components: components
+  ...components,
+  initialize: constructor,
+  render: render
 }
