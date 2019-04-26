@@ -14,6 +14,7 @@ const components = {
 
 const constructor = async function () {
   try {
+    console.log(API)
     state.isLogin = API.isLoggedIn()
     state.list = await API.getNote()
     if (!state.isLogin) {

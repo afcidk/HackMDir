@@ -120,7 +120,7 @@ function writeConfig (noteId, data) {
   document.body.appendChild(element)
 }
 
-module.export = {
+module.exports = {
   writeConfig: writeConfig,
   getConfig: getConfig,
   getHistory: getHistory,
