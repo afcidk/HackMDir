@@ -1,5 +1,5 @@
 .hmdir_operation_button {
-  position: absolute;
+  position: fixed;
   display: block;
   width: 64px;
   height: 64px;
@@ -11,4 +11,14 @@
   background-image: url("https://i.imgur.com/WK3AOms.png");
   background-position: 50% 50%;
   background-size: contain;
+}
+
+.hmdir_root {
+  background-color: rgba(255, 255, 255, 1);
+  position: fixed;
+  z-index: 998;
+  height: 800px;
+  width: 300px;
+  top: 50px;
+  overflow: auto;
 }

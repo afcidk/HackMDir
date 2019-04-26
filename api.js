@@ -21,22 +21,19 @@ async function getNote () {
   const doc = await getDOM('/profile')
   const maxPage = doc.querySelector('.pagination >li:last-child a').innerText
 
-  var result = []
+  let result = []
   for (var i = 1; i <= maxPage; ++i) {
-    getDOM('/profile?page=' + i)
-      .then((doc) => {
-        const element = Array.from(doc.querySelectorAll('.content a'))
+    const doc = await getDOM('/profile?page=' + i)
+    const element = doc.querySelectorAll('.content a')
 
-        element.forEach(ele => {
-          result.push({
-            href: ele.href,
-            title: ele.innerHTML
-          })
-        })
+    element.forEach(ele => {
+      result.push({
+        href: ele.href,
+        title: ele.innerHTML
       })
+    })
   }
 
-  console.log(result)
   return result
 }
 
@@ -85,7 +82,7 @@ async function connect (noteId) {
   })
 }
 
-module.export = {
+module.exports = {
   getHistory: getHistory,
   getNote: getNote,
   isLoggedIn: isLoggedIn,
