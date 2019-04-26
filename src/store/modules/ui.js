@@ -55,11 +55,14 @@ const render = function () {
   root.appendChild(ul)
   // config list component
   components.list = ul
+  // user fragment to append all list element
+  const fragment = document.createDocumentFragment()
   state.list.forEach(note => {
     const li = document.createElement('li')
     li.textContent = note.title
-    ul.appendChild(li)
+    fragment.appendChild(li)
   })
+  ul.appendChild(fragment)
 }
 
 module.exports = {
