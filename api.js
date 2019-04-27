@@ -1,4 +1,5 @@
 /* eslint-env browser */
+// FIXME: move some functions to new file (utils)
 
 /**
  * Detect whether exists a logged in user
@@ -19,7 +20,12 @@ function isLoggedIn () {
  */
 async function getNote () {
   const doc = await getDOM('/profile')
-  const maxPage = doc.querySelector('.pagination >li:last-child a').innerText
+
+  try {
+    var maxPage = doc.querySelector('.pagination >li:last-child a').innerText
+  } catch (e) { // prevent error when no user note
+    return []
+  }
 
   let result = []
   for (var i = 1; i <= maxPage; ++i) {
@@ -33,34 +39,31 @@ async function getNote () {
       })
     })
   }
-
   return result
 }
 
 async function getDOM (url) {
   console.log('received url: ' + url)
-  var res = await fetch(url)
-  var text = await res.text()
+  const res = await fetch(url)
+  const text = await res.text()
   return new DOMParser().parseFromString(text, 'text/html').firstElementChild
 }
 
 /**
  * Get History of a logged in user
- * @returns Array
+ * @returns JSON History lists
  */
 async function getHistory () {
   var history = await fetch('/history')
   return JSON.parse(await history.text()).history.map(target => ({
     title: target.text,
-    href: `https://hackmd.io/${target.id}`,
-    tags: target.tags,
-    time: target.time
+    href: `https://hackmd.io/${target.id}`
   }))
 }
 
 /**
  * Delete note of specific notdId
- * @param noteId
+ * @param String noteId
  * @returns Boolean Whether delete success or not
  */
 async function delNote (noteId) {
@@ -70,15 +73,21 @@ async function delNote (noteId) {
   })
 }
 
-async function connect (noteId) {
+/**
+ * Create a websocket connection instance
+ * @param String noteId
+ * @returns Websocket instance(io)
+ */
+async function connect (noteId, base = window) {
+  // FIXME: Add exception handling if cannot connect
+
   // Register realtime server
   var server = await fetch('/realtime-reg/realtime?noteId=' + noteId)
   server = await server.text()
   var url = JSON.parse(server)['url']
-  url = url.substring(url.indexOf('hackmd.io') + 9) + '/socket.io/'
+  url = url.replace('https://hackmd.io', '') + '/socket.io/'
 
-  /* global io */
-  return io('https://hackmd.io', {
+  return base.io('https://hackmd.io', {
     path: url,
     query: {
       noteId: noteId
@@ -87,11 +96,15 @@ async function connect (noteId) {
   })
 }
 
-async function getConfig () {
+/**
+ * Get config content
+ * @returns String Raw config content (Not parsed)
+ */
+async function getData () {
   var doc = await getDOM('/profile?q=hackmdir-config')
   const page = doc.querySelector('.content a')
   if (page === null) {
-    newConfig()
+    newData(':::info\nThis is test data\n:::')
     return {}
   }
 
@@ -101,35 +114,85 @@ async function getConfig () {
   console.log(info)
 }
 
-async function newConfig () {
+/**
+ * Create a new config file
+ * @param String Initial content for config file
+ */
+async function newData (content) {
   const newPage = (await fetch('/new')).url
 
+  // FIXME: set timeout since the page may not be initialized soon
+  // FIXME: Add exception if the note cannot be created
   setTimeout(function () {
-    writeConfig(newPage.substring(newPage.indexOf('hackmd.io') + 10),
-      ':::info\nThis is test config\n:::')
-  }, 5000)
+    writeData(newPage.replace('https://hackmd.io/', ''),
+      content)
+  }, 10000)
 }
 
-function writeConfig (noteId, data) {
+/**
+ * Write to config file (overwrite)
+ * @param String noteId
+ * @param String Content to overwrite the file
+ */
+function writeData (noteId, content) {
   console.log('noteId: ' + noteId)
-  console.log('data: ' + data)
+  console.log('data: ' + content)
   var element = document.createElement('iframe')
   element.style.display = 'none'
   element.onload = (function () {
-    return function () {
-      element.contentWindow.editor.setValue(data)
+    return async function () {
+      element.contentWindow.editor.setValue(content)
       console.log('write OK')
+
+      const socket = await connect(noteId, element.contentWindow)
+      socket.emit('permission', 'private')
     }
   }())
   element.src = '/' + noteId
   document.body.appendChild(element)
 }
 
+/**
+ * Change permission of multiple notes
+ * @param Array url of notes
+ * @param Array permission of choices (read->3/2/1, write->30/20/10)
+ */
+function changePermission (urls, perm) {
+  // preprocess url
+  var notes = []
+  urls.forEach(url => {
+    notes.push(url.replace('https://hackmd.io', ''))
+  })
+
+  var pstr = ''
+  if (perm === 33) pstr = 'private'
+  else if (perm === 32) pstr = 'protected'
+  else if (perm === 22) pstr = 'limited'
+  else if (perm === 31) pstr = 'locked'
+  else if (perm === 21) pstr = 'editable'
+  else if (perm === 11) pstr = 'freely'
+
+  // open the first url as base window
+  var element = document.createElement('iframe')
+  element.style.display = 'none'
+  element.onload = (function () {
+    return async function () {
+      notes.forEach(async function (url) {
+        const socket = await connect(url, element.contentWindow)
+        socket.emit('permission', pstr)
+      })
+    }
+  }())
+  element.src = notes[0]
+  document.body.appendChild(element)
+}
+
 module.exports = {
-  writeConfig: writeConfig,
-  getConfig: getConfig,
+  writeData: writeData,
+  getData: getData,
   getHistory: getHistory,
   getNote: getNote,
   isLoggedIn: isLoggedIn,
-  delNote: delNote
+  delNote: delNote,
+  changePermission: changePermission
 }
