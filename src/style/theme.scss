@@ -1,4 +1,4 @@
-.hmdir_operation_button {
+.hmdir_display_button {
   position: fixed;
   display: block;
   width: 32px;
@@ -20,7 +20,7 @@
   z-index: 998;
   height: 600px;
   max-height: 600px;
-  width: 235px;
+  width: 300px;
   top: 50px;
 
   color: #707070;
@@ -30,9 +30,8 @@
   position: relative;
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 40px 40px 500px;
-  grid-template-areas: "info"
-    "tab"
+  grid-template-rows: 100px 500px;
+  grid-template-areas: "operation"
     "list";
   grid-row-gap: 10px;
   justify-content: center;
@@ -48,17 +47,20 @@
     grid-area: info;
   }
 
-  .hmdir_tab_root {
-    grid-area: tab;
+  .hmdir_operation_container {
+    grid-area: operation;
+    justify-self: flex-end;
     .hmdir_type_button {
-      width: 65px;
-      height: 25px;
+      width: 60px;
+      height: 20px;
       background-color: white;
       border: none;
       border: 1px solid #AAAAAA;
       border-radius: 4px;
     
       color: #707070;
+      font-size: 10px;
+      margin-right: 5px;
     
       &:hover {
         background-color: darken(white, 10%);
@@ -66,7 +68,7 @@
     }
   }
 
-  .hmdir_list_root {
+  .hmdir_list_container {
     grid-area: list;
     align-self: flex-start;
 
@@ -91,14 +93,19 @@
   }
 }
 
-
-.lds-ring {
+.lds_ring {
   display: inline-block;
-  position: relative;
+  position: absolute;
   width: 64px;
   height: 64px;
+  left: 0; 
+  right: 0; 
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: auto; 
+  margin-right: auto;
 }
-.lds-ring div {
+.lds_ring div {
   box-sizing: border-box;
   display: block;
   position: absolute;
@@ -107,19 +114,19 @@
   margin: 6px;
   border: 6px solid #cef;
   border-radius: 50%;
-  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  animation: lds_ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
   border-color: #cef transparent transparent transparent;
 }
-.lds-ring div:nth-child(1) {
+.lds_ring div:nth-child(1) {
   animation-delay: -0.45s;
 }
-.lds-ring div:nth-child(2) {
+.lds_ring div:nth-child(2) {
   animation-delay: -0.3s;
 }
-.lds-ring div:nth-child(3) {
+.lds_ring div:nth-child(3) {
   animation-delay: -0.15s;
 }
-@keyframes lds-ring {
+@keyframes lds_ring {
   0% {
     transform: rotate(0deg);
   }

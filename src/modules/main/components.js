@@ -1,4 +1,5 @@
 const API = require('../../../api.js')
+const html = require('./main.html')
 const mutations = require('./store.js').mutations
 const getters = require('./store.js').getters
 
@@ -7,6 +8,7 @@ const components = {
   root: null,
   grid: null,
   list: null,
+  loading: null,
   typeButton: {
     recent: null,
     personal: null,
@@ -20,53 +22,20 @@ const constructor = async function () {
     if (!getters.getLoginStatus()) {
       return
     }
-    // initialize the operation button
+    // // initialize the display button
     const button = document.createElement('button')
-    button.id = 'hmdir_operation_button'
-    button.classList.add('hmdir_operation_button')
+    button.id = 'hmdir_display_button'
+    button.classList.add('hmdir_display_button')
     document.body.appendChild(button)
     // config root element reference to the components
     components.button = button
     // append root div to the page
-    const root = document.createElement('div')
-    root.classList.add('hmdir_root')
-    document.body.appendChild(root)
+    const root = document.createElement('span')
     root.style.display = 'none'
+    document.body.appendChild(root)
+    root.innerHTML = html
     // config root element reference to the components
     components.root = root
-    const grid = document.createElement('section')
-    grid.classList.add('hmdir_grid_section')
-    root.appendChild(grid)
-    components.grid = grid
-    // append type button to the root
-    const tabContainer = document.createElement('div')
-    tabContainer.classList.add('hmdir_tab_root')
-    const type = ['Recent', 'Personal', 'Dir']
-    type.forEach(target => {
-      const button = document.createElement('button')
-      button.classList.add('hmdir_type_button')
-      button.textContent = target
-      tabContainer.appendChild(button)
-      // config type button reference to the components
-      components.typeButton[target.toLocaleLowerCase()] = button
-      // config tab switch event
-      button.onclick = async function () {
-        try {
-          mutations.setType(target.toLocaleLowerCase())
-          if (target === 'Recent') {
-            mutations.setList(await API.getHistory())
-          } else if (target === 'Personal') {
-            mutations.setList(await API.getNote())
-          } else if (target === 'Dir') {
-            // TODO: fetch dir infomation and set list
-          }
-          render()
-        } catch (error) {
-          console.log(error)
-        }
-      }
-    })
-    grid.appendChild(tabContainer)
     // add button click event to display the root
     button.onclick = function () {
       mutations.setDisplay(!getters.getDisplayRoot())
@@ -75,10 +44,40 @@ const constructor = async function () {
       button.style.transform = getters.getDisplayRoot() ? 'scaleX(-1)' : 'scaleX(1)'
     }
     mutations.setList(await API.getHistory())
-    // append list container
-    const div = document.createElement('div')
-    div.classList.add('hmdir_list_root')
-    grid.appendChild(div)
+    // get the reference of all element
+    components.grid = document.querySelector('.hmdir_grid_section')
+    components.list = document.querySelector('.hmdir_list_container > ul')
+    components.loading = document.querySelector('.lds_ring')
+    components.loading.style.display = 'none'
+    components.typeButton.recent = document.querySelector('.hmdir_type_button:nth-child(1)')
+    components.typeButton.personal = document.querySelector('.hmdir_type_button:nth-child(2)')
+    components.typeButton.dir = document.querySelector('.hmdir_type_button:nth-child(3)')
+    // config type button event
+    Object.keys(components.typeButton).forEach(key => {
+      const button = components.typeButton[key]
+      button.onclick = async function () {
+        // clear the list first
+        mutations.setList([])
+        render()
+        // start loading effect
+        components.loading.style.display = 'block'
+        try {
+          mutations.setType(key)
+          if (key === 'recent') {
+            mutations.setList(await API.getHistory())
+          } else if (key === 'personal') {
+            mutations.setList(await API.getNote())
+          } else if (key === 'dir') {
+            // TODO: fetch dir infomation and set list
+          }
+          render()
+        } catch (error) {
+          console.log(error)
+        }
+        // start loading effect
+        components.loading.style.display = 'none'
+      }
+    })
     render()
   } catch (error) {
     console.log(error)
@@ -87,7 +86,7 @@ const constructor = async function () {
 
 // the render function to update the screen
 const render = function () {
-  const root = components.grid
+  const root = components.list.parentNode
   let ul
   if (components.list === null) {
     // insert ul element
@@ -113,8 +112,7 @@ const render = function () {
   // use replacement to refresh the list
   const temp = ul.cloneNode(false)
   temp.appendChild(fragment)
-  console.log(root)
-  root.querySelector('.hmdir_list_root').replaceChild(temp, components.list)
+  root.replaceChild(temp, components.list)
   // update components list reference
   components.list = temp
 }
