@@ -1,17 +1,15 @@
 .hmdir_display_button {
   position: fixed;
   display: block;
-  width: 32px;
-  height: 32px;
-  top: 60px;
-  left: 10px;
+  width: 18px;
+  height: 50px;
+  top: 50px;
+  left: 0px;
   z-index: 999;
+  background-color: white;
 
-  border: none;
-  background-color: transparent;
-  background-image: url("https://i.imgur.com/WK3AOms.png");
-  background-position: 50% 50%;
-  background-size: contain;
+  border: 1px solid #6b6b6b;
+  border-radius: 0 4px 4px 0;
 }
 
 .hmdir_root {
@@ -20,20 +18,19 @@
   z-index: 998;
   height: 600px;
   max-height: 600px;
-  width: 300px;
+  width: 360px;
   top: 50px;
 
-  color: #707070;
+  color: #6b6b6b;
 }
 
 .hmdir_grid_section {
   position: relative;
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 100px 500px;
+  grid-template-rows: 50px 550px;
   grid-template-areas: "operation"
     "list";
-  grid-row-gap: 10px;
   justify-content: center;
   justify-items: center;
   align-content: center;
@@ -49,20 +46,89 @@
 
   .hmdir_operation_container {
     grid-area: operation;
-    justify-self: flex-end;
-    .hmdir_type_button {
-      width: 60px;
-      height: 20px;
-      background-color: white;
-      border: none;
-      border: 1px solid #AAAAAA;
-      border-radius: 4px;
-    
-      color: #707070;
-      font-size: 10px;
-      margin-right: 5px;
-    
-      &:hover {
+    display: grid;
+    grid-template-columns: 250px 100px;
+    grid-template-rows: 20px 20px;
+    grid-template-areas: ". operation" 
+      "tab operation";
+    justify-content: flex-start;
+    justify-items: flex-start;
+    align-content: center;
+    align-items: center;
+    background-color: #6b6b6b;
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+    .hmdir_operation_root {
+      grid-area: operation;
+      display: grid;
+      grid-template-columns: 100%;
+      grid-template-rows: 1fr 1fr;
+      justify-content: flex-end;
+      justify-items: flex-end;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      .hmdir_operation_button {
+        max-width: 80px;
+        height: 18px;
+        background-color: transparent;
+        border: none;
+        border: 1px solid darken(white, 10%);
+        border-radius: 4px;
+      
+        color: darken(white, 10%);
+        font-size: 10px;
+        margin-right: 5px;
+      
+        &:hover {
+          background-color: darken(white, 50%);
+        }
+        i {
+          display: inline-block;
+          width: 8px;
+          height: 8px;
+          background-color: darken(white, 10%);
+          background-repeat: no-repeat;
+          background-size: contain;
+          background-position: 50% 50%;
+          margin-right: 8px;
+
+          -webkit-mask-size: contain;
+          mask-size: contain;
+        }
+        &:nth-child(1) {
+          i {
+            -webkit-mask-image: url("chrome-extension://mdekljnphcfblbcdnnbopkhhppblodhj/svgs/delete.svg");
+          }
+        }
+        &:nth-child(2) {
+          i {
+            -webkit-mask-image: url("chrome-extension://mdekljnphcfblbcdnnbopkhhppblodhj/svgs/permission.svg");
+          }
+        }
+      }
+    }
+    .hmdir_tab_root {
+      grid-area: tab;
+
+      .hmdir_type_button {
+        width: 70px;
+        height: 18px;
+        background-color: white;
+        border: none;
+        border: 1px solid #AAAAAA;
+        border-radius: 4px;
+      
+        color: #6b6b6b;
+        font-size: 10px;
+        margin-right: 5px;
+      
+        &:hover {
+          background-color: darken(white, 10%);
+        }
+      }
+      .hmdir_type_button[current="true"] {
         background-color: darken(white, 10%);
       }
     }
@@ -79,10 +145,27 @@
     text-align: left;
     overflow: auto;
     ul {
+      margin: 0;
+      padding: 12px;
+      list-style: none;
       li {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        
+        input[type="checkbox"] {
+          margin: 0 10px;
+        }
         a {
+          display: inline-block;
+          width: 300px;
+          height: 20px;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          overflow: hidden;
           text-decoration: none;
-          color: black;
+          color: #6b6b6b;
           &:hover {
             text-decoration: underline;
           }

@@ -14,6 +14,7 @@ const main = async function () {
   }
   // construct all element to the page
   await module.main.components.initialize()
+  // TODO: construct the modal
 }
 
 main()
