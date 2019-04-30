@@ -13,7 +13,6 @@ function isLoggedIn () {
 
   return false
 }
-
 /**
  * Get notes written by logged in user
  * @returns Array Information including href and title
@@ -63,13 +62,14 @@ async function getHistory () {
 
 /**
  * Delete note of specific notdId
- * @param String noteId
- * @returns Boolean Whether delete success or not
+ * @param Array Array of noteId
  */
-async function delNote (noteId) {
-  const socket = await connect(noteId)
-  socket.on('connect', () => {
-    socket.emit('delete')
+function delNote (noteId) {
+  noteId.forEach(async id => {
+    const socket = await connect(id)
+    socket.on('connect', () => {
+      socket.emit('delete')
+    })
   })
 }
 
@@ -80,9 +80,10 @@ async function delNote (noteId) {
  */
 async function connect (noteId, base = window) {
   // FIXME: Add exception handling if cannot connect
+  // FIXME: Check if base exists "io" instance
 
   // Register realtime server
-  var server = await fetch('/realtime-reg/realtime?noteId=' + noteId)
+  var server = await fetch(`/realtime-reg/realtime?noteId=${noteId}`)
   server = await server.text()
   var url = JSON.parse(server)['url']
   url = url.replace('https://hackmd.io', '') + '/socket.io/'
@@ -108,7 +109,7 @@ async function getData () {
     return {}
   }
 
-  const href = page.href + '/publish'
+  const href = `${page.href}/publish`
   doc = await getDOM(href)
   const info = doc.querySelector('#doc').innerHTML
   console.log(info)
