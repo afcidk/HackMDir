@@ -1,14 +1,18 @@
 /* eslint-env browser */
 // FIXME: move some functions to new file (utils)
 
+var noteData = ''
+
 /**
  * Detect whether exists a logged in user
  * @returns Boolean if user logged in
  */
-function isLoggedIn () {
-  // TODO: The better way is to check the connect.sid cookie,
-  // but we cannot get that cookie, unless we use chrome.cookies API
+async function isLoggedIn () {
   var cookie = document.cookie
+
+  // open data file at background, which supports socketio
+  getData()
+
   if (cookie.search('userid') !== -1 && cookie.search('loginstate') !== -1) return true
 
   return false
@@ -42,7 +46,6 @@ async function getNote () {
 }
 
 async function getDOM (url) {
-  console.log('received url: ' + url)
   const res = await fetch(url)
   const text = await res.text()
   return new DOMParser().parseFromString(text, 'text/html').firstElementChild
@@ -78,9 +81,8 @@ function delNote (noteId) {
  * @param String noteId
  * @returns Websocket instance(io)
  */
-async function connect (noteId, base = window) {
+async function connect (noteId, base = document.getElementById('hkmdir-data').contentWindow) {
   // FIXME: Add exception handling if cannot connect
-  // FIXME: Check if base exists "io" instance
 
   // Register realtime server
   var server = await fetch(`/realtime-reg/realtime?noteId=${noteId}`)
@@ -102,17 +104,23 @@ async function connect (noteId, base = window) {
  * @returns String Raw config content (Not parsed)
  */
 async function getData () {
-  var doc = await getDOM('/profile?q=hackmdir-config')
+  var doc = await getDOM('/profile?q=hkmdir-data')
+  var url = ''
   const page = doc.querySelector('.content a')
   if (page === null) {
-    newData(':::info\nThis is test data\n:::')
-    return {}
+    url = await newData('###### hkmdir-data\n')
+  } else {
+    url = page.href
+    const href = `${page.href}/publish`
+    doc = await getDOM(href)
+    noteData = doc.querySelector('#doc').innerHTML
+    console.log(noteData)
   }
 
-  const href = `${page.href}/publish`
-  doc = await getDOM(href)
-  const info = doc.querySelector('#doc').innerHTML
-  console.log(info)
+  // create hidden note for later socketio usage
+  if (document.getElementById('hkmdir-data') === null) {
+    createHiddenNote(url.replace('https://hackmd.io/', ''))
+  }
 }
 
 /**
@@ -138,20 +146,18 @@ async function newData (content) {
  * @param String noteId
  * @param String Content to overwrite the file
  */
-function writeData (noteId, content) {
-  console.log('noteId: ' + noteId)
-  console.log('data: ' + content)
+async function writeData (noteId, content) {
+  const contentWindow = document.getElementById('hkmdir-data').contentWindow
+
+  contentWindow.editor.setValue(content)
+  const socket = await connect(noteId)
+  socket.emit('permission', 'private')
+}
+
+function createHiddenNote (noteId = 'new') {
   var element = document.createElement('iframe')
   element.style.display = 'none'
-  element.onload = (function () {
-    return async function () {
-      element.contentWindow.editor.setValue(content)
-      console.log('write OK')
-
-      const socket = await connect(noteId, element.contentWindow)
-      socket.emit('permission', 'private')
-    }
-  }())
+  element.setAttribute('id', 'hkmdir-data')
   element.src = '/' + noteId
   document.body.appendChild(element)
 }
@@ -177,18 +183,10 @@ function changePermission (urls, perm) {
   else if (perm === 11) pstr = 'freely'
 
   // open the first url as base window
-  var element = document.createElement('iframe')
-  element.style.display = 'none'
-  element.onload = (function () {
-    return async function () {
-      notes.forEach(async function (url) {
-        const socket = await connect(url, element.contentWindow)
-        socket.emit('permission', pstr)
-      })
-    }
-  }())
-  element.src = notes[0]
-  document.body.appendChild(element)
+  notes.forEach(async note => {
+    const socket = await connect(note)
+    socket.emit('permission', pstr)
+  })
 }
 
 /**
@@ -216,5 +214,6 @@ module.exports = {
   isLoggedIn: isLoggedIn,
   delNote: delNote,
   changePermission: changePermission,
-  addBookmode: addBookmode
+  addBookmode: addBookmode,
+  noteData: noteData
 }
