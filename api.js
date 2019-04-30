@@ -118,6 +118,7 @@ async function getData () {
 /**
  * Create a new config file
  * @param String Initial content for config file
+ * @return String Url of new note
  */
 async function newData (content) {
   const newPage = (await fetch('/new')).url
@@ -128,6 +129,8 @@ async function newData (content) {
     writeData(newPage.replace('https://hackmd.io/', ''),
       content)
   }, 10000)
+
+  return newPage
 }
 
 /**
@@ -188,6 +191,23 @@ function changePermission (urls, perm) {
   document.body.appendChild(element)
 }
 
+/**
+ * Merge multiple notes into bookmode
+ * @param String Title of bookmode note
+ * @param Array data [[title1, href1], [title2, href2], ...]
+ * @returns String Url of bookmode note
+ */
+async function addBookmode (title, data) {
+  // create content
+  var content = `${title}\n===\n\n`
+  data.forEach(ele => {
+    content += `- [${ele[0]}](${ele[1]})\n`
+  })
+  const url = await newData(content)
+  const bmUrl = await fetch(`${url}/publish`)
+  return bmUrl.url.replace('/s/', '/c/')
+}
+
 module.exports = {
   writeData: writeData,
   getData: getData,
@@ -195,5 +215,6 @@ module.exports = {
   getNote: getNote,
   isLoggedIn: isLoggedIn,
   delNote: delNote,
-  changePermission: changePermission
+  changePermission: changePermission,
+  addBookmode: addBookmode
 }
