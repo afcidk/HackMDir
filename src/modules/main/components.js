@@ -4,24 +4,29 @@ const dirHTML = require('./dir.html')
 const mutations = require('./store.js').mutations
 const getters = require('./store.js').getters
 
+const eventBus = require('../eventBus')
+
 const components = {
   button: null,
   root: null,
   grid: null,
-  list: null,
-  listRoot: null,
+  dirListRoot: null,
+  noteList: null,
+  noteListRoot: null,
   loading: null,
   typeButton: {
     recent: null,
     personal: null,
     dir: null
-  }
+  },
+  newDirButton: null
 }
 
 const constructor = async function () {
   try {
-    mutations.setLoginStatus(API.isLoggedIn())
-    if (!getters.getLoginStatus()) {
+    const status = await API.isLoggedIn()
+    mutations.setLoginStatus(status)
+    if (!status) {
       return
     }
     // // initialize the display button
@@ -47,13 +52,15 @@ const constructor = async function () {
     mutations.setList(await API.getHistory())
     // get the reference of all element
     components.grid = document.querySelector('.hmdir_grid_section')
-    components.listRoot = document.querySelector('.hmdir_list_container')
-    components.list = document.querySelector('.hmdir_list_container > ul')
+    components.noteListRoot = document.querySelector('.hmdir_list_container')
+    components.noteList = document.querySelector('.hmdir_list_container > ul')
     components.loading = document.querySelector('.lds_ring')
     components.loading.style.display = 'none'
+    components.dirListRoot = htmlToElement(dirHTML)
     components.typeButton.recent = document.querySelector('.hmdir_type_button:nth-child(1)')
     components.typeButton.personal = document.querySelector('.hmdir_type_button:nth-child(2)')
     components.typeButton.dir = document.querySelector('.hmdir_type_button:nth-child(3)')
+    components.newDirButton = components.dirListRoot.querySelector('.hmdir_new_dir_button')
     // config type button event
     Object.keys(components.typeButton).forEach(key => {
       const button = components.typeButton[key]
@@ -68,11 +75,11 @@ const constructor = async function () {
           mutations.setType(key)
           // clear the list first
           mutations.setList([])
-          render()
+          // render()
           if (key === 'recent') {
             mutations.setList(await API.getHistory())
           } else if (key === 'personal') {
-            mutations.setList(await API.getCache('personal'))
+            mutations.setList(API.getCache('personal'))
           } else if (key === 'dir') {
             // TODO: fetch dir infomation and set list
           }
@@ -86,6 +93,10 @@ const constructor = async function () {
     })
     // set recent current status
     components.typeButton.recent.setAttribute('current', 'true')
+    // config event bus
+    components.newDirButton.onclick = function () {
+      eventBus.publish('displayNewDirModal')
+    }
     render()
 
     window.onload = () => {
@@ -119,6 +130,7 @@ const constructor = async function () {
       root.querySelector('.hmdir_list_root').childNodes[0].appendChild(li)
       console.log(event.dataTransfer)
     }
+    return components.root
   } catch (error) {
     console.log(error)
   }
@@ -134,31 +146,34 @@ const htmlToElement = function (html) {
 
 // the render function to update the screen
 const render = function () {
-  const root = components.listRoot
+  const root = components.noteListRoot
   if (getters.getType() === 'dir') {
-    root.innerHTML = dirHTML
-    root.appendChild(components.loading)
+    components.noteListRoot.replaceChild(components.dirListRoot, components.noteList)
+    components.dirListRoot.appendChild(components.loading)
     // set list reference to null
-    components.list = null
-    const ul = root.querySelector('.hmdir_dir_list_section > ul')
-    // render for dir
+    components.noteList = null
+    const ul = components.dirListRoot.querySelector('.hmdir_dir_list_section > ul')
+    // use fragment to update the list content
+    const fragment = document.createDocumentFragment()
     Object.keys(getters.getDirs()).forEach(dirname => {
       const li = htmlToElement(`<li><i  ></i>${dirname}</li>`)
-      ul.appendChild(li)
+      fragment.appendChild(li)
     })
+    ul.innerHTML = ''
+    ul.appendChild(fragment)
     return
   }
   let ul
-  if (components.list === null) {
+  if (components.noteList === null) {
     root.innerHTML = ''
     root.appendChild(components.loading)
     // insert ul element
     ul = document.createElement('ul')
     // config list element to components
-    components.list = ul
-    root.appendChild(components.list)
+    components.noteList = ul
+    root.appendChild(components.noteList)
   } else {
-    ul = components.list
+    ul = components.noteList
   }
   // use fragment to update the list content
   const fragment = document.createDocumentFragment()
@@ -170,9 +185,9 @@ const render = function () {
   // use replacement to refresh the list
   const temp = ul.cloneNode(false)
   temp.appendChild(fragment)
-  root.replaceChild(temp, components.list)
+  root.replaceChild(temp, components.noteList)
   // update components list reference
-  components.list = temp
+  components.noteList = temp
 }
 
 module.exports = {

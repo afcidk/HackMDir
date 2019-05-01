@@ -14,7 +14,8 @@ const main = async function () {
   }
   // construct all element to the page
   await module.main.components.initialize()
-  // TODO: construct the modal
+  const modal = await module.modal.components.initialize('新增資料夾', '輸入新資料夾名稱: ', true)
+  modal.style.display = 'none'
 }
 
 main()
