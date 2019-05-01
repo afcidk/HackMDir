@@ -30,7 +30,8 @@ module.exports = {
     new webpack.optimize.ModuleConcatenationPlugin(),
     new CopyWebpackPlugin([
       { from: './src/manifest.json' },
-      { from: './src/icons/', to: './icons' }
+      { from: './src/icons/', to: './icons' },
+      { from: './src/svgs', to: './svgs' }
     ])
   ],
   resolve: { extensions: ['.js', '.jsx'] },
@@ -45,6 +46,10 @@ module.exports = {
       {
         test: /\.(scss|sass)$/,
         use: ['style-loader', 'css-loader', 'sass-loader']
+      },
+      {
+        test: /\.(html)$/,
+        use: ['html-loader']
       }
     ]
   }

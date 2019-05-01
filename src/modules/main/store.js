@@ -2,7 +2,10 @@ const state = {
   isLogin: false,
   displayRoot: false,
   type: 'recent',
-  list: []
+  list: [],
+  dirs: {
+    test: []
+  }
 }
 
 const getters = {
@@ -17,6 +20,9 @@ const getters = {
   },
   getType: function () {
     return state.type
+  },
+  getDirs: function () {
+    return state.dirs
   }
 }
 
@@ -35,6 +41,27 @@ const mutations = {
       return
     }
     state.list = newList.slice()
+  },
+  newDir: function (name) {
+    state.dirs[name] = []
+  },
+  removeDir: function (name) {
+    state.dirs[name] = null
+  },
+  addNoteToDir: function (dirname, note) {
+    if (!state.dirs[dirname]) {
+      throw new Error('dir not found')
+    }
+    if (state.dirs[dirname].findIndex(target => target.id === note.id) !== -1) {
+      throw new Error('note is already exist in the dir')
+    }
+    state.dirs[dirname].push(note)
+  },
+  removeNoteFromDir: function (dirname, index) {
+    if (state.dirs[dirname].length === 0) {
+      throw new Error('dir is empty')
+    }
+    state.dirs[dirname].splice(index, 1)
   }
 }
 

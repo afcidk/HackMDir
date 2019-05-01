@@ -1,28 +1,42 @@
 /* eslint-env browser */
+// FIXME: move some functions to new file (utils)
+
+var cache = ''
+var cacheId = ''
+const utils = require('utils.js')
 
 /**
  * Detect whether exists a logged in user
  * @returns Boolean if user logged in
  */
-function isLoggedIn () {
-  // TODO: The better way is to check the connect.sid cookie,
-  // but we cannot get that cookie, unless we use chrome.cookies API
+async function isLoggedIn () {
   var cookie = document.cookie
+
+  // open data file at background, which supports socketio
+  const res = await utils.initCache()
+  cache = res.cache
+  cacheId = res.noteId
+
   if (cookie.search('userid') !== -1 && cookie.search('loginstate') !== -1) return true
 
   return false
 }
-
 /**
  * Get notes written by logged in user
  * @returns Array Information including href and title
  */
-async function getNote () {
-  const doc = await getDOM('/profile')
-  const maxPage = doc.querySelector('.pagination >li:last-child a').innerText
+async function getPersonal () {
+  const doc = await utils.getDOM('/profile')
+
+  try {
+    var maxPage = doc.querySelector('.pagination >li:last-child a').innerText
+  } catch (e) { // prevent error when no user note
+    return []
+  }
+
   let result = []
   for (var i = 1; i <= maxPage; ++i) {
-    const doc = await getDOM('/profile?page=' + i)
+    const doc = await utils.getDOM(`/profile?page=${i}`)
     const element = doc.querySelectorAll('.content a')
     element.forEach(ele => {
       result.push({
@@ -31,102 +45,105 @@ async function getNote () {
       })
     })
   }
+  // update Cache
+  writeCache(result)
   return result
-}
-
-async function getDOM (url) {
-  console.log('received url: ' + url)
-  var res = await fetch(url)
-  var text = await res.text()
-  return new DOMParser().parseFromString(text, 'text/html').firstElementChild
 }
 
 /**
  * Get History of a logged in user
- * @returns Array
+ * @returns JSON History lists
  */
 async function getHistory () {
   var history = await fetch('/history')
   return JSON.parse(await history.text()).history.map(target => ({
     title: target.text,
-    href: `https://hackmd.io/${target.id}`,
-    tags: target.tags,
-    time: target.time
+    href: `https://hackmd.io/${target.id}`
   }))
 }
 
 /**
  * Delete note of specific notdId
- * @param noteId
- * @returns Boolean Whether delete success or not
+ * @param Array Array of noteId
  */
-async function delNote (noteId) {
-  const socket = await connect(noteId)
-  socket.on('connect', () => {
-    socket.emit('delete')
+function delNote (noteId) {
+  noteId.forEach(async id => {
+    const socket = await utils.connect(id)
+    socket.on('connect', () => {
+      socket.emit('delete')
+    })
   })
 }
 
-async function connect (noteId) {
-  // Register realtime server
-  var server = await fetch('/realtime-reg/realtime?noteId=' + noteId)
-  server = await server.text()
-  var url = JSON.parse(server)['url']
-  url = url.substring(url.indexOf('hackmd.io') + 9) + '/socket.io/'
+/**
+ * Write content to hkmdir-data (overwrite)
+ * @param JSON Content to write
+ */
+function writeCache (content) {
+  const prefix = '###### tags: hkmdir-data\n\n'
+  utils.writeData(cacheId, prefix + JSON.stringify(content))
+}
 
-  /* global io */
-  return io('https://hackmd.io', {
-    path: url,
-    query: {
-      noteId: noteId
-    },
-    reconnectionAttempts: 20
+/**
+ * Change permission of multiple notes
+ * @param Array url of notes
+ * @param Array permission of choices (read->3/2/1, write->30/20/10)
+ */
+function changePermission (urls, perm) {
+  // preprocess url
+  var notes = []
+  urls.forEach(url => {
+    notes.push(url.replace('https://hackmd.io', ''))
+  })
+
+  var pstr = ''
+  if (perm === 33) pstr = 'private'
+  else if (perm === 32) pstr = 'protected'
+  else if (perm === 22) pstr = 'limited'
+  else if (perm === 31) pstr = 'locked'
+  else if (perm === 21) pstr = 'editable'
+  else if (perm === 11) pstr = 'freely'
+
+  // open the first url as base window
+  notes.forEach(async note => {
+    const socket = await utils.connect(note)
+    socket.emit('permission', pstr)
   })
 }
 
-async function getConfig () {
-  var doc = await getDOM('/profile?q=hackmdir-config')
-  const page = doc.querySelector('.content a')
-  if (page === null) {
-    newConfig()
-    return {}
+/**
+ * Merge multiple notes into bookmode
+ * @param String Title of bookmode note
+ * @param Array data [[title1, href1], [title2, href2], ...]
+ * @returns String Url of bookmode note
+ */
+async function addBookmode (title, data) {
+  // create content
+  var content = `${title}\n===\n\n`
+  data.forEach(ele => {
+    content += `- [${ele[0]}](${ele[1]})\n`
+  })
+  const url = await utils.newData(content)
+  const bmUrl = await fetch(`${url}/publish`)
+  return bmUrl.url.replace('/s/', '/c/')
+}
+
+function getCache (option) {
+  switch (option) {
+    case 'personal':
+      return cache
+    default:
+      return undefined
   }
-
-  const href = page.href + '/publish'
-  doc = await getDOM(href)
-  const info = doc.querySelector('#doc').innerHTML
-  console.log(info)
-}
-
-async function newConfig () {
-  const newPage = (await fetch('/new')).url
-
-  setTimeout(function () {
-    writeConfig(newPage.substring(newPage.indexOf('hackmd.io') + 10),
-      ':::info\nThis is test config\n:::')
-  }, 5000)
-}
-
-function writeConfig (noteId, data) {
-  console.log('noteId: ' + noteId)
-  console.log('data: ' + data)
-  var element = document.createElement('iframe')
-  element.style.display = 'none'
-  element.onload = (function () {
-    return function () {
-      element.contentWindow.editor.setValue(data)
-      console.log('write OK')
-    }
-  }())
-  element.src = '/' + noteId
-  document.body.appendChild(element)
 }
 
 module.exports = {
-  writeConfig: writeConfig,
-  getConfig: getConfig,
-  getHistory: getHistory,
-  getNote: getNote,
   isLoggedIn: isLoggedIn,
-  delNote: delNote
+  getCache: getCache,
+  writeCache: writeCache,
+  getHistory: getHistory,
+  getPersonal: getPersonal,
+  delNote: delNote,
+  changePermission: changePermission,
+  addBookmode: addBookmode
 }
