@@ -72,7 +72,7 @@ const constructor = async function () {
           if (key === 'recent') {
             mutations.setList(await API.getHistory())
           } else if (key === 'personal') {
-            mutations.setList(await API.getNote())
+            mutations.setList(await API.getCache('personal'))
           } else if (key === 'dir') {
             // TODO: fetch dir infomation and set list
           }

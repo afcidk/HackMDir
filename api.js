@@ -1,7 +1,9 @@
 /* eslint-env browser */
 // FIXME: move some functions to new file (utils)
 
-var noteData = ''
+var cache = ''
+var cacheId = ''
+const utils = require('utils.js')
 
 /**
  * Detect whether exists a logged in user
@@ -11,7 +13,9 @@ async function isLoggedIn () {
   var cookie = document.cookie
 
   // open data file at background, which supports socketio
-  getData()
+  const res = await utils.initCache()
+  cache = res.cache
+  cacheId = res.noteId
 
   if (cookie.search('userid') !== -1 && cookie.search('loginstate') !== -1) return true
 
@@ -21,8 +25,8 @@ async function isLoggedIn () {
  * Get notes written by logged in user
  * @returns Array Information including href and title
  */
-async function getNote () {
-  const doc = await getDOM('/profile')
+async function getPersonal () {
+  const doc = await utils.getDOM('/profile')
 
   try {
     var maxPage = doc.querySelector('.pagination >li:last-child a').innerText
@@ -32,7 +36,7 @@ async function getNote () {
 
   let result = []
   for (var i = 1; i <= maxPage; ++i) {
-    const doc = await getDOM('/profile?page=' + i)
+    const doc = await utils.getDOM(`/profile?page=${i}`)
     const element = doc.querySelectorAll('.content a')
 
     element.forEach(ele => {
@@ -42,13 +46,11 @@ async function getNote () {
       })
     })
   }
-  return result
-}
 
-async function getDOM (url) {
-  const res = await fetch(url)
-  const text = await res.text()
-  return new DOMParser().parseFromString(text, 'text/html').firstElementChild
+  // update Cache
+  writeCache(result)
+
+  return result
 }
 
 /**
@@ -69,7 +71,7 @@ async function getHistory () {
  */
 function delNote (noteId) {
   noteId.forEach(async id => {
-    const socket = await connect(id)
+    const socket = await utils.connect(id)
     socket.on('connect', () => {
       socket.emit('delete')
     })
@@ -77,89 +79,12 @@ function delNote (noteId) {
 }
 
 /**
- * Create a websocket connection instance
- * @param String noteId
- * @returns Websocket instance(io)
+ * Write content to hkmdir-data (overwrite)
+ * @param JSON Content to write
  */
-async function connect (noteId, base = document.getElementById('hkmdir-data').contentWindow) {
-  // FIXME: Add exception handling if cannot connect
-
-  // Register realtime server
-  var server = await fetch(`/realtime-reg/realtime?noteId=${noteId}`)
-  server = await server.text()
-  var url = JSON.parse(server)['url']
-  url = url.replace('https://hackmd.io', '') + '/socket.io/'
-
-  return base.io('https://hackmd.io', {
-    path: url,
-    query: {
-      noteId: noteId
-    },
-    reconnectionAttempts: 20
-  })
-}
-
-/**
- * Get config content
- * @returns String Raw config content (Not parsed)
- */
-async function getData () {
-  var doc = await getDOM('/profile?q=hkmdir-data')
-  var url = ''
-  const page = doc.querySelector('.content a')
-  if (page === null) {
-    url = await newData('###### hkmdir-data\n')
-  } else {
-    url = page.href
-    const href = `${page.href}/publish`
-    doc = await getDOM(href)
-    noteData = doc.querySelector('#doc').innerHTML
-    console.log(noteData)
-  }
-
-  // create hidden note for later socketio usage
-  if (document.getElementById('hkmdir-data') === null) {
-    createHiddenNote(url.replace('https://hackmd.io/', ''))
-  }
-}
-
-/**
- * Create a new config file
- * @param String Initial content for config file
- * @return String Url of new note
- */
-async function newData (content) {
-  const newPage = (await fetch('/new')).url
-
-  // FIXME: set timeout since the page may not be initialized soon
-  // FIXME: Add exception if the note cannot be created
-  setTimeout(function () {
-    writeData(newPage.replace('https://hackmd.io/', ''),
-      content)
-  }, 10000)
-
-  return newPage
-}
-
-/**
- * Write to config file (overwrite)
- * @param String noteId
- * @param String Content to overwrite the file
- */
-async function writeData (noteId, content) {
-  const contentWindow = document.getElementById('hkmdir-data').contentWindow
-
-  contentWindow.editor.setValue(content)
-  const socket = await connect(noteId)
-  socket.emit('permission', 'private')
-}
-
-function createHiddenNote (noteId = 'new') {
-  var element = document.createElement('iframe')
-  element.style.display = 'none'
-  element.setAttribute('id', 'hkmdir-data')
-  element.src = '/' + noteId
-  document.body.appendChild(element)
+function writeCache (content) {
+  const prefix = '###### tags: hkmdir-data\n\n'
+  utils.writeData(cacheId, prefix + JSON.stringify(content))
 }
 
 /**
@@ -184,7 +109,7 @@ function changePermission (urls, perm) {
 
   // open the first url as base window
   notes.forEach(async note => {
-    const socket = await connect(note)
+    const socket = await utils.connect(note)
     socket.emit('permission', pstr)
   })
 }
@@ -201,19 +126,27 @@ async function addBookmode (title, data) {
   data.forEach(ele => {
     content += `- [${ele[0]}](${ele[1]})\n`
   })
-  const url = await newData(content)
+  const url = await utils.newData(content)
   const bmUrl = await fetch(`${url}/publish`)
   return bmUrl.url.replace('/s/', '/c/')
 }
 
+function getCache (option) {
+  switch (option) {
+    case 'personal':
+      return cache
+    default:
+      return undefined
+  }
+}
+
 module.exports = {
-  writeData: writeData,
-  getData: getData,
-  getHistory: getHistory,
-  getNote: getNote,
   isLoggedIn: isLoggedIn,
+  getCache: getCache,
+  writeCache: writeCache,
+  getHistory: getHistory,
+  getPersonal: getPersonal,
   delNote: delNote,
   changePermission: changePermission,
-  addBookmode: addBookmode,
-  noteData: noteData
+  addBookmode: addBookmode
 }
