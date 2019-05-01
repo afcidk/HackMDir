@@ -38,7 +38,6 @@ async function getPersonal () {
   for (var i = 1; i <= maxPage; ++i) {
     const doc = await utils.getDOM(`/profile?page=${i}`)
     const element = doc.querySelectorAll('.content a')
-
     element.forEach(ele => {
       result.push({
         href: ele.href,
@@ -46,10 +45,8 @@ async function getPersonal () {
       })
     })
   }
-
   // update Cache
   writeCache(result)
-
   return result
 }
 
