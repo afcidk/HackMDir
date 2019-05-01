@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "install": "scripts/install-git-hooks",
+    "fix": "npx standard --fix",
     "dev": "NODE_ENV=development webpack --config webpack.dev.js --mode=development --watch",
     "build": "webpack --config webpack.prod.js"
   },
@@ -26,7 +27,7 @@
     "copy-webpack-plugin": "^5.0.3",
     "css-loader": "^2.1.1",
     "html-loader": "^0.5.5",
-    "node-sass": "^4.11.0",
+    "node-sass": "^4.12.0",
     "sass-loader": "^7.1.0",
     "standard": "^12.0.1",
     "style-loader": "^0.23.1",
