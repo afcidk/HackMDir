@@ -80,6 +80,38 @@ const constructor = async function () {
     div.classList.add('hmdir_list_root')
     grid.appendChild(div)
     render()
+
+    window.onload = () => {
+      // alert('load')
+      const noteList = document.querySelectorAll('.item')
+      noteList.forEach((element) => {
+        element.draggable = true
+        element.ondragstart = (event) => {
+          event.stopPropagation()
+          while (element.tagName.toLocaleLowerCase() !== 'a') {
+            element = element.parentNode
+          }
+          event.dataTransfer.setData('items', element.href)
+          console.log(element)
+        }
+      })
+    }
+    const dropZone = document.querySelector('.hmdir_grid_section')
+
+    dropZone.ondragover = (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    dropZone.ondrop = (event) => {
+      const li = document.createElement('li')
+      const aTag = document.createElement('a')
+      aTag.href = event.dataTransfer.getData('items')
+      aTag.target = '_blank'
+      aTag.text = 'temp'
+      li.appendChild(aTag)
+      root.querySelector('.hmdir_list_root').childNodes[0].appendChild(li)
+      console.log(event.dataTransfer)
+    }
   } catch (error) {
     console.log(error)
   }

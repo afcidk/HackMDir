@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "install": "scripts/install-git-hooks",
-    "postinstall": "ln -s node_modules/.bin/standard .",
     "dev": "NODE_ENV=development webpack --config webpack.dev.js --mode=development --watch",
     "build": "webpack --config webpack.prod.js"
   },

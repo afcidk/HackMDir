@@ -20,12 +20,10 @@ function isLoggedIn () {
 async function getNote () {
   const doc = await getDOM('/profile')
   const maxPage = doc.querySelector('.pagination >li:last-child a').innerText
-
   let result = []
   for (var i = 1; i <= maxPage; ++i) {
     const doc = await getDOM('/profile?page=' + i)
     const element = doc.querySelectorAll('.content a')
-
     element.forEach(ele => {
       result.push({
         href: ele.href,
@@ -33,7 +31,6 @@ async function getNote () {
       })
     })
   }
-
   return result
 }
 
