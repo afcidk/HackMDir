@@ -1,4 +1,4 @@
-const API = require('../../../api.js')
+const API = require('../../api/api.js')
 const mainHTML = require('./main.html')
 const dirHTML = require('./dir.html')
 const mutations = require('./store.js').mutations

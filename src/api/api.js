@@ -3,7 +3,7 @@
 
 var cache = ''
 var cacheId = ''
-const utils = require('utils.js')
+const utils = require('./utils.js')
 
 /**
  * Detect whether exists a logged in user
@@ -26,25 +26,12 @@ async function isLoggedIn () {
  * @returns Array Information including href and title
  */
 async function getPersonal () {
-  const doc = await utils.getDOM('/profile')
+  const doc = await fetch('/api/overview')
+  const text = await doc.text()
+  const result = Array.from(JSON.parse(text)).map(function (e) {
+    return { href: `https://hackmd.io/${e.id}`, title: e.title }
+  })
 
-  try {
-    var maxPage = doc.querySelector('.pagination >li:last-child a').innerText
-  } catch (e) { // prevent error when no user note
-    return []
-  }
-
-  let result = []
-  for (var i = 1; i <= maxPage; ++i) {
-    const doc = await utils.getDOM(`/profile?page=${i}`)
-    const element = doc.querySelectorAll('.content a')
-    element.forEach(ele => {
-      result.push({
-        href: ele.href,
-        title: ele.innerHTML
-      })
-    })
-  }
   // update Cache
   writeCache(result)
   return result
