@@ -41,11 +41,11 @@ module.exports = {
         test: /\.(js|jsx)$/,
         exclude: ['/node_modules/', '/src/api'],
         include: /src/,
-        use: 'babel-loader'
+        use: ['babel-loader']
       },
       {
         test: /\.(scss|sass)$/,
-        use: ['style-loader', 'css-loader', 'sass-loader']
+        use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader']
       },
       {
         test: /\.(html)$/,
