@@ -1,103 +1,81 @@
-const API = require('../../api/api.js')
 const mainHTML = require('./main.html')
-const dirHTML = require('./dir.html')
 const mutations = require('./store.js').mutations
 const getters = require('./store.js').getters
 
-const eventBus = require('../eventBus')
+const dirTabComponent = require('../dirTab')
+const recentTabComponent = require('../recentTab')
 
 const components = {
   button: null,
   root: null,
+  menuRoot: null,
   grid: null,
-  dirListRoot: null,
-  noteList: null,
-  noteListRoot: null,
-  loading: null,
+  contentSlot: null,
   typeButton: {
     recent: null,
     personal: null,
     dir: null
   },
-  newDirButton: null
+  recentTab: null,
+  personalTab: null,
+  dirTab: null
 }
 
 const constructor = async function () {
   try {
-    const status = await API.isLoggedIn()
+    const status = true// await API.isLoggedIn()
     mutations.setLoginStatus(status)
     if (!status) {
       return
     }
-    // // initialize the display button
-    const button = document.createElement('button')
-    button.id = 'hmdir_display_button'
-    button.classList.add('hmdir_display_button')
-    document.body.appendChild(button)
-    // config root element reference to the components
-    components.button = button
     // append root div to the page
-    const root = document.createElement('span')
-    root.style.display = 'none'
-    document.body.appendChild(root)
-    root.innerHTML = mainHTML
-    // config root element reference to the components
-    components.root = root
+    const root = document.createElement('div')
+    root.classList.add('hmdir_root')
+    // initialize the display button
+    const buttonHTML = `<button class="hmdir_display_button"><span>Append ►</span></button>`
+    const button = htmlToElement(buttonHTML)
+    root.appendChild(htmlToElement(mainHTML))
+    root.appendChild(button)
+    // get the reference of all element
+    this.root = root
+    this.menuRoot = root.querySelector('.hmdir_menu_root')
+    this.menuRoot.style.display = 'none'
+    this.button = button
+    this.grid = this.menuRoot.querySelector('.hmdir_grid_section')
+    this.typeButton.recent = this.menuRoot.querySelector('.hmdir_type_button:nth-child(1)')
+    this.typeButton.personal = this.menuRoot.querySelector('.hmdir_type_button:nth-child(2)')
+    this.typeButton.dir = this.menuRoot.querySelector('.hmdir_type_button:nth-child(3)')
+    this.contentSlot = this.menuRoot.querySelector('.hmdir_content_container')
+    this.dirTab = await dirTabComponent.components.initialize()
+    this.recentTab = await recentTabComponent.components.initialize()
+    // append the recent to the content slot
+    recentTabComponent.mutations.setDisplay(false)
+    this.contentSlot.appendChild(this.recentTab)
+    // set recent current status
+    this.typeButton.recent.setAttribute('current', 'true')
+    // TODO: get dir list
     // add button click event to display the root
     button.onclick = function () {
       mutations.setDisplay(!getters.getDisplayRoot())
-      root.style.display = getters.getDisplayRoot() ? 'block' : 'none'
-      button.style.left = getters.getDisplayRoot() ? '360px' : '0px'
-    }
-    mutations.setList(await API.getHistory())
-    // get the reference of all element
-    components.grid = document.querySelector('.hmdir_grid_section')
-    components.noteListRoot = document.querySelector('.hmdir_list_container')
-    components.noteList = document.querySelector('.hmdir_list_container > ul')
-    components.loading = document.querySelector('.lds_ring')
-    components.loading.style.display = 'none'
-    components.dirListRoot = htmlToElement(dirHTML)
-    components.typeButton.recent = document.querySelector('.hmdir_type_button:nth-child(1)')
-    components.typeButton.personal = document.querySelector('.hmdir_type_button:nth-child(2)')
-    components.typeButton.dir = document.querySelector('.hmdir_type_button:nth-child(3)')
-    components.newDirButton = components.dirListRoot.querySelector('.hmdir_new_dir_button')
+      this.menuRoot.style.display = getters.getDisplayRoot() ? 'block' : 'none'
+      this.button.childNodes[0].innerText = getters.getDisplayRoot() ? 'Close ◄' : 'Append ►'
+    }.bind(this)
     // config type button event
-    Object.keys(components.typeButton).forEach(key => {
-      const button = components.typeButton[key]
+    Object.keys(this.typeButton).forEach(key => {
+      const button = this.typeButton[key]
       button.onclick = async function () {
-        // start loading effect
-        components.loading.style.display = 'block'
-        components.typeButton.recent.removeAttribute('current')
-        components.typeButton.personal.removeAttribute('current')
-        components.typeButton.dir.removeAttribute('current')
-        components.typeButton[key].setAttribute('current', 'true')
+        this.typeButton.recent.removeAttribute('current')
+        this.typeButton.personal.removeAttribute('current')
+        this.typeButton.dir.removeAttribute('current')
+        this.typeButton[key].setAttribute('current', 'true')
         try {
           mutations.setType(key)
-          // clear the list first
-          mutations.setList([])
-          // render()
-          if (key === 'recent') {
-            mutations.setList(await API.getHistory())
-          } else if (key === 'personal') {
-            mutations.setList(API.getCache('personal'))
-          } else if (key === 'dir') {
-            // TODO: fetch dir infomation and set list
-          }
-          render()
+          this.render()
         } catch (error) {
           console.log(error)
         }
-        // finish loading effect
-        components.loading.style.display = 'none'
-      }
+      }.bind(this)
     })
-    // set recent current status
-    components.typeButton.recent.setAttribute('current', 'true')
-    // config event bus
-    components.newDirButton.onclick = function () {
-      eventBus.publish('displayNewDirModal')
-    }
-    render()
 
     window.onload = () => {
       // alert('load')
@@ -114,7 +92,7 @@ const constructor = async function () {
         }
       })
     }
-    const dropZone = document.querySelector('.hmdir_grid_section')
+    const dropZone = this.root.querySelector('.hmdir_grid_section')
 
     dropZone.ondragover = (event) => {
       event.preventDefault()
@@ -130,7 +108,7 @@ const constructor = async function () {
       root.querySelector('.hmdir_list_root').childNodes[0].appendChild(li)
       console.log(event.dataTransfer)
     }
-    return components.root
+    return this.root
   } catch (error) {
     console.log(error)
   }
@@ -146,48 +124,32 @@ const htmlToElement = function (html) {
 
 // the render function to update the screen
 const render = function () {
-  const root = components.noteListRoot
-  if (getters.getType() === 'dir') {
-    components.noteListRoot.replaceChild(components.dirListRoot, components.noteList)
-    components.dirListRoot.appendChild(components.loading)
-    // set list reference to null
-    components.noteList = null
-    const ul = components.dirListRoot.querySelector('.hmdir_dir_list_section > ul')
-    // use fragment to update the list content
-    const fragment = document.createDocumentFragment()
-    Object.keys(getters.getDirs()).forEach(dirname => {
-      const li = htmlToElement(`<li><i  ></i>${dirname}</li>`)
-      fragment.appendChild(li)
-    })
-    ul.innerHTML = ''
-    ul.appendChild(fragment)
-    return
+  while (this.contentSlot.firstChild) {
+    this.contentSlot.firstChild.remove()
   }
-  let ul
-  if (components.noteList === null) {
-    root.innerHTML = ''
-    root.appendChild(components.loading)
-    // insert ul element
-    ul = document.createElement('ul')
-    // config list element to components
-    components.noteList = ul
-    root.appendChild(components.noteList)
-  } else {
-    ul = components.noteList
+  switch (getters.getType()) {
+    case 'recent':
+      recentTabComponent.components.render()
+      recentTabComponent.mutations.setDisplay(true)
+      // personalTabComponent.mutations.setDisplay(false)
+      dirTabComponent.mutations.setDisplay(false)
+      this.contentSlot.appendChild(this.recentTab)
+      break
+    case 'personal':
+      // personalTabComponent.compnoents.redner()
+      recentTabComponent.mutations.setDisplay(false)
+      // personalTabComponent.mutations.setDisplay(true)
+      dirTabComponent.mutations.setDisplay(false)
+      // this.contentSlot.appendChild(this.personalTab)
+      break
+    case 'dir':
+      dirTabComponent.components.render()
+      recentTabComponent.mutations.setDisplay(false)
+      // personalTabComponent.mutations.setDisplay(false)
+      dirTabComponent.mutations.setDisplay(true)
+      this.contentSlot.appendChild(this.dirTab)
+      break
   }
-  // use fragment to update the list content
-  const fragment = document.createDocumentFragment()
-  // loop all element in list
-  for (let [index, note] of getters.getList().entries()) {
-    const li = htmlToElement(`<li><input type="checkbox" data-index="${index}" /><a href="${note.href}" target="_blank">${note.title}</a></li>`)
-    fragment.appendChild(li)
-  }
-  // use replacement to refresh the list
-  const temp = ul.cloneNode(false)
-  temp.appendChild(fragment)
-  root.replaceChild(temp, components.noteList)
-  // update components list reference
-  components.noteList = temp
 }
 
 module.exports = {

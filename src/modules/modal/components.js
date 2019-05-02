@@ -38,6 +38,11 @@ const constructor = async function (title, context, input = false) {
     components.button.cancel.onclick = function () {
       components.root.style.display = 'none'
     }
+    components.button.submit.onclick = function () {
+      eventBus.publish('addNewDir', components.input.value)
+      components.input.value = ''
+      components.root.style.display = 'none'
+    }
     // subscribe the click event
     eventBus.subscribe('displayNewDirModal', function () {
       components.root.style.display = 'grid'
