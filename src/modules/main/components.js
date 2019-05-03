@@ -4,6 +4,7 @@ const getters = require('./store.js').getters
 
 const dirTabComponent = require('../dirTab')
 const recentTabComponent = require('../recentTab')
+const API = require('../../api/api.js')
 
 const components = {
   button: null,
@@ -18,7 +19,12 @@ const components = {
   },
   recentTab: null,
   personalTab: null,
-  dirTab: null
+  dirTab: null,
+  operationButton: {
+    delete: null,
+    permission: null,
+    bookmode: null
+  }
 }
 
 const constructor = async function () {
@@ -45,6 +51,9 @@ const constructor = async function () {
     this.typeButton.recent = this.menuRoot.querySelector('.hmdir_type_button:nth-child(1)')
     this.typeButton.personal = this.menuRoot.querySelector('.hmdir_type_button:nth-child(2)')
     this.typeButton.dir = this.menuRoot.querySelector('.hmdir_type_button:nth-child(3)')
+    this.operationButton.delete = this.menuRoot.querySelector('.hmdir_operation_button:nth-child(1)')
+    this.operationButton.permission = this.menuRoot.querySelector('.hmdir_operation_button:nth-child(2)')
+    this.operationButton.bookmode = this.menuRoot.querySelector('.hmdir_operation_button:nth-child(3)')
     this.contentSlot = this.menuRoot.querySelector('.hmdir_content_container')
     this.dirTab = await dirTabComponent.components.initialize()
     this.recentTab = await recentTabComponent.components.initialize()
@@ -71,6 +80,17 @@ const constructor = async function () {
         try {
           mutations.setType(key)
           this.render()
+        } catch (error) {
+          console.log(error)
+        }
+      }.bind(this)
+    })
+    Object.keys(this.operationButton).forEach(key => {
+      const button = this.operationButton[key]
+      button.onclick = async function () {
+        try {
+          mutations.setType(key)
+          this.operationMode()
         } catch (error) {
           console.log(error)
         }
@@ -152,8 +172,28 @@ const render = function () {
   }
 }
 
+// the operationMode function to implement operation 
+const operationMode = function () {
+  switch (getters.getType()) {
+    case 'delete':
+      // TODO: delete noteId list
+      API.delNote(recentTabComponent.getters.getListNoteId())
+      console.log("delete")
+      break
+    case 'permission':
+      // TODO: set permission of noteId list
+      console.log("permission")
+      break
+    case 'bookmode':
+      // TODO: bookmode
+      console.log("bookmode")
+      break
+  }
+}
+
 module.exports = {
   ...components,
   initialize: constructor,
-  render: render
+  render: render,
+  operationMode: operationMode
 }
