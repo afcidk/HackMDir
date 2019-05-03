@@ -33,6 +33,10 @@ const mutations = {
   },
   setListNoteId: function (noteId) {
     state.listNoteId.push(noteId)
+  },
+  removeNoteId: function (noteId) {
+    var pos = state.listNoteId.indexOf(noteId)
+    state.listNoteId.splice(pos, 1)
   }
 }
 

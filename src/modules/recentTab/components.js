@@ -56,7 +56,25 @@ const render = function () {
     const checkbox = li.querySelector('input')
     checkbox.addEventListener('click', function () {
       var noteID = note.href.substring(18)
-      mutations.setListNoteId(noteID)
+      var deleteNote = 0
+      getters.getListNoteId().forEach(checkid => {
+        if(checkid == noteID) {
+          mutations.removeNoteId(noteID)
+          deleteNote = 1
+        }
+      })
+      if(!deleteNote) {
+        mutations.setListNoteId(noteID)
+      }
+      var operationButton = document.getElementsByClassName('hmdir_operation_button')
+      for (var i=0; i<operationButton.length; i++) {
+        operationButton[i].classList.add('active')
+      }
+      if(getters.getListNoteId().length == 0) {
+        for (var i=0; i<operationButton.length; i++) {
+          operationButton[i].classList.remove('active')
+        }
+      }
     })
     fragment.appendChild(li)
   }
