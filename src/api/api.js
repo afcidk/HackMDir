@@ -26,6 +26,7 @@ async function isLoggedIn () {
  * @returns Array Information including href and title
  */
 async function getPersonal () {
+  console.log('getPersona')
   const doc = await fetch('/api/overview')
   const text = await doc.text()
   const result = Array.from(JSON.parse(text)).map(function (e) {
@@ -116,11 +117,12 @@ async function addBookmode (title, data) {
 }
 
 function getCache (option) {
-  switch (option) {
-    case 'personal':
-      return cache
-    default:
-      return undefined
+  if (option === 'personal') {
+    console.log('getCache')
+    if (cache === '') return getPersonal()
+    else return cache
+  } else {
+    return undefined
   }
 }
 

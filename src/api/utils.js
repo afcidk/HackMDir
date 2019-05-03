@@ -1,11 +1,12 @@
 /* eslint-env browser */
 
+const io = require('socket.io-client')
 /**
  * Create a websocket connection instance
  * @param String noteId
  * @returns Websocket instance(io)
  */
-async function connect (noteId, base = document.getElementById('hkmdir-data').contentWindow) {
+async function connect (noteId) {
   // FIXME: Add exception handling if cannot connect
 
   // Register realtime server
@@ -14,7 +15,7 @@ async function connect (noteId, base = document.getElementById('hkmdir-data').co
   var url = JSON.parse(server)['url']
   url = url.replace('https://hackmd.io', '') + '/socket.io/'
 
-  return base.io('https://hackmd.io', {
+  return io('https://hackmd.io', {
     path: url,
     query: {
       noteId: noteId
@@ -27,14 +28,6 @@ async function getDOM (url) {
   const res = await fetch(url)
   const text = await res.text()
   return new DOMParser().parseFromString(text, 'text/html').firstElementChild
-}
-
-function createHiddenNote (noteId = 'new') {
-  var element = document.createElement('iframe')
-  element.style.display = 'none'
-  element.setAttribute('id', 'hkmdir-data')
-  element.src = '/' + noteId
-  document.body.appendChild(element)
 }
 
 /**
@@ -61,10 +54,23 @@ async function newData (content) {
  * @param String Content to overwrite the file
  */
 async function writeData (noteId, content) {
-  const contentWindow = document.getElementById('hkmdir-data').contentWindow
+  // TODO: This is not a robust function, cannot remove characters
+  // // possibly related to cursor
 
-  contentWindow.editor.setValue(content)
   const socket = await connect(noteId)
+  const doc = await getDOM(`https://hackmd.io/${noteId}/publish`)
+  const length = doc.querySelector('#doc').innerHTML.length
+  console.log(length)
+  socket.emit('doc', { revision: 0, force: true })
+  // if (length === 0) {
+  socket.emit('operation', 0, [content], null)
+  /*
+  } else {
+    socket.emit('operation', 0, [-length], null)
+    socket.emit('operation', 1, [content], null)
+  }
+  */
+
   socket.emit('permission', 'private')
 }
 
@@ -75,9 +81,9 @@ async function writeData (noteId, content) {
 async function initCache () {
   var cache = ''
   var noteId = ''
-
   var doc = await getDOM('/profile?q=hkmdir-data')
   const page = doc.querySelector('.content a')
+
   if (page === null) {
     noteId = await newData('###### hkmdir-data\n')
   } else {
@@ -89,17 +95,12 @@ async function initCache () {
   }
 
   noteId = noteId.replace('https://hackmd.io/', '')
-  // create hidden note for later socketio usage
-  if (document.getElementById('hkmdir-data') === null) {
-    createHiddenNote(noteId.replace('https://hackmd.io/', ''))
-  }
   return { noteId: noteId, cache: cache }
 }
 
 module.exports = {
   connect: connect,
   getDOM: getDOM,
-  createHiddenNote: createHiddenNote,
   newData: newData,
   writeData: writeData,
   initCache: initCache
