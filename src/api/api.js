@@ -56,6 +56,7 @@ async function getHistory () {
  */
 function delNote (noteId) {
   noteId.forEach(async id => {
+    console.log(id)
     const socket = await utils.connect(id)
     socket.on('connect', () => {
       socket.emit('delete')

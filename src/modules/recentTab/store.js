@@ -2,12 +2,16 @@ const API = require('../../api/api.js')
 
 const state = {
   display: false,
-  list: []
+  list: [],
+  listNoteId: []
 }
 
 const getters = {
   getList: function () {
     return state.list
+  },
+  getListNoteId: function () {
+    return state.listNoteId
   }
 }
 
@@ -26,6 +30,9 @@ const mutations = {
       return
     }
     state.list = newList.slice()
+  },
+  setListNoteId: function (noteId) {
+    state.listNoteId.push(noteId)
   }
 }
 
