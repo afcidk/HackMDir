@@ -54,8 +54,8 @@ const render = function () {
     const htmlString = `<li><input type="checkbox" data-index="${index}" /><a href="${note.href}" target="_blank">${note.title}</a></li>`
     const li = htmlToElement(htmlString)
     const checkbox = li.querySelector('input')
-    checkbox.addEventListener("click", function() {
-      noteID = note.href.substring(18);
+    checkbox.addEventListener('click', function () {
+      var noteID = note.href.substring(18)
       mutations.setListNoteId(noteID)
     })
     fragment.appendChild(li)

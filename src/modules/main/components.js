@@ -172,21 +172,19 @@ const render = function () {
   }
 }
 
-// the operationMode function to implement operation 
+// the operationMode function to implement operation
 const operationMode = function () {
   switch (getters.getType()) {
     case 'delete':
-      // TODO: delete noteId list
       API.delNote(recentTabComponent.getters.getListNoteId())
-      console.log("delete")
       break
     case 'permission':
       // TODO: set permission of noteId list
-      console.log("permission")
+      // console.log('permission')
       break
     case 'bookmode':
       // TODO: bookmode
-      console.log("bookmode")
+      // console.log('bookmode')
       break
   }
 }
