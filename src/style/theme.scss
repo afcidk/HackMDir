@@ -60,6 +60,10 @@
     grid-area: info;
   }
 
+  .hmdir_operation_container .active{
+    border: 2px solid #72AAD8 !important;
+  }
+
   .hmdir_operation_container {
     grid-area: operation;
     display: grid;
