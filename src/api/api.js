@@ -43,7 +43,7 @@ async function getPersonal () {
  * @returns JSON History lists
  */
 async function getHistory () {
-  var history = await fetch('/history')
+  var history = await fetch('/history', { cache: 'no-store' })
   return JSON.parse(await history.text()).history.map(target => ({
     title: target.text,
     href: `https://hackmd.io/${target.id}`
@@ -51,11 +51,36 @@ async function getHistory () {
 }
 
 /**
+ * Delete note in history page by specific notdId
+ * @param Array Array of noteId
+ */
+async function delHistoryNote (noteId) {
+  await utils.asyncForEach(noteId, async function (id) {
+    const header = new Headers()
+    header.append('x-requested-with', 'XMLHttpRequest')
+    // get the csfr token
+    let token
+    const metas = document.getElementsByTagName('meta')
+    for (let i = 0; i < metas.length; i++) {
+      if (metas[i].getAttribute('name') === 'csrf-token') {
+        token = metas[i].getAttribute('content')
+        break
+      }
+    }
+    header.append('x-xsrf-token', token)
+    const result = await fetch(`history/${id}`, {
+      method: 'delete',
+      headers: header
+    })
+    console.log(result)
+  })
+}
+/**
  * Delete note of specific notdId
  * @param Array Array of noteId
  */
-function delNote (noteId) {
-  noteId.forEach(async id => {
+async function delNote (noteId) {
+  await utils.asyncForEach(noteId, async function (id) {
     console.log(id)
     const socket = await utils.connect(id)
     socket.on('connect', () => {
@@ -134,6 +159,7 @@ module.exports = {
   getHistory: getHistory,
   getPersonal: getPersonal,
   delNote: delNote,
+  delHostoryNote: delHistoryNote,
   changePermission: changePermission,
   addBookmode: addBookmode
 }
