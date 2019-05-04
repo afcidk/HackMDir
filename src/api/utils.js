@@ -1,5 +1,16 @@
 /* eslint-env browser */
 
+/**
+ * async version for forEach
+ * @param Array array
+ * @param Function callback
+ */
+const asyncForEach = async function (array, callback) {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array)
+  }
+}
+
 const io = require('socket.io-client')
 /**
  * Create a websocket connection instance
@@ -103,5 +114,6 @@ module.exports = {
   getDOM: getDOM,
   newData: newData,
   writeData: writeData,
-  initCache: initCache
+  initCache: initCache,
+  asyncForEach: asyncForEach
 }

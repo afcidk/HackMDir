@@ -77,23 +77,16 @@ const constructor = async function () {
         this.typeButton.personal.removeAttribute('current')
         this.typeButton.dir.removeAttribute('current')
         this.typeButton[key].setAttribute('current', 'true')
-        try {
-          mutations.setType(key)
-          this.render()
-        } catch (error) {
-          console.log(error)
-        }
       }.bind(this)
     })
     Object.keys(this.operationButton).forEach(key => {
       const button = this.operationButton[key]
       button.onclick = async function () {
-        try {
-          mutations.setType(key)
-          this.operationMode()
-        } catch (error) {
-          console.log(error)
-        }
+        await this.operationMode('deleteHistory')
+        // remove active status
+        Object.keys(this.operationButton).forEach(key => {
+          this.operationButton[key].classList.remove('active')
+        })
       }.bind(this)
     })
 
@@ -143,27 +136,27 @@ const htmlToElement = function (html) {
 }
 
 // the render function to update the screen
-const render = function () {
+const render = async function () {
   while (this.contentSlot.firstChild) {
     this.contentSlot.firstChild.remove()
   }
   switch (getters.getType()) {
     case 'recent':
-      recentTabComponent.components.render()
+      await recentTabComponent.components.render()
       recentTabComponent.mutations.setDisplay(true)
       // personalTabComponent.mutations.setDisplay(false)
       dirTabComponent.mutations.setDisplay(false)
       this.contentSlot.appendChild(this.recentTab)
       break
     case 'personal':
-      // personalTabComponent.compnoents.redner()
+      // await personalTabComponent.compnoents.redner()
       recentTabComponent.mutations.setDisplay(false)
       // personalTabComponent.mutations.setDisplay(true)
       dirTabComponent.mutations.setDisplay(false)
       // this.contentSlot.appendChild(this.personalTab)
       break
     case 'dir':
-      dirTabComponent.components.render()
+      await dirTabComponent.components.render()
       recentTabComponent.mutations.setDisplay(false)
       // personalTabComponent.mutations.setDisplay(false)
       dirTabComponent.mutations.setDisplay(true)
@@ -173,10 +166,11 @@ const render = function () {
 }
 
 // the operationMode function to implement operation
-const operationMode = function () {
-  switch (getters.getType()) {
-    case 'delete':
-      API.delNote(recentTabComponent.getters.getListNoteId())
+const operationMode = async function (type) {
+  switch (type) {
+    case 'deleteHistory':
+      await API.delHostoryNote(recentTabComponent.getters.getTempRemoved())
+      this.render()
       break
     case 'permission':
       // TODO: set permission of noteId list

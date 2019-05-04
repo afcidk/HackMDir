@@ -11,7 +11,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://hackmd.io/"
+        "https://hackmd.io/",
+        "https://hackmd.io/recent"
       ],
       "js": [
         "content.js"
