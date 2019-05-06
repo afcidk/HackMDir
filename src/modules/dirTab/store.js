@@ -9,7 +9,8 @@ const state = {
       title: 'test',
       href: 'www.facebook.com'
     }]
-  }
+  },
+  tempRemoved: {}
 }
 
 const getters = {
@@ -18,6 +19,9 @@ const getters = {
   },
   getDirs: function () {
     return state.dirs
+  },
+  getTempRemoved: function () {
+    return state.tempRemoved
   }
 }
 
@@ -31,26 +35,37 @@ const mutations = {
   newDir: function (name) {
     state.dirs[name] = []
   },
-  removeDir: function (dirname) {
-    if (!state.dirs[dirname]) {
-      throw new Error('dir do not exist')
-    }
-    delete state.dirs[dirname]
-  },
   addNoteToDir: function (dirname, note) {
     if (!state.dirs[dirname]) {
       throw new Error('dir not found')
     }
-    if (state.dirs[dirname].findIndex(target => target.id === note.id) !== -1) {
+    if (state.dirs[dirname].findIndex(target => target.href === note.href) !== -1) {
       throw new Error('note is already exist in the dir')
     }
     state.dirs[dirname].push(note)
   },
-  removeNoteFromDir: function (dirname, index) {
-    if (state.dirs[dirname].length === 0) {
-      throw new Error('dir is empty')
+  addTempRemoved: function (dirname, index) {
+    if (!state.tempRemoved[dirname]) {
+      state.tempRemoved[dirname] = []
     }
-    state.dirs[dirname].splice(index, 1)
+    state.tempRemoved[dirname].push(index)
+  },
+  removeTempRemoved: function (dirname, index) {
+    const targetIndex = state.tempRemoved[dirname].findIndex(target => target === index)
+    state.tempRemoved[dirname].splice(targetIndex, 1)
+  },
+  remove: function () {
+    Object.keys(state.tempRemoved).forEach(key => {
+      state.tempRemoved[key].forEach(index => {
+        console.log(index)
+        state.dirs[key].splice(index, 1)
+      })
+      // remove the dir if the dir is empty
+      if (state.dirs[key].length === 0) {
+        delete state.dirs[key]
+      }
+    })
+    state.tempRemoved = {}
   }
 }
 

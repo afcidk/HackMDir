@@ -77,50 +77,29 @@ const constructor = async function () {
         this.typeButton.personal.removeAttribute('current')
         this.typeButton.dir.removeAttribute('current')
         this.typeButton[key].setAttribute('current', 'true')
+        mutations.setType(key)
+        this.render()
       }.bind(this)
     })
     Object.keys(this.operationButton).forEach(key => {
       const button = this.operationButton[key]
       button.onclick = async function () {
-        await this.operationMode('deleteHistory')
+        switch (getters.getType()) {
+          case 'recent':
+            await this.operationMode('deleteHistory')
+            break
+          case 'personal':
+            break
+          case 'dir':
+            await this.operationMode('deleteDir')
+            break
+        }
         // remove active status
         Object.keys(this.operationButton).forEach(key => {
           this.operationButton[key].classList.remove('active')
         })
       }.bind(this)
     })
-
-    window.onload = () => {
-      // alert('load')
-      const noteList = document.querySelectorAll('.item')
-      noteList.forEach((element) => {
-        element.draggable = true
-        element.ondragstart = (event) => {
-          event.stopPropagation()
-          while (element.tagName.toLocaleLowerCase() !== 'a') {
-            element = element.parentNode
-          }
-          event.dataTransfer.setData('items', element.href)
-          console.log(element)
-        }
-      })
-    }
-    const dropZone = this.root.querySelector('.hmdir_grid_section')
-
-    dropZone.ondragover = (event) => {
-      event.preventDefault()
-      event.stopPropagation()
-    }
-    dropZone.ondrop = (event) => {
-      const li = document.createElement('li')
-      const aTag = document.createElement('a')
-      aTag.href = event.dataTransfer.getData('items')
-      aTag.target = '_blank'
-      aTag.text = 'temp'
-      li.appendChild(aTag)
-      root.querySelector('.hmdir_list_root').childNodes[0].appendChild(li)
-      console.log(event.dataTransfer)
-    }
     return this.root
   } catch (error) {
     console.log(error)
@@ -170,6 +149,12 @@ const operationMode = async function (type) {
   switch (type) {
     case 'deleteHistory':
       await API.delHostoryNote(recentTabComponent.getters.getTempRemoved())
+      this.render()
+      break
+    case 'deleteDir':
+      dirTabComponent.mutations.remove()
+      // TODO: delete note through API
+      // await API.delNote(dirTabComponent.getters.getTempRemoved())
       this.render()
       break
     case 'permission':
