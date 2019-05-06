@@ -50,7 +50,7 @@ const render = function () {
   const fragment = document.createDocumentFragment()
   const dirs = getters.getDirs()
   Object.keys(dirs).forEach(dirname => {
-    const htmlString = `<li><i></i><a>${dirname} (${dirs[dirname].length})</a><input type="checkbox"/><div class="hmdir_subdir_root" style="display: none;"><ul></ul></div></li>`
+    const htmlString = `<li data-dirname="${dirname}"><i></i><a>${dirname} (${dirs[dirname].length})</a><input type="checkbox"/><div class="hmdir_subdir_root" style="display: none;"><ul></ul></div></li>`
     const li = htmlToElement(htmlString)
     const a = li.querySelector('a')
     const subListRoot = li.querySelector('.hmdir_subdir_root')
@@ -61,16 +61,96 @@ const render = function () {
     }
     // use fragment to append li
     const subFragment = document.createDocumentFragment()
-    dirs[dirname].forEach(note => {
-      const htmlString = `<li><a href="${note.href}" target="_blank">${note.title}</a> <input type="checkbox" /></li>`
+    for (let [index, note] of dirs[dirname].entries()) {
+      const htmlString = `<li><a href="${note.href}" target="_blank">${note.title}</a> <input type="checkbox" data-index="${index}" data-dirname="${dirname}"/></li>`
       const noteDOM = htmlToElement(htmlString)
       subFragment.appendChild(noteDOM)
-    })
+    }
     subList.appendChild(subFragment)
+    // config click event at folder checkbox
+    const folderCheckbox = li.querySelector(':scope > input')
+    const noteCheckboxs = Object.values(subList.querySelectorAll('input'))
+    const operationButton = Object.values(document.getElementsByClassName('hmdir_operation_button'))
+    folderCheckbox.addEventListener('click', function () {
+      noteCheckboxs.forEach(checkbox => {
+        checkbox.checked = folderCheckbox.checked
+      })
+    })
+    noteCheckboxs.forEach(checkbox => {
+      checkbox.addEventListener('click', function () {
+        if (checkbox.checked) {
+          mutations.addTempRemoved(dirname, checkbox.getAttribute('data-index'))
+        } else {
+          mutations.removeTempRemoved(dirname, checkbox.getAttribute('data-index'))
+        }
+        let count = 0
+        for (let i = 0; i < noteCheckboxs.length; ++i) {
+          count = count + (noteCheckboxs[i].checked ? 1 : 0)
+        }
+        folderCheckbox.checked = count === noteCheckboxs.length
+      })
+    })
+    // check if there is a checkbox checked
+    const allCheckbox = [...noteCheckboxs, folderCheckbox]
+    allCheckbox.forEach(checkbox => {
+      checkbox.addEventListener('click', function () {
+        let flag = false
+        allCheckbox.forEach(checkbox => {
+          if (checkbox.checked) {
+            flag = true
+          }
+        })
+        if (flag) {
+          operationButton.forEach(button => {
+            button.classList.add('active')
+          })
+        } else {
+          operationButton.forEach(button => {
+            button.classList.remove('active')
+          })
+        }
+      })
+    })
     fragment.appendChild(li)
   })
   ul.innerHTML = ''
   ul.appendChild(fragment)
+  // config all folder li as drag zone
+  const folders = ul.querySelectorAll(':scope > li')
+  for (let i = 0; i < folders.length; ++i) {
+    console.log(folders[i])
+    folders[i].addEventListener('dragover', function (event) {
+      event.preventDefault()
+      event.stopPropagation()
+      let element = event.target
+      while (element.tagName.toLocaleLowerCase() !== 'li') {
+        element = element.parentNode
+      }
+      element.classList.add('active')
+    })
+    folders[i].addEventListener('dragleave', function (event) {
+      console.log(event.target)
+      event.preventDefault()
+      event.stopPropagation()
+      let element = event.target
+      while (element.tagName.toLocaleLowerCase() !== 'li') {
+        element = element.parentNode
+      }
+      element.classList.remove('active')
+    })
+    folders[i].addEventListener('drop', function (event) {
+      let element = event.target
+      while (element.tagName.toLocaleLowerCase() !== 'li') {
+        element = element.parentNode
+      }
+      const key = element.getAttribute('data-dirname')
+      mutations.addNoteToDir(key, {
+        title: event.dataTransfer.getData('title'),
+        href: event.dataTransfer.getData('href')
+      })
+      this.render()
+    }.bind(this))
+  }
 }
 
 module.exports = {
