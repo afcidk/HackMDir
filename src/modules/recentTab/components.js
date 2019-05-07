@@ -34,7 +34,9 @@ const htmlToElement = function (html) {
 }
 
 // the render function to update the screen
-const render = function () {
+const render = async function () {
+  mutations.setList(await API.getHistory())
+  // console.log(getters.getList())
   const root = this.listRoot
   let ul
   if (this.list === null) {
@@ -55,24 +57,21 @@ const render = function () {
     const li = htmlToElement(htmlString)
     const checkbox = li.querySelector('input')
     checkbox.addEventListener('click', function () {
-      var noteID = note.href.substring(18)
-      var deleteNote = 0
-      getters.getListNoteId().forEach(checkid => {
-        if(checkid == noteID) {
-          mutations.removeNoteId(noteID)
-          deleteNote = 1
-        }
-      })
-      if(!deleteNote) {
-        mutations.setListNoteId(noteID)
+      const noteID = note.href.substring(18)
+      if (checkbox.checked) {
+        mutations.addTempRemoved(noteID)
+      } else {
+        mutations.removeTempRemoved(noteID)
       }
-      var operationButton = document.getElementsByClassName('hmdir_operation_button')
-      for (var i=0; i<operationButton.length; i++) {
-        operationButton[i].classList.add('active')
-      }
-      if(getters.getListNoteId().length == 0) {
-        for (var i=0; i<operationButton.length; i++) {
-          operationButton[i].classList.remove('active')
+      const operationButton = document.getElementsByClassName('hmdir_operation_button')
+      for (let i = 0; i < 3; ++i) {
+        const target = operationButton[i]
+        if (getters.getTempRemoved().length > 0) {
+          if (!target.classList.contains('active')) {
+            target.classList.add('active')
+          }
+        } else {
+          target.classList.remove('active')
         }
       }
     })

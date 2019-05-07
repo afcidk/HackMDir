@@ -3,15 +3,15 @@ const API = require('../../api/api.js')
 const state = {
   display: false,
   list: [],
-  listNoteId: []
+  tempRemoved: []
 }
 
 const getters = {
   getList: function () {
     return state.list
   },
-  getListNoteId: function () {
-    return state.listNoteId
+  getTempRemoved: function () {
+    return state.tempRemoved
   }
 }
 
@@ -26,17 +26,18 @@ const mutations = {
     }
   },
   setList: function (newList) {
+    // console.log(newList)
     if (!Array.isArray(newList)) {
       return
     }
     state.list = newList.slice()
   },
-  setListNoteId: function (noteId) {
-    state.listNoteId.push(noteId)
+  addTempRemoved: function (noteId) {
+    state.tempRemoved.push(noteId)
   },
-  removeNoteId: function (noteId) {
-    var pos = state.listNoteId.indexOf(noteId)
-    state.listNoteId.splice(pos, 1)
+  removeTempRemoved: function (noteId) {
+    const pos = state.tempRemoved.indexOf(noteId)
+    state.tempRemoved.splice(pos, 1)
   }
 }
 
