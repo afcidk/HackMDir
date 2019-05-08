@@ -24,6 +24,16 @@ const components = {
     delete: null,
     permission: null,
     bookmode: null
+  },
+  permissionReadButton: {
+    owner: null,
+    signedin: null,
+    guest: null
+  },
+  permissionWriteButton: {
+    owner: null,
+    signedin: null,
+    guest: null
   }
 }
 
@@ -54,6 +64,12 @@ const constructor = async function () {
     this.operationButton.delete = this.menuRoot.querySelector('.hmdir_operation_button:nth-child(1)')
     this.operationButton.permission = this.menuRoot.querySelector('.hmdir_operation_button:nth-child(2)')
     this.operationButton.bookmode = this.menuRoot.querySelector('.hmdir_operation_button:nth-child(3)')
+    this.permissionReadButton.owner = this.menuRoot.querySelector('.hmdir_permission_read_button:nth-child(1)')
+    this.permissionReadButton.signedin = this.menuRoot.querySelector('.hmdir_permission_read_button:nth-child(2)')
+    this.permissionReadButton.guest = this.menuRoot.querySelector('.hmdir_permission_read_button:nth-child(3)')
+    this.permissionWriteButton.owner = this.menuRoot.querySelector('.hmdir_permission_write_button:nth-child(1)')
+    this.permissionWriteButton.signedin = this.menuRoot.querySelector('.hmdir_permission_write_button:nth-child(2)')
+    this.permissionWriteButton.guest = this.menuRoot.querySelector('.hmdir_permission_write_button:nth-child(3)')
     this.contentSlot = this.menuRoot.querySelector('.hmdir_content_container')
     this.dirTab = await dirTabComponent.components.initialize()
     this.recentTab = await recentTabComponent.components.initialize()
@@ -121,6 +137,115 @@ const constructor = async function () {
         })
       }.bind(this)
     })
+    Object.keys(this.permissionReadButton).forEach(key => {
+      const button = this.permissionReadButton[key]
+      button.onclick = async function () {
+        const permissiontype = button.innerText
+        switch (permissiontype) {
+          case '擁有者':
+            mutations.setPermissionRead(3)
+            document.getElementById('read_owner').style.backgroundColor = '#D0D0D0'
+            document.getElementById('read_signedin').style.backgroundColor = 'white'
+            document.getElementById('read_guest').style.backgroundColor = 'white'
+            mutations.setPermissionWrite(3)
+            document.getElementById('write_owner').style.backgroundColor = '#D0D0D0'
+            document.getElementById('write_signedin').style.backgroundColor = 'white'
+            document.getElementById('write_guest').style.backgroundColor = 'white'
+            break
+          case '已登入':
+            mutations.setPermissionRead(2)
+            document.getElementById('read_owner').style.backgroundColor = 'white'
+            document.getElementById('read_signedin').style.backgroundColor = '#D0D0D0'
+            document.getElementById('read_guest').style.backgroundColor = 'white'
+            if (getters.getPermissionWrite() === 1) {
+              mutations.setPermissionWrite(2)
+              document.getElementById('write_owner').style.backgroundColor = 'white'
+              document.getElementById('write_signedin').style.backgroundColor = '#D0D0D0'
+              document.getElementById('write_guest').style.backgroundColor = 'white'
+            }
+            break
+          case '訪客':
+            mutations.setPermissionRead(1)
+            document.getElementById('read_owner').style.backgroundColor = 'white'
+            document.getElementById('read_signedin').style.backgroundColor = 'white'
+            document.getElementById('read_guest').style.backgroundColor = '#D0D0D0'
+            break
+        }
+        permissionStyle()
+        const read = getters.getPermissionRead()
+        const write = getters.getPermissionWrite()
+        switch (getters.getType()) {
+          case 'recent':
+            API.changePermission(recentTabComponent.getters.getTempRemoved(), read * 10 + write)
+            break
+          case 'personal':
+            break
+          case 'dir':
+            API.changePermission(dirTabComponent.getters.getTempRemoved(), read * 10 + write)
+            break
+        }
+        this.render()
+      }.bind(this)
+    })
+    Object.keys(this.permissionWriteButton).forEach(key => {
+      const button = this.permissionWriteButton[key]
+      button.onclick = async function () {
+        const permissiontype = button.innerText
+        if (getters.getPermissionRead() === 3) {
+          mutations.setPermissionWrite(3)
+        } else if (getters.getPermissionRead() === 2) {
+          switch (permissiontype) {
+            case '擁有者':
+              mutations.setPermissionWrite(3)
+              document.getElementById('write_owner').style.backgroundColor = '#D0D0D0'
+              document.getElementById('write_signedin').style.backgroundColor = 'white'
+              document.getElementById('write_guest').style.backgroundColor = 'white'
+              break
+            case '已登入':
+              mutations.setPermissionWrite(2)
+              document.getElementById('write_owner').style.backgroundColor = 'white'
+              document.getElementById('write_signedin').style.backgroundColor = '#D0D0D0'
+              document.getElementById('write_guest').style.backgroundColor = 'white'
+              break
+          }
+        } else {
+          switch (permissiontype) {
+            case '擁有者':
+              mutations.setPermissionWrite(3)
+              document.getElementById('write_owner').style.backgroundColor = '#D0D0D0'
+              document.getElementById('write_signedin').style.backgroundColor = 'white'
+              document.getElementById('write_guest').style.backgroundColor = 'white'
+              break
+            case '已登入':
+              mutations.setPermissionWrite(2)
+              document.getElementById('write_owner').style.backgroundColor = 'white'
+              document.getElementById('write_signedin').style.backgroundColor = '#D0D0D0'
+              document.getElementById('write_guest').style.backgroundColor = 'white'
+              break
+            case '訪客':
+              mutations.setPermissionWrite(1)
+              document.getElementById('write_owner').style.backgroundColor = 'white'
+              document.getElementById('write_signedin').style.backgroundColor = 'white'
+              document.getElementById('write_guest').style.backgroundColor = '#D0D0D0'
+              break
+          }
+        }
+        permissionStyle()
+        const read = getters.getPermissionRead()
+        const write = getters.getPermissionWrite()
+        switch (getters.getType()) {
+          case 'recent':
+            API.changePermission(recentTabComponent.getters.getTempRemoved(), write * 10 + read)
+            break
+          case 'personal':
+            break
+          case 'dir':
+            API.changePermission(dirTabComponent.getters.getTempRemoved(), write * 10 + read)
+            break
+        }
+        this.render()
+      }.bind(this)
+    })
     return this.root
   } catch (error) {
     console.log(error)
@@ -170,28 +295,58 @@ const operationMode = async function (type) {
   switch (type) {
     case 'deleteHistory':
       await API.delHostoryNote(recentTabComponent.getters.getTempRemoved())
+      document.getElementById('permission_block').style.display = 'none'
       this.render()
       break
     case 'deleteDir':
       dirTabComponent.mutations.remove()
+      document.getElementById('permission_block').style.display = 'none'
       // TODO: delete note through API
       // await API.delNote(dirTabComponent.getters.getTempRemoved())
       this.render()
       break
     case 'permission':
-      // TODO: set permission of noteId list
-      permissionChoose()
+      permissionStyle()
+      switch (getters.getType()) {
+        case 'recent':
+          if (recentTabComponent.getters.getTempRemoved().length > 0) {
+            document.getElementById('permission_block').style.display = 'inline'
+          } else {
+            document.getElementById('permission_block').style.display = 'none'
+          }
+          break
+        case 'personal':
+          break
+        case 'dir':
+          if (dirTabComponent.getters.getTempRemoved().length > 0) {
+            document.getElementById('permission_block').style.display = 'inline'
+          } else {
+            document.getElementById('permission_block').style.display = 'none'
+          }
+          break
+      }
       break
     case 'bookmode':
       // TODO: bookmode
+      document.getElementById('permission_block').style.display = 'none'
       // console.log('bookmode')
       break
   }
 }
 
-// the permissionChoose function to append interface to change permission
-const permissionChoose = function () {
-  document.getElementById('permission_block').style.display = 'inline'
+// the function to set style of permission button
+const permissionStyle = function () {
+  if (getters.getPermissionRead() === 3) {
+    document.getElementById('write_signedin').style.color = '#AAAAAA'
+    document.getElementById('write_guest').style.color = '#AAAAAA'
+    mutations.setPermissionWrite(3)
+  } else if (getters.getPermissionRead() === 2) {
+    document.getElementById('write_signedin').style.color = '#6b6b6b'
+    document.getElementById('write_guest').style.color = '#AAAAAA'
+  } else {
+    document.getElementById('write_signedin').style.color = '#6b6b6b'
+    document.getElementById('write_guest').style.color = '#6b6b6b'
+  }
 }
 
 module.exports = {

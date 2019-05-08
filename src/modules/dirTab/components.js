@@ -111,6 +111,9 @@ const render = function () {
         }
       })
     })
+    if (getters.getTempRemoved().length === 0) {
+      document.getElementById('permission_block').style.display = 'none'
+    }
     fragment.appendChild(li)
   })
   ul.innerHTML = ''

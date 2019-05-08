@@ -72,6 +72,7 @@ const render = async function () {
           }
         } else {
           target.classList.remove('active')
+          document.getElementById('permission_block').style.display = 'none'
         }
       }
     })

@@ -6,7 +6,7 @@
   align-items: center;
   width: 18px;
   height: 80px;
-  z-index: 999;
+  z-index: 10;
   background-color: white;
   padding: 0;
   margin: 0;
@@ -620,7 +620,7 @@
       padding: 0;
       margin: 4px 0;
     }
-    .hmdir_permission_button {
+    .hmdir_permission_read_button, .hmdir_permission_write_button {
       width: 70px;
       height: 18px;
       background-color: white;
@@ -637,21 +637,21 @@
         background-color: darken(white, 10%);
       }
     }
-    .hmdir_permission_button:first-child {
+    .hmdir_permission_read_button:first-child, .hmdir_permission_write_button:first-child {
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
     }
-    .hmdir_permission_button:not(:first-child):not(:last-child) {
+    .hmdir_permission_read_button:not(:first-child):not(:last-child), .hmdir_permission_write_button:not(:first-child):not(:last-child) {
       border-radius: 0;
     }
-    .hmdir_permission_button:last-child {
+    .hmdir_permission_read_button:last-child, .hmdir_permission_write_button:last-child {
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
     }
-    .hmdir_permission_button[current="true"] {
+    .hmdir_permission_read_button[current="true"], .hmdir_permission_write_button[current="true"] {
       background-color: darken(white, 10%);
     }
-    .hmdir_permission_button:not(:last-child) {
+    .hmdir_permission_read_button:not(:last-child), .hmdir_permission_write_button:not(:last-child) {
       border-right: none; /* Prevent double borders */
     }
   }

@@ -26,7 +26,6 @@ async function isLoggedIn () {
  * @returns Array Information including href and title
  */
 async function getPersonal () {
-  console.log('getPersona')
   const doc = await fetch('/api/overview')
   const text = await doc.text()
   const result = Array.from(JSON.parse(text)).map(function (e) {
