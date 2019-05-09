@@ -12,7 +12,9 @@ const state = {
       title: 'test',
       href: 'www.facebook.com'
     }]
-  }
+  },
+  permissionRead: null,
+  permissionWrite: null
 }
 
 const getters = {
@@ -30,6 +32,12 @@ const getters = {
   },
   getDirs: function () {
     return state.dirs
+  },
+  getPermissionRead: function () {
+    return state.permissionRead
+  },
+  getPermissionWrite: function () {
+    return state.permissionWrite
   }
 }
 
@@ -69,6 +77,12 @@ const mutations = {
       throw new Error('dir is empty')
     }
     state.dirs[dirname].splice(index, 1)
+  },
+  setPermissionRead: function (type) {
+    state.permissionRead = type
+  },
+  setPermissionWrite: function (type) {
+    state.permissionWrite = type
   }
 }
 

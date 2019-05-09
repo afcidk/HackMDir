@@ -1,25 +1,23 @@
 /* eslint-env browser */
+const io = require('socket.io-client')
 
 /**
- * async version for forEach
+ * Async version for forEach
  * @param Array array
  * @param Function callback
  */
-const asyncForEach = async function (array, callback) {
+async function asyncForEach (array, callback) {
   for (let index = 0; index < array.length; index++) {
     await callback(array[index], index, array)
   }
 }
 
-const io = require('socket.io-client')
 /**
  * Create a websocket connection instance
  * @param String noteId
  * @returns Websocket instance(io)
  */
 async function connect (noteId) {
-  // FIXME: Add exception handling if cannot connect
-
   // Register realtime server
   var server = await fetch(`/realtime-reg/realtime?noteId=${noteId}`)
   server = await server.text()
@@ -35,6 +33,36 @@ async function connect (noteId) {
   })
 }
 
+/**
+ * Get the revision number of a note
+ * @param noteId
+ * @return Int Revision number
+ */
+async function getRevision (noteId) {
+  var fetched = await fetch(`/realtime-reg/realtime?noteId=${noteId}`)
+  var raw = await fetched.text()
+  const server = JSON.parse(raw)['url'].replace('https://hackmd.io', '') + '/socket.io'
+
+  fetched = await fetch(`${server}/?noteId=${noteId}&transport=polling`)
+  raw = await fetched.text()
+  const sid = JSON.parse(raw.substring(raw.indexOf('{'))).sid
+
+  fetched = await fetch(`${server}/?noteId=${noteId}&transport=polling&sid=${sid}`)
+  raw = await fetched.text()
+
+  // may fail sometimes, make more attempts~
+  try {
+    return parseInt(raw.match('"revision":([0-9]*)')[1])
+  } catch (TypeError) {
+    return getRevision(noteId)
+  }
+}
+
+/**
+ * Get DOM of a page
+ * @param String Url
+ * @return DOMElement
+ */
 async function getDOM (url) {
   const res = await fetch(url)
   const text = await res.text()
@@ -65,22 +93,20 @@ async function newData (content) {
  * @param String Content to overwrite the file
  */
 async function writeData (noteId, content) {
-  // TODO: This is not a robust function, cannot remove characters
-  // // possibly related to cursor
-
   const socket = await connect(noteId)
   const doc = await getDOM(`https://hackmd.io/${noteId}/publish`)
-  const length = doc.querySelector('#doc').innerHTML.length
-  console.log(length)
-  socket.emit('doc', { revision: 0, force: true })
-  // if (length === 0) {
-  socket.emit('operation', 0, [content], null)
-  /*
-  } else {
-    socket.emit('operation', 0, [-length], null)
-    socket.emit('operation', 1, [content], null)
+  const length = doc.querySelector('#doc').innerText.length
+  var revision = await getRevision(noteId)
+
+  if (length > 2) {
+    socket.emit('operation', revision, [1, -1, length - 2], null)
+    socket.emit('operation', revision + 1, [-length + 1], null)
+    revision += 2
+  } else if (length > 0) {
+    socket.emit('operation', revision, [-length], null)
+    revision += 1
   }
-  */
+  socket.emit('operation', revision, [content], null)
 
   socket.emit('permission', 'private')
 }

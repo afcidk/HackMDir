@@ -36,7 +36,7 @@ const htmlToElement = function (html) {
 // the render function to update the screen
 const render = async function () {
   mutations.setList(await API.getHistory())
-  console.log(getters.getList())
+  // console.log(getters.getList())
   const root = this.listRoot
   let ul
   if (this.list === null) {
@@ -72,6 +72,7 @@ const render = async function () {
           }
         } else {
           target.classList.remove('active')
+          document.getElementById('permission_block').style.display = 'none'
         }
       }
     })

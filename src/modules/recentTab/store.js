@@ -26,7 +26,7 @@ const mutations = {
     }
   },
   setList: function (newList) {
-    console.log(newList)
+    // console.log(newList)
     if (!Array.isArray(newList)) {
       return
     }
