@@ -10,6 +10,7 @@ const state = {
       href: 'www.facebook.com'
     }]
   },
+  delay: null,
   tempRemoved: {}
 }
 
@@ -20,6 +21,9 @@ const getters = {
   getDirs: function () {
     return state.dirs
   },
+  getDelay: function () {
+    return state.delay
+  },
   getTempRemoved: function () {
     return state.tempRemoved
   }
@@ -28,6 +32,9 @@ const getters = {
 const mutations = {
   setDisplay: function (data) {
     state.display = data
+  },
+  setDelay: function (data) {
+    state.delay = data
   },
   setDirs: function (data) {
     state.dirs = Object.assign({}, data)

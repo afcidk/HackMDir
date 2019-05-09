@@ -20,6 +20,16 @@ const constructor = async function () {
     this.newDirButton = this.root.querySelector('.hmdir_new_dir_button')
     this.input = this.root.querySelector('.hmdir_dir_operation_section > input')
 
+    this.input.addEventListener('input', function () {
+      if (getters.getDelay()) {
+        window.clearTimeout(getters.getDelay())
+      }
+      const delay = window.setTimeout(function () {
+        this.render()
+      }.bind(this), 500)
+      mutations.setDelay(delay)
+    }.bind(this))
+
     // config event bus
     this.newDirButton.onclick = function () {
       eventBus.publish('displayNewDirModal')
@@ -48,9 +58,15 @@ const render = function () {
   const ul = this.list
   // use fragment to update the list content
   const fragment = document.createDocumentFragment()
+  // set display list
+  const keyword = this.input.value
+  const displayDirs = {}
   const dirs = getters.getDirs()
   Object.keys(dirs).forEach(dirname => {
-    const htmlString = `<li data-dirname="${dirname}"><i></i><a>${dirname} (${dirs[dirname].length})</a><input type="checkbox"/><div class="hmdir_subdir_root" style="display: none;"><ul></ul></div></li>`
+    displayDirs[dirname] = dirs[dirname].filter(note => note.title.indexOf(keyword) !== -1)
+  })
+  Object.keys(displayDirs).forEach(dirname => {
+    const htmlString = `<li data-dirname="${dirname}"><i></i><a>${dirname} (${displayDirs[dirname].length})</a><input type="checkbox"/><div class="hmdir_subdir_root" style="display: none;"><ul></ul></div></li>`
     const li = htmlToElement(htmlString)
     const a = li.querySelector('a')
     const subListRoot = li.querySelector('.hmdir_subdir_root')
@@ -61,7 +77,7 @@ const render = function () {
     }
     // use fragment to append li
     const subFragment = document.createDocumentFragment()
-    for (let [index, note] of dirs[dirname].entries()) {
+    for (let [index, note] of displayDirs[dirname].entries()) {
       const htmlString = `<li><a href="${note.href}" target="_blank">${note.title}</a> <input type="checkbox" data-index="${index}" data-dirname="${dirname}"/></li>`
       const noteDOM = htmlToElement(htmlString)
       subFragment.appendChild(noteDOM)

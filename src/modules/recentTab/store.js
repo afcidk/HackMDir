@@ -3,7 +3,9 @@ const API = require('../../api/api.js')
 const state = {
   display: false,
   list: [],
-  tempRemoved: []
+  displayList: [],
+  tempRemoved: [],
+  delay: null
 }
 
 const getters = {
@@ -12,6 +14,12 @@ const getters = {
   },
   getTempRemoved: function () {
     return state.tempRemoved
+  },
+  getDisplayList: function () {
+    return state.displayList
+  },
+  getDelay: function () {
+    return state.delay
   }
 }
 
@@ -24,6 +32,9 @@ const mutations = {
         state.list = res.slice()
       })
     }
+  },
+  setDisplayList: function (data) {
+    state.displayList = data.slice()
   },
   setList: function (newList) {
     // console.log(newList)
@@ -38,6 +49,9 @@ const mutations = {
   removeTempRemoved: function (noteId) {
     const pos = state.tempRemoved.indexOf(noteId)
     state.tempRemoved.splice(pos, 1)
+  },
+  setDelay: function (data) {
+    state.delay = data
   }
 }
 

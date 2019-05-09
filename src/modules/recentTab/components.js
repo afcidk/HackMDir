@@ -6,7 +6,8 @@ const getters = require('./store.js').getters
 const components = {
   root: null,
   listRoot: null,
-  list: null
+  list: null,
+  input: null
 }
 
 const constructor = async function () {
@@ -16,6 +17,16 @@ const constructor = async function () {
     this.list = this.listRoot.querySelector('ul')
     this.input = this.root.querySelector('.hmdir_recent_operation_section > input')
     mutations.setList(await API.getHistory())
+
+    this.input.addEventListener('input', function () {
+      if (getters.getDelay()) {
+        window.clearTimeout(getters.getDelay())
+      }
+      const delay = window.setTimeout(function () {
+        this.render()
+      }.bind(this), 500)
+      mutations.setDelay(delay)
+    }.bind(this))
 
     this.render()
     console.log(this.root)
@@ -36,7 +47,8 @@ const htmlToElement = function (html) {
 // the render function to update the screen
 const render = async function () {
   mutations.setList(await API.getHistory())
-  // console.log(getters.getList())
+  const keyword = this.input.value
+  const displayList = getters.getList().filter(target => target.title.indexOf(keyword) !== -1)
   const root = this.listRoot
   let ul
   if (this.list === null) {
@@ -52,7 +64,7 @@ const render = async function () {
   // use fragment to update the list content
   const fragment = document.createDocumentFragment()
   // loop all element in list
-  for (let [index, note] of getters.getList().entries()) {
+  for (let [index, note] of displayList.entries()) {
     const htmlString = `<li><input type="checkbox" data-index="${index}" /><a href="${note.href}" target="_blank">${note.title}</a></li>`
     const li = htmlToElement(htmlString)
     const checkbox = li.querySelector('input')
