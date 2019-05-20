@@ -3,14 +3,17 @@ const webpack = require('webpack')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 
+const DIST_DIR = path.resolve(__dirname, 'dist')
+const SRC_DIR = path.resolve(__dirname, 'src')
+
 module.exports = {
   mode: 'production',
   entry: {
-    content: ['babel-polyfill', path.resolve('src', 'content.js')],
-    background: ['babel-polyfill', path.resolve('src', 'background.js')]
+    content: ['babel-polyfill', SRC_DIR + '/content.js'],
+    background: ['babel-polyfill', SRC_DIR + '/background.js']
   },
   output: {
-    path: path.resolve('dist'),
+    path: DIST_DIR,
     filename: '[name].js',
     publicPath: './'
   },
