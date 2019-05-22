@@ -13,6 +13,7 @@ import OperationContent from './OperationContent.js'
 import Collapse from '@material-ui/core/Collapse'
 
 import API from '../../api/api.js'
+import ListSubheader from '@material-ui/core/ListSubheader'
 
 const styles = theme => ({
   root: {
@@ -33,6 +34,9 @@ const styles = theme => ({
     width: '100%',
     height: '651px',
     backgroundColor: 'rgba(0, 0, 0, 0.18)'
+  },
+  header: {
+    padding: '0'
   }
 })
 
@@ -82,7 +86,7 @@ class ListContent extends React.Component {
   // the render function
   render () {
     // destructuring assignment
-    const { list, selectedList, selectItem, unSelectItem, deleteItems, clearAllSelected } = this.props
+    const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected } = this.props
     return (
       <List className={this.props.classes.root}>
         <div key='spinner'
@@ -90,9 +94,11 @@ class ListContent extends React.Component {
           style={{ display: this.state.fetching ? 'flex' : 'none' }}>
           <CircularProgress />
         </div>
-        <Collapse in={selectedList.length > 0} mountOnEnter unmountOnExit style={{ transformOrigin: '0 0 0' }} key='operation-container'>
-          <OperationContent tab={this.props.tab} selectedList={selectedList} deleteItemsEvent={deleteItems} clearAllSelectedEvent={clearAllSelected} />
-        </Collapse>
+        <ListSubheader className={this.props.classes.header} key='operation-container'>
+          <Collapse in={selectedList.length > 0} mountOnEnter unmountOnExit style={{ transformOrigin: '0 0 0' }}>
+            <OperationContent tab={this.props.tab} list={list} selectedList={selectedList} deleteItemsEvent={deleteItems} setSelectedEvent={setSelected} />
+          </Collapse>
+        </ListSubheader>
         {list.map((target, index) => (
           this.props.tab === 'Directory' ? (
             <Slide
