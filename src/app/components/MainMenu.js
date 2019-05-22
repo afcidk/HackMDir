@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid'
 import IconButton from '@material-ui/core/IconButton'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import SettingIcon from '@material-ui/icons/Settings'
+import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
 
 import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
@@ -38,6 +39,9 @@ const styles = theme => ({
     '&:after': {
       borderBottomColor: 'white'
     }
+  },
+  selectItem: {
+    fontSize: '14px'
   },
   triangle: {
     fill: 'white'
@@ -88,7 +92,7 @@ class MainMenu extends React.Component {
               <ArrowBackIcon />
             </IconButton>
           </Grid>
-          <Grid item xs={8}>
+          <Grid item xs={this.props.tab === 'Directory' ? 6 : 8}>
             <form className={this.props.classes.form}>
               <FormControl>
                 <Select
@@ -104,7 +108,8 @@ class MainMenu extends React.Component {
                   {[0, 1, 2].map(index => (
                     <MenuItem
                       value={this.state.tabs[index]}
-                      key={this.state.tabs[index]}>
+                      key={this.state.tabs[index]}
+                      className={this.props.classes.selectItem}>
                       {this.state.tabs[index]}
                     </MenuItem>
                   ))}
@@ -112,6 +117,18 @@ class MainMenu extends React.Component {
               </FormControl>
             </form>
           </Grid>
+          {
+            this.props.tab === 'Directory' ? (
+              <Grid item xs={2}>
+                <IconButton
+                  color='inherit'
+                  size='small'
+                  aria-label='new-dir'>
+                  <CreateNewFolderIcon />
+                </IconButton>
+              </Grid>
+            ) : null
+          }
           <Grid item xs={2}>
             <IconButton
               color='inherit'

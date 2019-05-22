@@ -82,8 +82,9 @@ async function delNote (noteId) {
   await utils.asyncForEach(noteId, async function (id) {
     console.log(id)
     const socket = await utils.connect(id)
-    socket.on('connect', () => {
+    socket.on('connect', async () => {
       socket.emit('delete')
+      await delHistoryNote(id)
     })
   })
 }

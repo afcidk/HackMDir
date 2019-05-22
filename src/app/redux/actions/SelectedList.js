@@ -8,6 +8,7 @@ export const unSelectItem = target => ({
   payload: target
 })
 
-export const clearAllSelected = () => ({
-  type: 'CLEAR_ALL_SELECTED'
+export const setSelected = target => ({
+  type: 'SET_SELECTED',
+  payload: target
 })

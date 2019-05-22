@@ -23,6 +23,10 @@ const styles = theme => ({
     width: '36px',
     height: '36px',
     transition: 'opacity 100ms ease-in-out'
+  },
+  checkedStyle: {
+    color: '#4285f4',
+    fill: '#4285f4'
   }
 })
 
@@ -65,15 +69,16 @@ class ListNoteItem extends React.Component {
     return (
       <ListItem
         button
-        onClick={this.handleListClick.bind(this)}>
+        onClick={this.handleListClick.bind(this)}
+        style={{ backgroundColor: this.props.checked ? 'rgba(66, 33, 244, 0.18)' : null, height: '48px' }}>
         <Grid container spacing={16} justify='flex-start' alignContent='center' alignItems='center'>
           <Grid item xs={2}>
             <ListItemIcon>
-              <DescriptionIcon />
+              <DescriptionIcon className={this.props.checked ? this.props.classes.checkedStyle : null} />
             </ListItemIcon>
           </Grid>
           <Grid item xs={8}>
-            <ListItemText primary={this.props.title} classes={{ primary: this.props.classes.text }} />
+            <ListItemText primary={this.props.title} classes={{ primary: `${this.props.classes.text} ${this.props.checked ? this.props.classes.checkedStyle : null}` }} />
           </Grid>
           <Grid item xs={2}>
             <Checkbox style={{ opacity: this.state.displayCheckbox ? 1 : 0, color: '#4285f4' }} className={this.props.classes.checkbox} onMouseOver={e => { this.setState({ displayCheckbox: true }) }} onMouseLeave={e => { this.setState({ displayCheckbox: this.props.displayCheckbox }) }} onClick={this.handleCheckboxClick.bind(this)} checked={this.props.checked} />
