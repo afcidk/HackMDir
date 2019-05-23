@@ -88,7 +88,7 @@ class OperationContainer extends React.Component {
           const noteIds = this.props.selectedList.map(target => (target.href.substr(18)))
           switch (this.props.tab) {
             case 'Recent':
-              await API.delHostoryNote(noteIds)
+              await API.delHistoryNote(noteIds)
               break
             case 'Personal':
               await API.delNote(noteIds)

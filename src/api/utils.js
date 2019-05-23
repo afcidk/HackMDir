@@ -29,7 +29,7 @@ async function connect (noteId) {
     query: {
       noteId: noteId
     },
-    reconnectionAttempts: 20
+    reconnectionAttempts: 30
   })
 }
 
@@ -65,6 +65,8 @@ async function getRevision (noteId) {
  */
 async function getDOM (url) {
   const res = await fetch(url)
+  if (res.status === 404) return null
+
   const text = await res.text()
   return new DOMParser().parseFromString(text, 'text/html').firstElementChild
 }
@@ -94,52 +96,47 @@ async function newData (content) {
  */
 async function writeData (noteId, content) {
   const socket = await connect(noteId)
-  const doc = await getDOM(`https://hackmd.io/${noteId}/publish`)
-  const length = doc.querySelector('#doc').innerText.length
-  var revision = await getRevision(noteId)
+  socket.on('connect', async () => {
+    const doc = await getDOM(`https://hackmd.io/${noteId}/publish`)
+    const length = doc.querySelector('#doc').innerText.length
+    var revision = await getRevision(noteId)
 
-  if (length > 2) {
-    socket.emit('operation', revision, [1, -1, length - 2], null)
-    socket.emit('operation', revision + 1, [-length + 1], null)
-    revision += 2
-  } else if (length > 0) {
-    socket.emit('operation', revision, [-length], null)
-    revision += 1
-  }
-  socket.emit('operation', revision, [content], null)
+    if (length > 2) {
+      socket.emit('operation', revision, [1, -1, length - 2], null)
+      socket.emit('operation', revision + 1, [-length + 1], null)
+      revision += 2
+    } else if (length > 0) {
+      socket.emit('operation', revision, [-length], null)
+      revision += 1
+    }
+    socket.emit('operation', revision, [content], null)
 
-  socket.emit('permission', 'private')
+    socket.emit('permission', 'private')
+  })
 }
 
 /**
- * Initialize cache
- * @returns JSON
+ * Initialize data note if not exist
+ * @returns String url of data note
  */
-async function initCache () {
-  var cache = ''
-  var noteId = ''
+async function getDataUrl () {
+  var noteUrl = ''
   var doc = await getDOM('/profile?q=hkmdir-data')
   const page = doc.querySelector('.content a')
 
   if (page === null) {
-    noteId = await newData('###### hkmdir-data\n')
+    noteUrl = await newData('###### hkmdir-data\n')
   } else {
-    noteId = page.href
-    const href = `${page.href}/publish`
-    doc = await getDOM(href)
-    cache = doc.querySelector('#doc').innerHTML
-    console.log(cache)
+    noteUrl = page.href
   }
 
-  noteId = noteId.replace('https://hackmd.io/', '')
-  return { noteId: noteId, cache: cache }
+  return noteUrl
 }
 
 module.exports = {
   connect: connect,
-  getDOM: getDOM,
   newData: newData,
   writeData: writeData,
-  initCache: initCache,
+  getDataUrl: getDataUrl,
   asyncForEach: asyncForEach
 }

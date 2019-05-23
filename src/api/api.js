@@ -1,8 +1,9 @@
 /* eslint-env browser */
 // FIXME: move some functions to new file (utils)
 
-var cache = ''
-var cacheId = ''
+var dataUrl = ''
+var personalCache = ''
+var historyCache = ''
 const utils = require('./utils.js')
 
 /**
@@ -13,14 +14,25 @@ async function isLoggedIn () {
   var cookie = document.cookie
 
   // open data file at background, which supports socketio
-  const res = await utils.initCache()
-  cache = res.cache
-  cacheId = res.noteId
+  dataUrl = await utils.getDataUrl()
 
   if (cookie.search('userid') !== -1 && cookie.search('loginstate') !== -1) return true
 
   return false
 }
+
+async function initCache () {
+  personalCache = await getPersonal()
+  historyCache = await getHistory()
+
+  setInterval(5000, async () => {
+    personalCache = await getPersonal()
+  }, 5000)
+  setTimeout(5000, async () => {
+    historyCache = await getHistory()
+  }, 5000)
+}
+
 /**
  * Get notes written by logged in user
  * @returns Array Information including href and title
@@ -32,8 +44,8 @@ async function getPersonal () {
     return { href: `https://hackmd.io/${e.id}`, title: e.title }
   })
 
-  // update Cache
-  writeCache(result)
+  // update data note
+  writeContent(result)
   return result
 }
 
@@ -93,9 +105,9 @@ async function delNote (noteId) {
  * Write content to hkmdir-data (overwrite)
  * @param JSON Content to write
  */
-function writeCache (content) {
+function writeContent (content) {
   const prefix = '###### tags: hkmdir-data\n\n'
-  utils.writeData(cacheId, prefix + JSON.stringify(content))
+  utils.writeData(dataUrl.replace('https://hackmd.io/', ''), prefix + JSON.stringify(content))
 }
 
 /**
@@ -121,7 +133,9 @@ function changePermission (urls, perm) {
   // open the first url as base window
   notes.forEach(async note => {
     const socket = await utils.connect(note)
-    socket.emit('permission', pstr)
+    socket.on('connect', () => {
+      socket.emit('permission', pstr)
+    })
   })
 }
 
@@ -142,11 +156,11 @@ async function addBookmode (title, data) {
   return bmUrl.url.replace('/s/', '/c/')
 }
 
-function getCache (option) {
+function getData (option) {
   if (option === 'personal') {
-    console.log('getCache')
-    if (cache === '') return getPersonal()
-    else return cache
+    return personalCache
+  } else if (option === 'history') {
+    return historyCache
   } else {
     return undefined
   }
@@ -154,12 +168,11 @@ function getCache (option) {
 
 module.exports = {
   isLoggedIn: isLoggedIn,
-  getCache: getCache,
-  writeCache: writeCache,
-  getHistory: getHistory,
-  getPersonal: getPersonal,
+  initCache: initCache,
+  getData: getData,
+  writeContent: writeContent,
   delNote: delNote,
-  delHostoryNote: delHistoryNote,
+  delHistoryNote: delHistoryNote,
   changePermission: changePermission,
   addBookmode: addBookmode
 }

@@ -68,9 +68,9 @@ class ListContent extends React.Component {
       await this.setAsyncState({ fetching: true })
       let result = []
       if (tab === 'Recent') {
-        result = await API.getHistory()
+        result = API.getData('history')
       } else if (tab === 'Personal') {
-        result = await API.getPersonal()
+        result = API.getData('personal')
       } else if (tab === 'Directory') {
       }
       this.props.setItems(result)
