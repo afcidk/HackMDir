@@ -15,6 +15,7 @@ const store = createStore(
 
 /* main function */
 const main = async function () {
+  if (!API.isLoggedIn()) return
   await API.initCache()
   console.log(window.outerWidth)
   const root = document.createElement('div')

@@ -25,10 +25,10 @@ async function initCache () {
   personalCache = await getPersonal()
   historyCache = await getHistory()
 
-  setInterval(5000, async () => {
+  setInterval(async () => {
     personalCache = await getPersonal()
   }, 5000)
-  setTimeout(5000, async () => {
+  setInterval(async () => {
     historyCache = await getHistory()
   }, 5000)
 }
@@ -79,11 +79,10 @@ async function delHistoryNote (noteId) {
       }
     }
     header.append('x-xsrf-token', token)
-    const result = await fetch(`history/${id}`, {
+    await fetch(`history/${id}`, {
       method: 'delete',
       headers: header
     })
-    console.log(result)
   })
 }
 /**
@@ -92,11 +91,10 @@ async function delHistoryNote (noteId) {
  */
 async function delNote (noteId) {
   await utils.asyncForEach(noteId, async function (id) {
-    console.log(id)
     const socket = await utils.connect(id)
     socket.on('connect', async () => {
       socket.emit('delete')
-      await delHistoryNote(id)
+      await delHistoryNote([id])
     })
   })
 }
