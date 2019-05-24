@@ -1,5 +1,6 @@
 /* eslint-env browser */
 const io = require('socket.io-client')
+var dataUrl = ''
 
 /**
  * Async version for forEach
@@ -120,17 +121,52 @@ async function writeData (noteId, content) {
  * @returns String url of data note
  */
 async function getDataUrl () {
-  var noteUrl = ''
+  if (dataUrl) return dataUrl
   var doc = await getDOM('/profile?q=hkmdir-data')
   const page = doc.querySelector('.content a')
 
   if (page === null) {
-    noteUrl = await newData('###### hkmdir-data\n')
+    dataUrl = await newData('###### hkmdir-data\n')
   } else {
-    noteUrl = page.href
+    dataUrl = page.href
   }
 
-  return noteUrl
+  return dataUrl
+}
+
+/**
+ * Get History of a logged in user
+ * @returns JSON History lists
+ */
+async function getHistory () {
+  var history = await fetch('/history', { cache: 'no-store' })
+  return JSON.parse(await history.text()).history.map(target => ({
+    title: target.text,
+    href: `https://hackmd.io/${target.id}`
+  }))
+}
+
+/**
+ * Get notes written by logged in user
+ * @returns Array Information including href and title
+ */
+async function getPersonal () {
+  const doc = await fetch('/api/overview')
+  const text = await doc.text()
+  const result = Array.from(JSON.parse(text)).map(function (e) {
+    return { href: `https://hackmd.io/${e.id}`, title: e.title }
+  })
+
+  return result
+}
+
+async function getDirectory () {
+  const doc = await fetch(`${dataUrl}/publish`)
+  const text = await doc.text()
+  var data = new DOMParser().parseFromString(text, 'text/html')
+    .querySelector('#doc').innerText.replace('###### tags: hkmdir-data', '')
+
+  return JSON.parse(data).dir
 }
 
 module.exports = {
@@ -138,5 +174,8 @@ module.exports = {
   newData: newData,
   writeData: writeData,
   getDataUrl: getDataUrl,
+  getHistory: getHistory,
+  getPersonal: getPersonal,
+  getDirectory: getDirectory,
   asyncForEach: asyncForEach
 }
