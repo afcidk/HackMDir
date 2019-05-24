@@ -10,6 +10,7 @@ import LockIcon from '@material-ui/icons/Lock'
 import CheckboxIcon from '@material-ui/icons/CheckBox'
 import Tooltip from '@material-ui/core/Tooltip'
 import ConfirmModal from './ConfirmModal.js'
+import PermissionModal from './PermissionModal.js'
 
 import API from '../../api/api.js'
 
@@ -42,6 +43,7 @@ class OperationContainer extends React.Component {
     super(props)
     this.state = {
       showConfirm: false,
+      showPermission: false,
       title: '',
       message: '',
       agreeEvent: null,
@@ -88,7 +90,7 @@ class OperationContainer extends React.Component {
           const noteIds = this.props.selectedList.map(target => (target.href.substr(18)))
           switch (this.props.tab) {
             case 'Recent':
-              await API.delHostoryNote(noteIds)
+              await API.delHistoryNote(noteIds)
               break
             case 'Personal':
               await API.delNote(noteIds)
@@ -110,7 +112,24 @@ class OperationContainer extends React.Component {
     })
   }
   permissionOperation () {
-
+    this.setState({
+      showPermission: true,
+      agreeEvent: async function (data) {
+        try {
+          this.setState({ loading: true })
+          const noteIds = this.props.selectedList.map(target => (target.href))
+          await API.changePermission(noteIds, data.write + data.read * 10)
+          this.props.setSelectedEvent([])
+          this.setState({ showPermission: false, loading: false })
+        } catch (error) {
+          console.log(error)
+          this.setState({ showPermission: false, loading: false })
+        }
+      }.bind(this),
+      disagreeEvent: function () {
+        this.setState({ showPermission: false })
+      }.bind(this)
+    })
   }
   selectAllOperation () {
     // unselect all if it is already select all
@@ -125,6 +144,7 @@ class OperationContainer extends React.Component {
     return (
       <Grid container className={this.props.classes.root} alignContent='center' alignItems='center' >
         <ConfirmModal show={this.state.showConfirm} title={this.state.title} message={this.state.message} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
+        <PermissionModal show={this.state.showPermission} number={this.props.selectedList.length} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
         <Grid item xs={2}>
           <Tooltip title='Bookmode' classes={{ tooltip: this.props.classes.tooltip }}>
             <IconButton className={this.props.classes.button} aria-label='bookmode' onClick={this.bookModeOperation.bind(this)}>

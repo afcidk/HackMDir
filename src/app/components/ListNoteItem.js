@@ -43,6 +43,15 @@ class ListNoteItem extends React.Component {
       this.setState({ displayCheckbox: nextProps.displayCheckbox })
     }
   }
+  // shouldComponentUpdate (nextProps, nextState) {
+  //   let flag = true
+  //   for (let key in nextProps) {
+  //     if (nextProps[key] !== this.props[key]) {
+  //       flag = false
+  //     }
+  //   }
+  //   return flag
+  // }
 
   handleListClick (event) {
     event.stopPropagation()

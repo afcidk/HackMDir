@@ -1,8 +1,9 @@
 /* eslint-env browser */
 // FIXME: move some functions to new file (utils)
 
-var cache = ''
-var cacheId = ''
+var dataUrl = ''
+var personalCache = ''
+var historyCache = ''
 const utils = require('./utils.js')
 
 /**
@@ -13,14 +14,25 @@ async function isLoggedIn () {
   var cookie = document.cookie
 
   // open data file at background, which supports socketio
-  const res = await utils.initCache()
-  cache = res.cache
-  cacheId = res.noteId
+  dataUrl = await utils.getDataUrl()
 
   if (cookie.search('userid') !== -1 && cookie.search('loginstate') !== -1) return true
 
   return false
 }
+
+async function initCache () {
+  personalCache = await getPersonal()
+  historyCache = await getHistory()
+
+  setInterval(async () => {
+    personalCache = await getPersonal()
+  }, 5000)
+  setInterval(async () => {
+    historyCache = await getHistory()
+  }, 5000)
+}
+
 /**
  * Get notes written by logged in user
  * @returns Array Information including href and title
@@ -32,8 +44,8 @@ async function getPersonal () {
     return { href: `https://hackmd.io/${e.id}`, title: e.title }
   })
 
-  // update Cache
-  writeCache(result)
+  // update data note
+  writeContent(result)
   return result
 }
 
@@ -67,11 +79,10 @@ async function delHistoryNote (noteId) {
       }
     }
     header.append('x-xsrf-token', token)
-    const result = await fetch(`history/${id}`, {
+    await fetch(`history/${id}`, {
       method: 'delete',
       headers: header
     })
-    console.log(result)
   })
 }
 /**
@@ -80,11 +91,10 @@ async function delHistoryNote (noteId) {
  */
 async function delNote (noteId) {
   await utils.asyncForEach(noteId, async function (id) {
-    console.log(id)
     const socket = await utils.connect(id)
     socket.on('connect', async () => {
       socket.emit('delete')
-      await delHistoryNote(id)
+      await delHistoryNote([id])
     })
   })
 }
@@ -93,9 +103,9 @@ async function delNote (noteId) {
  * Write content to hkmdir-data (overwrite)
  * @param JSON Content to write
  */
-function writeCache (content) {
+function writeContent (content) {
   const prefix = '###### tags: hkmdir-data\n\n'
-  utils.writeData(cacheId, prefix + JSON.stringify(content))
+  utils.writeData(dataUrl.replace('https://hackmd.io/', ''), prefix + JSON.stringify(content))
 }
 
 /**
@@ -103,25 +113,26 @@ function writeCache (content) {
  * @param Array url of notes
  * @param Array permission of choices (read->3/2/1, write->30/20/10)
  */
-function changePermission (urls, perm) {
+async function changePermission (urls, perm) {
   // preprocess url
   var notes = []
   urls.forEach(url => {
-    notes.push(url.replace('https://hackmd.io', ''))
+    notes.push(url.replace('https://hackmd.io/', ''))
   })
-
   var pstr = ''
-  if (perm === 33) pstr = 'private'
-  else if (perm === 32) pstr = 'protected'
-  else if (perm === 22) pstr = 'limited'
-  else if (perm === 31) pstr = 'locked'
-  else if (perm === 21) pstr = 'editable'
-  else if (perm === 11) pstr = 'freely'
+  if (perm === 11) pstr = 'private'
+  else if (perm === 21) pstr = 'protected'
+  else if (perm === 31) pstr = 'limited'
+  else if (perm === 22) pstr = 'locked'
+  else if (perm === 32) pstr = 'editable'
+  else if (perm === 33) pstr = 'freely'
 
   // open the first url as base window
-  notes.forEach(async note => {
+  await utils.asyncForEach(notes, async function (note) {
     const socket = await utils.connect(note)
-    socket.emit('permission', pstr)
+    socket.on('connect', () => {
+      socket.emit('permission', pstr)
+    })
   })
 }
 
@@ -142,11 +153,11 @@ async function addBookmode (title, data) {
   return bmUrl.url.replace('/s/', '/c/')
 }
 
-function getCache (option) {
+function getData (option) {
   if (option === 'personal') {
-    console.log('getCache')
-    if (cache === '') return getPersonal()
-    else return cache
+    return personalCache
+  } else if (option === 'history') {
+    return historyCache
   } else {
     return undefined
   }
@@ -154,12 +165,11 @@ function getCache (option) {
 
 module.exports = {
   isLoggedIn: isLoggedIn,
-  getCache: getCache,
-  writeCache: writeCache,
-  getHistory: getHistory,
-  getPersonal: getPersonal,
+  initCache: initCache,
+  getData: getData,
+  writeContent: writeContent,
   delNote: delNote,
-  delHostoryNote: delHistoryNote,
+  delHistoryNote: delHistoryNote,
   changePermission: changePermission,
   addBookmode: addBookmode
 }

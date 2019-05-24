@@ -4,6 +4,7 @@ import Root from './app/Root.js'
 import { createStore } from 'redux'
 import { Provider } from 'react-redux'
 import reducers from './app/redux/reducers'
+import API from './api/api.js'
 
 import './style/theme.scss'
 
@@ -14,7 +15,8 @@ const store = createStore(
 
 /* main function */
 const main = async function () {
-  console.log(window.outerWidth)
+  if (!API.isLoggedIn()) return
+  await API.initCache()
   const root = document.createElement('div')
   root.classList.add('hmdir_app')
   document.body.appendChild(root)
