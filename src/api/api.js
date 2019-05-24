@@ -4,6 +4,8 @@
 var dataUrl = ''
 var personalCache = ''
 var historyCache = ''
+var dataCache = { 'last_tab': 'recent', 'dir': {} }
+
 const utils = require('./utils.js')
 
 /**
@@ -22,43 +24,16 @@ async function isLoggedIn () {
 }
 
 async function initCache () {
-  personalCache = await getPersonal()
-  historyCache = await getHistory()
+  personalCache = await utils.getPersonal()
+  historyCache = await utils.getHistory()
+  dataCache = await utils.getDirectory()
 
   setInterval(async () => {
-    personalCache = await getPersonal()
+    personalCache = await utils.getPersonal()
   }, 5000)
   setInterval(async () => {
-    historyCache = await getHistory()
+    historyCache = await utils.getHistory()
   }, 5000)
-}
-
-/**
- * Get notes written by logged in user
- * @returns Array Information including href and title
- */
-async function getPersonal () {
-  const doc = await fetch('/api/overview')
-  const text = await doc.text()
-  const result = Array.from(JSON.parse(text)).map(function (e) {
-    return { href: `https://hackmd.io/${e.id}`, title: e.title }
-  })
-
-  // update data note
-  writeContent(result)
-  return result
-}
-
-/**
- * Get History of a logged in user
- * @returns JSON History lists
- */
-async function getHistory () {
-  var history = await fetch('/history', { cache: 'no-store' })
-  return JSON.parse(await history.text()).history.map(target => ({
-    title: target.text,
-    href: `https://hackmd.io/${target.id}`
-  }))
 }
 
 /**
@@ -85,6 +60,7 @@ async function delHistoryNote (noteId) {
     })
   })
 }
+
 /**
  * Delete note of specific notdId
  * @param Array Array of noteId
@@ -103,15 +79,23 @@ async function delNote (noteId) {
  * Write content to hkmdir-data (overwrite)
  * @param JSON Content to write
  */
-function writeContent (content) {
+function writeContent (key, value) {
   const prefix = '###### tags: hkmdir-data\n\n'
-  utils.writeData(dataUrl.replace('https://hackmd.io/', ''), prefix + JSON.stringify(content))
+  const keyFilter = ['last_tab', 'dir']
+  if (keyFilter.indexOf(key) === -1) {
+    console.log('error key')
+    return
+  }
+
+  dataCache[key] = value
+
+  utils.writeData(dataUrl.replace('https://hackmd.io/', ''), prefix + JSON.stringify(dataCache))
 }
 
 /**
  * Change permission of multiple notes
  * @param Array url of notes
- * @param Array permission of choices (read->3/2/1, write->30/20/10)
+ * @param Integer permission of choices (read->3/2/1, write->30/20/10)
  */
 async function changePermission (urls, perm) {
   // preprocess url
