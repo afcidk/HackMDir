@@ -15,8 +15,8 @@ import API from '../../api/api.js'
 import ListSubheader from '@material-ui/core/ListSubheader'
 
 // use memo to enhance the render performance
-const MemoListNoteItem = React.memo(ListNoteItem, (prev, next) => prev.href === next.href)
-const MemoListDirItem = React.memo(ListDirItem, (prev, next) => prev.href === next.href)
+// const MemoListNoteItem = React.memo(ListNoteItem, (prev, next) => prev.href === next.href)
+// const MemoListDirItem = React.memo(ListDirItem, (prev, next) => prev.href === next.href)
 
 const styles = theme => ({
   root: {
@@ -84,6 +84,7 @@ class ListContent extends React.Component {
   render () {
     // destructuring assignment
     const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected } = this.props
+    console.log(selectedList)
     return (
       <List className={this.props.classes.root}>
         <ListSubheader className={this.props.classes.header} key='operation-container'>
@@ -100,7 +101,7 @@ class ListContent extends React.Component {
               unmountOnExit
               timeout={150}
               key={`slide-${index}`}>
-              <MemoListDirItem title={target.title} href={target.href} displayCheckbox={selectedList.length > 0} checked={selectedList.findIndex(iter => iter.href === target.href) !== -1} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
+              <ListDirItem title={target.title} href={target.href} displayCheckbox={selectedList.length > 0} checked={selectedList.findIndex(iter => iter.href === target.href) !== -1} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
             </Slide>
           ) : (
             <Slide
@@ -110,7 +111,7 @@ class ListContent extends React.Component {
               unmountOnExit
               timeout={150}
               key={`slide-${index}`}>
-              <MemoListNoteItem title={target.title} href={target.href} displayCheckbox={selectedList.length > 0} checked={selectedList.findIndex(iter => iter.href === target.href) !== -1} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
+              <ListNoteItem title={target.title} href={target.href} displayCheckbox={selectedList.length > 0} checked={selectedList.findIndex(iter => iter.href === target.href) !== -1} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
             </Slide>
           )
         ))}
