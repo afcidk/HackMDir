@@ -59,6 +59,18 @@ async function delHistoryNote (noteId) {
       headers: header
     })
   })
+
+  historyCache = await utils.getHistory()
+  const hrefList = historyCache.map(e => e.href)
+  var fail = []
+  noteId.forEach(id => {
+    if (hrefList.indexOf(id) !== -1) fail.push(id)
+  })
+
+  // console.log('fail = ')
+  // console.log(fail)
+
+  return fail
 }
 
 /**
@@ -73,6 +85,18 @@ async function delNote (noteId) {
       await delHistoryNote([id])
     })
   })
+
+  personalCache = await utils.getPersonal()
+  const hrefList = personalCache.map(e => e.href)
+  var fail = []
+  noteId.forEach(id => {
+    if (hrefList.indexOf(id) !== -1) fail.push(id)
+  })
+
+  // console.log('fail = ')
+  // console.log(fail)
+
+  return fail
 }
 
 /**
