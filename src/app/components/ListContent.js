@@ -124,8 +124,10 @@ class ListContent extends React.PureComponent {
   // the render function
   render () {
     // destructuring assignment
-    const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected, setNewDir } = this.props
-    console.log(this.state.dirs)
+    const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected } = this.props
+    let updatedList = list.filter((item) => {
+      return item.title.toString().toLowerCase().indexOf(this.props.search.toLowerCase()) !== -1
+    })
     return (
       <List className={this.props.classes.root}>
         <ListSubheader className={this.props.classes.header} key='operation-container'>
@@ -139,20 +141,20 @@ class ListContent extends React.PureComponent {
             direction='right'
             mountOnEnter
             unmountOnExit
-            timeout={150}>
+            timeout={100}>
             <div>
               <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} style={{ display: this.props.newdir ? 'block' : 'none' }} />
               <ListDirItem dir={list} displayCheckbox={Object.keys(selectedList).length > 0} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} setNewDir={setNewDir} newdir={this.props.newdir} dirs={this.state.dirs} open={this.state.open} />
             </div>
           </Slide>
         ) : (
-          list.map((target, index) => (
+          updatedList.map((target, index) => (
             <Slide
               in={!this.state.changingTab}
               direction='right'
               mountOnEnter
               unmountOnExit
-              timeout={150}
+              timeout={100}
               key={`slide-${index}`}>
               <ListNoteItem title={target.title} href={target.href} displayCheckbox={Object.keys(selectedList).length > 0} checked={selectedList[target.href.substr(18)]} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
             </Slide>
