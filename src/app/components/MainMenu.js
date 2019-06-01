@@ -93,6 +93,7 @@ class MainMenu extends React.PureComponent {
 
   // the render function
   render () {
+    console.log('MainMenu render')
     return (
       <Grid
         item

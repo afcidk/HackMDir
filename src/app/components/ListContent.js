@@ -17,7 +17,7 @@ import API from '../../api/api.js'
 import ListSubheader from '@material-ui/core/ListSubheader'
 
 // use memo to enhance the render performance
-// const MemoListNoteItem = React.memo(ListNoteItem)
+const MemoListNoteItem = React.memo(ListNoteItem)
 // const MemoListDirItem = React.memo(ListDirItem)
 
 const styles = theme => ({
@@ -59,7 +59,8 @@ class ListContent extends React.PureComponent {
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleAddList = this.handleAddList.bind(this)
   }
-  componentDidMount () {
+
+  componentWillMount () {
     this.fetchData(this.props.tab)
   }
 
@@ -68,6 +69,8 @@ class ListContent extends React.PureComponent {
       return
     }
     this.fetchData(nextProps.tab)
+    // erase the selected items
+    this.props.setSelected({})
   }
 
   fetchData (tab) {
@@ -84,7 +87,6 @@ class ListContent extends React.PureComponent {
     }
     // deal with the transition delay
     setTimeout(function () {
-      this.props.setItems([])
       setTimeout(function () {
         this.props.setItems(result)
         this.setState({ changingTab: false })
@@ -123,6 +125,7 @@ class ListContent extends React.PureComponent {
 
   // the render function
   render () {
+    console.log('ListContent render')
     // destructuring assignment
     const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected, setNewDir } = this.props
     let updatedList = list.filter((item) => {
@@ -148,17 +151,20 @@ class ListContent extends React.PureComponent {
             </div>
           </Slide>
         ) : (
-          updatedList.map((target, index) => (
-            <Slide
-              in={!this.state.changingTab}
-              direction='right'
-              mountOnEnter
-              unmountOnExit
-              timeout={100}
-              key={`slide-${index}`}>
-              <ListNoteItem title={target.title} href={target.href} displayCheckbox={Object.keys(selectedList).length > 0} checked={selectedList[target.href.substr(18)]} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
-            </Slide>
-          ))
+          <Slide
+            in={!this.state.changingTab}
+            direction='right'
+            mountOnEnter
+            unmountOnExit
+            timeout={100}>
+            <div >
+              <React.Fragment>
+                {updatedList.map((target, index) => (
+                  <MemoListNoteItem key={`note-${index}`} title={target.title} href={target.href} displayCheckbox={Object.keys(selectedList).length > 0} checked={selectedList[target.href.substr(18)]} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
+                ))}
+              </React.Fragment>
+            </div>
+          </Slide>
         )}
       </List>
     )

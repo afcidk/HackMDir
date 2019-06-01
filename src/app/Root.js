@@ -6,6 +6,7 @@ import ListContainer from './containers/ListContainer.js'
 class Root extends React.Component {
   // the render function
   render () {
+    console.log('Root render')
     return (
       <Grid
         container

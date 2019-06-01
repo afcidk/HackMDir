@@ -51,7 +51,8 @@
     "webpack": "^4.32.1",
     "webpack-cli": "^3.3.2",
     "webpack-dev-server": "^3.4.1",
-    "webpack-reload-extension": "0.0.6"
+    "webpack-reload-extension": "0.0.6",
+    "why-did-you-update": "^1.0.6"
   },
   "dependencies": {
     "array-move": "^2.1.0",

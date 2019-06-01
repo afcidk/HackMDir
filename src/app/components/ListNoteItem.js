@@ -22,7 +22,15 @@ const styles = theme => ({
   checkbox: {
     width: '36px',
     height: '36px',
-    transition: 'opacity 100ms ease-in-out'
+    transition: 'opacity 100ms ease-in-out',
+    opacity: 0,
+    color: '#4285f4',
+    '&:hover': {
+      opacity: 1
+    }
+  },
+  forceDisplay: {
+    opacity: '1 !important'
   },
   checkedStyle: {
     color: '#4285f4',
@@ -66,6 +74,7 @@ class ListNoteItem extends React.PureComponent {
 
   // the render function
   render () {
+    console.log('ListNoteItem render')
     return (
       <React.Fragment>
         <ListItem
@@ -82,7 +91,7 @@ class ListNoteItem extends React.PureComponent {
               <ListItemText primary={this.props.title} classes={{ primary: `${this.props.classes.text} ${this.props.checked ? this.props.classes.checkedStyle : null}` }} />
             </Grid>
             <Grid item xs={2}>
-              <Checkbox style={{ opacity: this.state.displayCheckbox ? 1 : 0, color: '#4285f4' }} className={this.props.classes.checkbox} onMouseOver={e => { this.setState({ displayCheckbox: true }) }} onMouseLeave={e => { this.setState({ displayCheckbox: this.props.displayCheckbox }) }} onClick={this.handleCheckboxClick.bind(this)} checked={this.props.checked} />
+              <Checkbox style={{ color: '#4285f4' }} className={this.state.displayCheckbox ? `${this.props.classes.forceDisplay} ${this.props.classes.checkbox} test` : `${this.props.classes.checkbox}`} onClick={this.handleCheckboxClick.bind(this)} />
             </Grid>
           </Grid>
         </ListItem>
