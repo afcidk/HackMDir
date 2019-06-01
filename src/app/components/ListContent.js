@@ -120,6 +120,7 @@ class ListContent extends React.PureComponent {
   handleSubmit (event) {
     this.handleAddList(this.state.newDirName)
     // Directory.newDir(this.state.newDirName.toString())
+    this.props.setNewDir(false)
     event.preventDefault()
   }
 
@@ -146,7 +147,9 @@ class ListContent extends React.PureComponent {
             unmountOnExit
             timeout={100}>
             <div>
-              <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} style={{ display: this.props.newdir ? 'block' : 'none' }} />
+              <div style={{ display: this.props.newdir ? 'block' : 'none' }}>
+                <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} />
+              </div>
               <ListDirItem dir={list} displayCheckbox={Object.keys(selectedList).length > 0} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} setNewDir={setNewDir} newdir={this.props.newdir} dirs={this.state.dirs} open={this.state.open} />
             </div>
           </Slide>
