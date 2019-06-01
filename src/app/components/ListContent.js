@@ -84,6 +84,10 @@ class ListContent extends React.PureComponent {
   render () {
     // destructuring assignment
     const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected } = this.props
+    let updatedList = list.filter((item) => {
+      return item.title.toString().toLowerCase().indexOf(this.props.search.toLowerCase()) !== -1
+    })
+
     return (
       <List className={this.props.classes.root}>
         <ListSubheader className={this.props.classes.header} key='operation-container'>
@@ -91,7 +95,7 @@ class ListContent extends React.PureComponent {
             <OperationContent tab={this.props.tab} list={list} selectedList={selectedList} deleteItemsEvent={deleteItems} setSelectedEvent={setSelected} />
           </Collapse>
         </ListSubheader>
-        {list.map((target, index) => (
+        { updatedList.map((target, index) => (
           this.props.tab === 'Directory' ? (
             <Slide
               in={!this.state.changingTab}
