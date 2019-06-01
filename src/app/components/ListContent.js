@@ -13,11 +13,12 @@ import OperationContent from './OperationContent.js'
 import Collapse from '@material-ui/core/Collapse'
 
 import API from '../../api/api.js'
+// import Directory from '../../api/directory.js'
 import ListSubheader from '@material-ui/core/ListSubheader'
 
 // use memo to enhance the render performance
-// const MemoListNoteItem = React.memo(ListNoteItem, (prev, next) => prev.href === next.href)
-// const MemoListDirItem = React.memo(ListDirItem, (prev, next) => prev.href === next.href)
+// const MemoListNoteItem = React.memo(ListNoteItem)
+// const MemoListDirItem = React.memo(ListDirItem)
 
 const styles = theme => ({
   root: {
@@ -44,7 +45,7 @@ const styles = theme => ({
   }
 })
 
-class ListContent extends React.Component {
+class ListContent extends React.PureComponent {
   constructor (props) {
     super(props)
     this.state = {
@@ -87,8 +88,8 @@ class ListContent extends React.Component {
       setTimeout(function () {
         this.props.setItems(result)
         this.setState({ changingTab: false })
-      }.bind(this), 150)
-    }.bind(this), 150)
+      }.bind(this), 100)
+    }.bind(this), 100)
   }
 
   handleAddList (newitem) {
@@ -124,10 +125,11 @@ class ListContent extends React.Component {
   render () {
     // destructuring assignment
     const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected, setNewDir } = this.props
+    console.log(this.state.dirs)
     return (
       <List className={this.props.classes.root}>
         <ListSubheader className={this.props.classes.header} key='operation-container'>
-          <Collapse in={selectedList.length > 0} mountOnEnter unmountOnExit style={{ transformOrigin: '0 0 0' }}>
+          <Collapse in={Object.keys(selectedList).length > 0} mountOnEnter unmountOnExit style={{ transformOrigin: '0 0 0' }} timeout={100}>
             <OperationContent tab={this.props.tab} list={list} selectedList={selectedList} deleteItemsEvent={deleteItems} setSelectedEvent={setSelected} />
           </Collapse>
         </ListSubheader>
@@ -140,7 +142,7 @@ class ListContent extends React.Component {
             timeout={150}>
             <div>
               <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} style={{ display: this.props.newdir ? 'block' : 'none' }} />
-              <ListDirItem dir={list} displayCheckbox={selectedList.length > 0} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} setNewDir={setNewDir} newdir={this.props.newdir} dirs={this.state.dirs} open={this.state.open} />
+              <ListDirItem dir={list} displayCheckbox={Object.keys(selectedList).length > 0} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} setNewDir={setNewDir} newdir={this.props.newdir} dirs={this.state.dirs} open={this.state.open} />
             </div>
           </Slide>
         ) : (
@@ -152,13 +154,10 @@ class ListContent extends React.Component {
               unmountOnExit
               timeout={150}
               key={`slide-${index}`}>
-              <ListNoteItem title={target.title} href={target.href} displayCheckbox={selectedList.length > 0} checked={selectedList.findIndex(iter => iter.href === target.href) !== -1} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
+              <ListNoteItem title={target.title} href={target.href} displayCheckbox={Object.keys(selectedList).length > 0} checked={selectedList[target.href.substr(18)]} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
             </Slide>
           ))
         )}
-        {/* this.props.tab === 'Directory' ? (
-          { this.props.newdir ? <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} /> : null }
-        ) : null */}
       </List>
     )
   }

@@ -23,14 +23,14 @@
     
     "default_icon": {
       "16": "icons/icon_16.png",
-      "32": "icons/icon_32.png",
-      "48": "icons/icon_48.png"
+      "48": "icons/icon_48.png",
+      "128": "icons/icon_128.png"
     }
   },
   "icons": {
     "16": "icons/icon_16.png",
-    "32": "icons/icon_32.png",
-    "48": "icons/icon_48.png"
+    "48": "icons/icon_48.png",
+    "128": "icons/icon_128.png"
   },
   "web_accessible_resources": [
     "svgs/*"

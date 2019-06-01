@@ -26,7 +26,7 @@ async function isLoggedIn () {
 async function initCache () {
   personalCache = await utils.getPersonal()
   historyCache = await utils.getHistory()
-  dataCache = await utils.getDirectory()
+  dataCache = await utils.getData()
 
   setInterval(async () => {
     personalCache = await utils.getPersonal()
@@ -164,7 +164,9 @@ function getData (option) {
   } else if (option === 'history') {
     return historyCache
   } else if (option === 'directory') {
-    return dataCache
+    return dataCache.dir
+  } else if (option === 'last_tab') {
+    return dataCache['last_tab']
   } else {
     return undefined
   }

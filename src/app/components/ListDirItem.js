@@ -243,7 +243,6 @@ class ListDirItem extends React.Component {
 
   // the render function
   render () {
-    console.log(this.props.dir)
     return (
       <DirList
         distance={1}

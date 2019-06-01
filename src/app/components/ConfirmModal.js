@@ -23,7 +23,7 @@ const styles = theme => ({
   }
 })
 
-class ConfirmModal extends React.Component {
+class ConfirmModal extends React.PureComponent {
   // the render function
   render () {
     return (

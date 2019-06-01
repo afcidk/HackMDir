@@ -183,7 +183,7 @@ async function delHistory (note) {
   })
 }
 
-async function getDirectory () {
+async function getData () {
   const doc = await fetch(`${dataUrl}/publish`)
   const text = await doc.text()
   var data = new DOMParser().parseFromString(text, 'text/html')
@@ -192,7 +192,7 @@ async function getDirectory () {
 
   console.log(data)
   try {
-    return JSON.parse(data).dir
+    return JSON.parse(data)
   } catch (e) {
     console.log(data)
     console.log(e)
@@ -210,7 +210,7 @@ module.exports = {
   getDataUrl: getDataUrl,
   getHistory: getHistory,
   getPersonal: getPersonal,
-  getDirectory: getDirectory,
+  getData: getData,
   asyncForEach: asyncForEach,
   common_prefix: COMMON_PREFIX
 }
