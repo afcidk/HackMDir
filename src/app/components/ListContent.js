@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 import List from '@material-ui/core/List'
 import ListNoteItem from './ListNoteItem.js'
 import ListDirItem from './ListDirItem.js'
+import NewDirItem from './NewDirItem.js'
 
 import Slide from '@material-ui/core/Slide'
 
@@ -47,8 +48,15 @@ class ListContent extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      changingTab: false
+      changingTab: false,
+      dirs: [],
+      open: [],
+      newDirName: ''
     }
+
+    this.handleChange = this.handleChange.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleAddList = this.handleAddList.bind(this)
   }
   componentDidMount () {
     this.fetchData(this.props.tab)
@@ -69,6 +77,9 @@ class ListContent extends React.Component {
     } else if (tab === 'Personal') {
       result = API.getData('personal')
     } else if (tab === 'Directory') {
+      result = API.getData('directory')
+      console.log(API.getData('directory'))
+      // result = [1]
     }
     // deal with the transition delay
     setTimeout(function () {
@@ -80,11 +91,39 @@ class ListContent extends React.Component {
     }.bind(this), 150)
   }
 
+  handleAddList (newitem) {
+    let lists = this.state.dirs
+    let open = this.state.open
+    let newlists = []
+    let newopen = []
+    newlists.push(newitem)
+    for (let i = 0; i <= lists.length - 1; i++) {
+      newlists.push(lists[i])
+    }
+    newopen.push(false)
+    for (let i = 0; i <= open.length - 1; i++) {
+      newopen.push(open[i])
+    }
+    this.setState({
+      dirs: newlists,
+      open: newopen
+    })
+  };
+
+  handleChange (event) {
+    this.setState({ newDirName: event.target.value })
+  }
+
+  handleSubmit (event) {
+    this.handleAddList(this.state.newDirName)
+    // Directory.newDir(this.state.newDirName.toString())
+    event.preventDefault()
+  }
+
   // the render function
   render () {
     // destructuring assignment
-    const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected } = this.props
-    console.log(selectedList)
+    const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected, setNewDir } = this.props
     return (
       <List className={this.props.classes.root}>
         <ListSubheader className={this.props.classes.header} key='operation-container'>
@@ -92,18 +131,20 @@ class ListContent extends React.Component {
             <OperationContent tab={this.props.tab} list={list} selectedList={selectedList} deleteItemsEvent={deleteItems} setSelectedEvent={setSelected} />
           </Collapse>
         </ListSubheader>
-        {list.map((target, index) => (
-          this.props.tab === 'Directory' ? (
-            <Slide
-              in={!this.state.changingTab}
-              direction='right'
-              mountOnEnter
-              unmountOnExit
-              timeout={150}
-              key={`slide-${index}`}>
-              <ListDirItem title={target.title} href={target.href} displayCheckbox={selectedList.length > 0} checked={selectedList.findIndex(iter => iter.href === target.href) !== -1} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
-            </Slide>
-          ) : (
+        {this.props.tab === 'Directory' ? (
+          <Slide
+            in={!this.state.changingTab}
+            direction='right'
+            mountOnEnter
+            unmountOnExit
+            timeout={150}>
+            <div>
+              <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} style={{ display: this.props.newdir ? 'block' : 'none' }} />
+              <ListDirItem dir={list} displayCheckbox={selectedList.length > 0} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} setNewDir={setNewDir} newdir={this.props.newdir} dirs={this.state.dirs} open={this.state.open} />
+            </div>
+          </Slide>
+        ) : (
+          list.map((target, index) => (
             <Slide
               in={!this.state.changingTab}
               direction='right'
@@ -113,8 +154,11 @@ class ListContent extends React.Component {
               key={`slide-${index}`}>
               <ListNoteItem title={target.title} href={target.href} displayCheckbox={selectedList.length > 0} checked={selectedList.findIndex(iter => iter.href === target.href) !== -1} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
             </Slide>
-          )
-        ))}
+          ))
+        )}
+        {/* this.props.tab === 'Directory' ? (
+          { this.props.newdir ? <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} /> : null }
+        ) : null */}
       </List>
     )
   }

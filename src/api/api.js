@@ -101,7 +101,7 @@ async function delNote (noteId) {
  * @param JSON Content to write
  */
 function writeContent (key, value) {
-  const prefix = utils.common_prefix
+  const prefix = '###### tags: `hkmdir-data`\n\n'
   const keyFilter = ['last_tab', 'dir']
   if (keyFilter.indexOf(key) === -1) {
     console.log('error key')

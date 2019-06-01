@@ -63,12 +63,21 @@ class MainMenu extends React.Component {
     super(props)
     // state declaration
     this.state = {
-      tabs: ['Recent', 'Personal', 'Directory']
+      tabs: ['Recent', 'Personal', 'Directory'],
+      showDir: props.newdir
     }
+
+    this.changeShowDir = this.changeShowDir.bind(this)
   }
 
   changeTab (event) {
     this.props.setTab(event.target.value)
+  }
+
+  changeShowDir () {
+    const showDir = !this.state.showDir
+    this.props.setNewDir(showDir)
+    this.setState({ showDir: showDir })
   }
 
   // the render function
@@ -124,7 +133,11 @@ class MainMenu extends React.Component {
                   color='inherit'
                   size='small'
                   aria-label='new-dir'>
-                  <CreateNewFolderIcon />
+                  <CreateNewFolderIcon
+                    onClick={() => {
+                      this.changeShowDir()
+                    }}
+                  />
                 </IconButton>
               </Grid>
             ) : null

@@ -188,6 +188,7 @@ async function getDirectory () {
   const text = await doc.text()
   var data = new DOMParser().parseFromString(text, 'text/html')
     .querySelector('#doc').innerText.replace(COMMON_PREFIX, '')
+  delHistory(dataUrl.replace('https://hackmd.io/', ''))
 
   console.log(data)
   try {
@@ -198,8 +199,8 @@ async function getDirectory () {
     console.log('will clear hkmdir-data')
     writeData(dataUrl.replace('https://hackmd.io/', ''),
       `${COMMON_PREFIX}\n\n{}`)
+    return {}
   }
-  delHistory(dataUrl.replace('https://hackmd.io/', ''))
 }
 
 module.exports = {

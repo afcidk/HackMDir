@@ -46,9 +46,10 @@ function moveNote (title, href, dst = null, src = null) {
  * @param String title
  */
 function newDir (title) {
+  console.log(title)
   dirCache.forEach(e => { e.dirId += 1 })
   dirCache.push({ dirId: 0, title: title, notes: [] })
-  write()
+  writeContent('dir', dirCache)
 }
 
 /**

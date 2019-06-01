@@ -43,7 +43,6 @@
     "redux": "^4.0.1",
     "sass-loader": "^7.1.0",
     "socket.io-client": "^2.2.0",
-    "standard": "^12.0.1",
     "style-loader": "^0.23.1",
     "terser-webpack-plugin": "^1.2.4",
     "uuid": "^3.3.2",
@@ -53,7 +52,10 @@
     "webpack-reload-extension": "0.0.6"
   },
   "dependencies": {
+    "array-move": "^2.1.0",
     "pre-commit": "^1.2.2",
+    "react-sortable-hoc": "^1.9.1",
+    "standard": "^12.0.1",
     "standardjs": "^1.0.0-alpha"
   }
 }
