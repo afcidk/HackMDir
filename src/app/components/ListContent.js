@@ -15,8 +15,8 @@ import API from '../../api/api.js'
 import ListSubheader from '@material-ui/core/ListSubheader'
 
 // use memo to enhance the render performance
-// const MemoListNoteItem = React.memo(ListNoteItem, (prev, next) => prev.href === next.href)
-// const MemoListDirItem = React.memo(ListDirItem, (prev, next) => prev.href === next.href)
+// const MemoListNoteItem = React.memo(ListNoteItem)
+// const MemoListDirItem = React.memo(ListDirItem)
 
 const styles = theme => ({
   root: {
@@ -43,7 +43,7 @@ const styles = theme => ({
   }
 })
 
-class ListContent extends React.Component {
+class ListContent extends React.PureComponent {
   constructor (props) {
     super(props)
     this.state = {
@@ -76,19 +76,18 @@ class ListContent extends React.Component {
       setTimeout(function () {
         this.props.setItems(result)
         this.setState({ changingTab: false })
-      }.bind(this), 150)
-    }.bind(this), 150)
+      }.bind(this), 100)
+    }.bind(this), 100)
   }
 
   // the render function
   render () {
     // destructuring assignment
     const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected } = this.props
-    console.log(selectedList)
     return (
       <List className={this.props.classes.root}>
         <ListSubheader className={this.props.classes.header} key='operation-container'>
-          <Collapse in={selectedList.length > 0} mountOnEnter unmountOnExit style={{ transformOrigin: '0 0 0' }}>
+          <Collapse in={Object.keys(selectedList).length > 0} mountOnEnter unmountOnExit style={{ transformOrigin: '0 0 0' }} timeout={100}>
             <OperationContent tab={this.props.tab} list={list} selectedList={selectedList} deleteItemsEvent={deleteItems} setSelectedEvent={setSelected} />
           </Collapse>
         </ListSubheader>
@@ -99,20 +98,21 @@ class ListContent extends React.Component {
               direction='right'
               mountOnEnter
               unmountOnExit
-              timeout={150}
+              timeout={100}
               key={`slide-${index}`}>
               <ListDirItem title={target.title} href={target.href} displayCheckbox={selectedList.length > 0} checked={selectedList.findIndex(iter => iter.href === target.href) !== -1} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
             </Slide>
           ) : (
-            <Slide
-              in={!this.state.changingTab}
-              direction='right'
-              mountOnEnter
-              unmountOnExit
-              timeout={150}
-              key={`slide-${index}`}>
-              <ListNoteItem title={target.title} href={target.href} displayCheckbox={selectedList.length > 0} checked={selectedList.findIndex(iter => iter.href === target.href) !== -1} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
-            </Slide>
+            <React.Fragment key={`slide-${index}`}>
+              <Slide
+                in={!this.state.changingTab}
+                direction='right'
+                mountOnEnter
+                unmountOnExit
+                timeout={100}>
+                <ListNoteItem title={target.title} href={target.href} displayCheckbox={Object.keys(selectedList).length > 0} checked={!!selectedList[target.href.substr(18)]} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
+              </Slide>
+            </React.Fragment>
           )
         ))}
       </List>

@@ -154,7 +154,7 @@ async function addBookmode (title, data) {
   // create content
   var content = `${title}\n===\n\n`
   data.forEach(ele => {
-    content += `- [${ele[0]}](${ele[1]})\n`
+    content += `- [${ele.title}](${ele.href})\n`
   })
   const url = await utils.newData(content)
   const bmUrl = await fetch(`${url}/publish`)

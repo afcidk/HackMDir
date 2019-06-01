@@ -30,7 +30,7 @@ const styles = theme => ({
   }
 })
 
-class ListNoteItem extends React.Component {
+class ListNoteItem extends React.PureComponent {
   constructor (props) {
     super(props)
     this.state = {
@@ -43,15 +43,6 @@ class ListNoteItem extends React.Component {
       this.setState({ displayCheckbox: nextProps.displayCheckbox })
     }
   }
-  // shouldComponentUpdate (nextProps, nextState) {
-  //   let flag = true
-  //   for (let key in nextProps) {
-  //     if (nextProps[key] !== this.props[key]) {
-  //       flag = false
-  //     }
-  //   }
-  //   return flag
-  // }
 
   handleListClick (event) {
     event.stopPropagation()
@@ -76,24 +67,26 @@ class ListNoteItem extends React.Component {
   // the render function
   render () {
     return (
-      <ListItem
-        button
-        onClick={this.handleListClick.bind(this)}
-        style={{ backgroundColor: this.props.checked ? 'rgba(66, 33, 244, 0.18)' : null, height: '48px' }}>
-        <Grid container spacing={16} justify='flex-start' alignContent='center' alignItems='center'>
-          <Grid item xs={2}>
-            <ListItemIcon>
-              <DescriptionIcon className={this.props.checked ? this.props.classes.checkedStyle : null} />
-            </ListItemIcon>
+      <React.Fragment>
+        <ListItem
+          button
+          onClick={this.handleListClick.bind(this)}
+          style={{ backgroundColor: this.props.checked ? 'rgba(66, 33, 244, 0.18)' : null, height: '48px' }}>
+          <Grid container spacing={16} justify='flex-start' alignContent='center' alignItems='center'>
+            <Grid item xs={2}>
+              <ListItemIcon>
+                <DescriptionIcon className={this.props.checked ? this.props.classes.checkedStyle : null} />
+              </ListItemIcon>
+            </Grid>
+            <Grid item xs={8}>
+              <ListItemText primary={this.props.title} classes={{ primary: `${this.props.classes.text} ${this.props.checked ? this.props.classes.checkedStyle : null}` }} />
+            </Grid>
+            <Grid item xs={2}>
+              <Checkbox style={{ opacity: this.state.displayCheckbox ? 1 : 0, color: '#4285f4' }} className={this.props.classes.checkbox} onMouseOver={e => { this.setState({ displayCheckbox: true }) }} onMouseLeave={e => { this.setState({ displayCheckbox: this.props.displayCheckbox }) }} onClick={this.handleCheckboxClick.bind(this)} checked={this.props.checked} />
+            </Grid>
           </Grid>
-          <Grid item xs={8}>
-            <ListItemText primary={this.props.title} classes={{ primary: `${this.props.classes.text} ${this.props.checked ? this.props.classes.checkedStyle : null}` }} />
-          </Grid>
-          <Grid item xs={2}>
-            <Checkbox style={{ opacity: this.state.displayCheckbox ? 1 : 0, color: '#4285f4' }} className={this.props.classes.checkbox} onMouseOver={e => { this.setState({ displayCheckbox: true }) }} onMouseLeave={e => { this.setState({ displayCheckbox: this.props.displayCheckbox }) }} onClick={this.handleCheckboxClick.bind(this)} checked={this.props.checked} />
-          </Grid>
-        </Grid>
-      </ListItem>
+        </ListItem>
+      </React.Fragment>
     )
   }
 }

@@ -1,15 +1,13 @@
-export default (state = [], action) => {
+export default (state = {}, action) => {
   switch (action.type) {
     case 'SELECT_ITEM':
-      return [
-        ...state,
-        action.payload
-      ]
+      state[action.payload.href.substr(18)] = action.payload
+      return Object.assign({}, state)
     case 'UN_SELECT_ITEM':
-      const index = state.findIndex(target => target.href === action.payload.href)
-      return [...state.slice(0, index), ...state.slice(index + 1)]
+      delete state[action.payload.href.substr(18)]
+      return Object.assign({}, state)
     case 'SET_SELECTED':
-      return action.payload
+      return Object.assign({}, action.payload)
     default:
       return state
   }
