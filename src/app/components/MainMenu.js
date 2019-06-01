@@ -64,7 +64,6 @@ class MainMenu extends React.PureComponent {
     // state declaration
     this.state = {
       tabs: ['Recent', 'Personal', 'Directory'],
-      showDir: props.newdir,
       keying: null
     }
 
@@ -76,9 +75,7 @@ class MainMenu extends React.PureComponent {
   }
 
   changeShowDir () {
-    const showDir = !this.state.showDir
-    this.props.setNewDir(showDir)
-    this.setState({ showDir: showDir })
+    this.props.setNewDir(!this.props.newdir)
   }
   changeSearch (event) {
     const searchingText = event.target.value

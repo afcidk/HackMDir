@@ -16,6 +16,7 @@ import { sortableContainer, sortableElement } from 'react-sortable-hoc'
 import arrayMove from 'array-move'
 
 import ListDirNoteItem from './ListDirNoteItem.js'
+// import Directory from '../../api/directory.js'
 
 const styles = theme => ({
   ul: {
@@ -23,7 +24,8 @@ const styles = theme => ({
   },
   root: {
     width: '100%',
-    maxWidth: 360
+    maxWidth: 360,
+    zIndex: '99999999'
   },
   text: {
     display: 'inline-block',
@@ -128,14 +130,12 @@ const DirList = sortableContainer(
     style,
     checkBoxonMouseOver,
     checkBoxonMouseLeave,
-    handleCheckboxClick,
-    handleAddList
+    handleCheckboxClick
   }) => {
     return (
       <ul className={style.ul}>
         {/* { this.props.newdir ? <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} /> : null } */}
         {props.dir.map((value, index) => {
-          // handleAddList(value.title)
           return (
             <DirItem
               key={`item-${index}`}
@@ -161,33 +161,23 @@ const DirList = sortableContainer(
 class ListDirItem extends React.Component {
   constructor (props) {
     super(props)
+
+    let newlists = []
+    props.dir.map((value) => {
+      newlists.push(value.title)
+    })
+
     this.state = {
       displayCheckbox: props.displayCheckbox,
-      dirs: [],
-      // open: [],
+      dirs: newlists,
       open: props.open
-      // newDirName: ''
     }
 
-    this.handleAddList = this.handleAddList.bind(this)
     this.handleClick = this.handleClick.bind(this)
     this.checkBoxonMouseOver = this.checkBoxonMouseOver.bind(this)
     this.checkBoxonMouseLeave = this.checkBoxonMouseLeave.bind(this)
     this.onSortEnd = this.onSortEnd.bind(this)
   }
-
-  handleAddList (newitem) {
-    let lists = this.state.dirs
-    let newlists = []
-    newlists.push(newitem)
-    for (let i = 0; i <= lists.length - 1; i++) {
-      newlists.push(lists[i])
-    }
-    this.setState({
-      dirs: newlists
-    })
-    console.log(this.state.dirs)
-  };
 
   // handleChange(event) {
   //   this.setState({newDirName: event.target.value});
@@ -218,10 +208,10 @@ class ListDirItem extends React.Component {
 
   onSortEnd (oldIndex, newIndex) {
     console.log(oldIndex, newIndex)
-    // Directory.moveDir(newIndex, oldIndex)
+    // Directory.moveDir(oldIndex.newIndex, oldIndex.oldIndex)
     this.setState(({ dirs, open }) => ({
-      dirs: arrayMove(dirs, oldIndex, newIndex),
-      open: arrayMove(open, oldIndex, newIndex)
+      dirs: arrayMove(dirs, oldIndex.newIndex, oldIndex.oldIndex),
+      open: arrayMove(open, oldIndex.newIndex, oldIndex.oldIndex)
     }))
   };
 
@@ -254,7 +244,6 @@ class ListDirItem extends React.Component {
         checkBoxonMouseOver={this.checkBoxonMouseOver}
         checkBoxonMouseLeave={this.checkBoxonMouseLeave}
         handleCheckboxClick={this.handleCheckboxClick}
-        handleAddList={this.handleAddList}
       />
     )
   }

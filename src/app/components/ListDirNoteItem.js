@@ -11,7 +11,13 @@ import Grid from '@material-ui/core/Grid'
 
 import DragHandle from '@material-ui/icons/DragHandle'
 
+// import Directory from '../../api/directory.js'
+
 const styles = theme => ({
+  root: {
+    zIndex: '99999999',
+    cursor: 'pointer'
+  },
   text: {
     display: 'inline-block',
     maxWidth: '180px',
@@ -58,7 +64,11 @@ const NoteItem = sortableElement(
     checkBoxonMouseOver,
     checkBoxonMouseLeave
   }) => (
-    <ListItem>
+    <ListItem
+      component='nav'
+      style={{ backgroundColor: props.checked ? 'rgba(66, 33, 244, 0.18)' : null }}
+      className={style.root}
+    >
       <Grid
         container
         spacing={16}
@@ -114,7 +124,7 @@ class NoteContainer extends React.Component {
     super(props)
     this.state = {
       displayCheckbox: props.displayCheckbox,
-      items: ['note 1'],
+      notes: [],
       dirId: -1
     }
 
@@ -133,13 +143,18 @@ class NoteContainer extends React.Component {
 
   onSortEnd (oldIndex, newIndex) {
     if (getCursorPosition()[0] > 320) {
-      console.log('Remove', this.state.items[oldIndex])
-      // Directory.moveNote(title, href, src = {dirId: this.props.dirId, noteId: oldIndex})
+      this.props.value.notes.map((value, index) => {
+        if (index === oldIndex.oldIndex) {
+          console.log('Remove', value.title, value.href, this.props.dirId)
+          // Directory.moveNote(value.title, value.href, null, {dirId: this.props.dirId, noteId: oldIndex.oldIndex})
+        }
+      })
     } else {
       // Directory.moveNote(title, href, dst = {dirId: this.props.dirId, noteId: newIndex}, src = {dirId: this.props.dirId, noteId: oldIndex})
     }
-    this.setState(({ items }) => ({
-      items: arrayMove(items, oldIndex, newIndex)
+    console.log('Remove', oldIndex.newIndex, oldIndex.oldIndex)
+    this.setState(({ notes }) => ({
+      notes: arrayMove(notes, oldIndex, newIndex)
     }))
   };
   render () {
