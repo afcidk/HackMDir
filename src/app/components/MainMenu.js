@@ -64,14 +64,22 @@ class MainMenu extends React.PureComponent {
     // state declaration
     this.state = {
       tabs: ['Recent', 'Personal', 'Directory'],
+      showDir: props.newdir
       keying: null
     }
+
+    this.changeShowDir = this.changeShowDir.bind(this)
   }
 
   changeTab (event) {
     this.props.setTab(event.target.value)
   }
 
+  changeShowDir () {
+    const showDir = !this.state.showDir
+    this.props.setNewDir(showDir)
+    this.setState({ showDir: showDir })
+  }
   changeSearch (event) {
     const searchingText = event.target.value
     let keying = this.state.keying
@@ -136,7 +144,11 @@ class MainMenu extends React.PureComponent {
                   color='inherit'
                   size='small'
                   aria-label='new-dir'>
-                  <CreateNewFolderIcon />
+                  <CreateNewFolderIcon
+                    onClick={() => {
+                      this.changeShowDir()
+                    }}
+                  />
                 </IconButton>
               </Grid>
             ) : null
