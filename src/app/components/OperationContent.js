@@ -162,6 +162,7 @@ class OperationContent extends React.PureComponent {
   }
   // the render function
   render () {
+    console.log('OperationContent render')
     return (
       <Grid container className={this.props.classes.root} alignContent='center' alignItems='center' >
         <ConfirmModal show={this.state.showConfirm} title={this.state.title} message={this.state.message} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />

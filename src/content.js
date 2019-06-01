@@ -27,6 +27,10 @@ const main = async function () {
     </Provider>,
     root
   )
+  // if (process.env.NODE_ENV !== 'production') {
+  //   const { whyDidYouUpdate } = require('why-did-you-update')
+  //   whyDidYouUpdate(React, { groupByComponent: true, collapseComponentGroups: true })
+  // }
 }
 
 main()

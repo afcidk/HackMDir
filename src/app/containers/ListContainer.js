@@ -10,7 +10,7 @@ const mapStateToProps = (state) => {
     list: state.List,
     selectedList: state.SelectedList,
     tab: state.Tab,
-    newdir: state.NewDir
+    newdir: state.NewDir,
     search: state.Search
   }
 }

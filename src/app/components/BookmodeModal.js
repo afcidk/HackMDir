@@ -21,10 +21,10 @@ import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 import arrayMove from 'array-move'
 import { TextField } from '@material-ui/core'
 
-const Sortableitem = SortableElement(({ title }) => {
+const SortableItem = SortableElement(({ title }) => {
   return (
     <React.Fragment>
-      <ListItem>
+      <ListItem style={{ zIndex: 999999 }}>
         <Grid container spacing={16} justify='flex-start' alignContent='center' alignItems='center'>
           <Grid item xs={2}>
             <ListItemIcon>
@@ -42,13 +42,12 @@ const Sortableitem = SortableElement(({ title }) => {
 })
 
 const SortableList = SortableContainer(({ items }) => {
-  console.log(items)
   return (
     <List>
       {
         items.map((target, index) => {
           return (
-            <Sortableitem
+            <SortableItem
               key={`bookmode-note-${index}`}
               index={index}
               sortIndex={index}

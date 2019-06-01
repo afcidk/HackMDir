@@ -64,7 +64,7 @@ class MainMenu extends React.PureComponent {
     // state declaration
     this.state = {
       tabs: ['Recent', 'Personal', 'Directory'],
-      showDir: props.newdir
+      showDir: props.newdir,
       keying: null
     }
 
@@ -93,6 +93,7 @@ class MainMenu extends React.PureComponent {
 
   // the render function
   render () {
+    console.log('MainMenu render')
     return (
       <Grid
         item
