@@ -26,7 +26,7 @@ async function isLoggedIn () {
 async function initCache () {
   personalCache = await utils.getPersonal()
   historyCache = await utils.getHistory()
-  dataCache = await utils.getDirectory()
+  dataCache = await utils.getData()
 
   setInterval(async () => {
     personalCache = await utils.getPersonal()
@@ -101,7 +101,7 @@ async function delNote (noteId) {
  * @param JSON Content to write
  */
 function writeContent (key, value) {
-  const prefix = utils.common_prefix
+  const prefix = '###### tags: `hkmdir-data`\n\n'
   const keyFilter = ['last_tab', 'dir']
   if (keyFilter.indexOf(key) === -1) {
     console.log('error key')
@@ -164,7 +164,9 @@ function getData (option) {
   } else if (option === 'history') {
     return historyCache
   } else if (option === 'directory') {
-    return dataCache
+    return dataCache.dir
+  } else if (option === 'last_tab') {
+    return dataCache['last_tab']
   } else {
     return undefined
   }

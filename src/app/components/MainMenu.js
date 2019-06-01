@@ -63,12 +63,32 @@ class MainMenu extends React.PureComponent {
     super(props)
     // state declaration
     this.state = {
-      tabs: ['Recent', 'Personal', 'Directory']
+      tabs: ['Recent', 'Personal', 'Directory'],
+      showDir: props.newdir,
+      keying: null
     }
+
+    this.changeShowDir = this.changeShowDir.bind(this)
   }
 
   changeTab (event) {
     this.props.setTab(event.target.value)
+  }
+
+  changeShowDir () {
+    const showDir = !this.state.showDir
+    this.props.setNewDir(showDir)
+    this.setState({ showDir: showDir })
+  }
+  changeSearch (event) {
+    const searchingText = event.target.value
+    let keying = this.state.keying
+    if (keying) {
+      clearTimeout(keying)
+    }
+    keying = setTimeout(function () {
+      this.props.setSearch(searchingText)
+    }.bind(this), 250)
   }
 
   // the render function
@@ -124,7 +144,11 @@ class MainMenu extends React.PureComponent {
                   color='inherit'
                   size='small'
                   aria-label='new-dir'>
-                  <CreateNewFolderIcon />
+                  <CreateNewFolderIcon
+                    onClick={() => {
+                      this.changeShowDir()
+                    }}
+                  />
                 </IconButton>
               </Grid>
             ) : null
@@ -144,7 +168,7 @@ class MainMenu extends React.PureComponent {
               <SearchIcon className={this.props.classes.searchIcon} />
             </Grid>
             <Grid item xs={9} container>
-              <InputBase onChange={this.props.keyChange} style={{ fontSize: '16px' }} fullWidth placeholder={this.props.tab === 'Directory' ? 'Search directories & notes here ...' : 'Search notes here ...'} />
+              <InputBase onChange={this.changeSearch.bind(this)} style={{ fontSize: '16px' }} fullWidth placeholder={this.props.tab === 'Directory' ? 'Search directories & notes here ...' : 'Search notes here ...'} />
             </Grid>
           </Grid>
         </Grid>
