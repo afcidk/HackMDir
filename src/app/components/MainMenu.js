@@ -57,7 +57,7 @@ const styles = theme => ({
   }
 })
 
-class MainMenu extends React.Component {
+class MainMenu extends React.PureComponent {
   // constructor
   constructor (props) {
     super(props)

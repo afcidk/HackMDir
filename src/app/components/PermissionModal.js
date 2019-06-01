@@ -27,7 +27,7 @@ const styles = theme => ({
   }
 })
 
-class PermissionModal extends React.Component {
+class PermissionModal extends React.PureComponent {
   constructor (props) {
     super(props)
     this.state = {

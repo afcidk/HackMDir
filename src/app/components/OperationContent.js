@@ -11,6 +11,8 @@ import CheckboxIcon from '@material-ui/icons/CheckBox'
 import Tooltip from '@material-ui/core/Tooltip'
 import ConfirmModal from './ConfirmModal.js'
 import PermissionModal from './PermissionModal.js'
+import BookmodeModal from './BookmodeModal.js'
+import Snackbar from '@material-ui/core/Snackbar'
 
 import API from '../../api/api.js'
 
@@ -38,12 +40,15 @@ const styles = theme => ({
   }
 })
 
-class OperationContainer extends React.Component {
+class OperationContent extends React.PureComponent {
   constructor (props) {
     super(props)
     this.state = {
       showConfirm: false,
+      showBookmode: false,
       showPermission: false,
+      showSnackBar: false,
+      errorMessage: '',
       title: '',
       message: '',
       agreeEvent: null,
@@ -53,13 +58,23 @@ class OperationContainer extends React.Component {
   }
   bookModeOperation () {
     this.setState({
-      showConfirm: true,
-      title: '建立 Bookmode',
-      message: `您確定要將目前 ${this.props.selectedList.length} 項筆記合成一個 Bookmode 發布出去嗎？`,
-      agreeEvent: function () {
-      },
+      showBookmode: true,
+      agreeEvent: async function (title, sortedNotes) {
+        try {
+          this.setState({ loading: true })
+          const resultUrl = await API.addBookmode(title, sortedNotes)
+          // open the result note in other tab
+          window.open(resultUrl, '_target')
+          this.props.setSelectedEvent({})
+          this.setState({ showBookmode: false, loading: false })
+        } catch (error) {
+          console.log(error)
+          this.props.setSelectedEvent({})
+          this.setState({ showBookmode: false, loading: false, errorMessage: error.message, showSnackBar: true })
+        }
+      }.bind(this),
       disagreeEvent: function () {
-        this.setState({ showConfirm: false })
+        this.setState({ showBookmode: false })
       }.bind(this)
     })
   }
@@ -69,15 +84,15 @@ class OperationContainer extends React.Component {
     switch (this.props.tab) {
       case 'Recent':
         title = '移除 Recent 中的紀錄'
-        text = `您確定要將目前 ${this.props.selectedList.length} 項筆記移除嗎？`
+        text = `您確定要將目前 ${Object.keys(this.props.selectedList).length} 項筆記移除嗎？`
         break
       case 'Personal':
         title = '刪除 Personal 中的筆記'
-        text = `您確定要將目前 ${this.props.selectedList.length} 項筆記刪除嗎？`
+        text = `您確定要將目前 ${Object.keys(this.props.selectedList).length} 項筆記刪除嗎？`
         break
       case 'Directory':
         title = '刪除 Directory 中的資料夾/筆記'
-        text = `您確定要將目前 ${this.props.selectedList.length} 項資料夾/筆記刪除嗎？`
+        text = `您確定要將目前 ${Object.keys(this.props.selectedList).length} 項資料夾/筆記刪除嗎？`
         break
     }
     this.setState({
@@ -87,7 +102,7 @@ class OperationContainer extends React.Component {
       agreeEvent: async function () {
         try {
           this.setState({ loading: true })
-          const noteIds = this.props.selectedList.map(target => (target.href.substr(18)))
+          const noteIds = Object.keys(this.props.selectedList)
           switch (this.props.tab) {
             case 'Recent':
               await API.delHistoryNote(noteIds)
@@ -98,12 +113,13 @@ class OperationContainer extends React.Component {
             case 'Directory':
               break
           }
-          this.props.deleteItemsEvent(this.props.selectedList)
-          this.props.setSelectedEvent([])
+          this.props.deleteItemsEvent(Object.values(this.props.selectedList))
+          this.props.setSelectedEvent({})
           this.setState({ showConfirm: false, loading: false })
         } catch (error) {
           console.log(error)
-          this.setState({ showConfirm: false, loading: false })
+          this.props.setSelectedEvent({})
+          this.setState({ showConfirm: false, loading: false, errorMessage: error.message, showSnackBar: true })
         }
       }.bind(this),
       disagreeEvent: function () {
@@ -123,7 +139,8 @@ class OperationContainer extends React.Component {
           this.setState({ showPermission: false, loading: false })
         } catch (error) {
           console.log(error)
-          this.setState({ showPermission: false, loading: false })
+          this.props.setSelectedEvent([])
+          this.setState({ showConfirm: false, loading: false, errorMessage: error.message, showSnackBar: true })
         }
       }.bind(this),
       disagreeEvent: function () {
@@ -133,18 +150,32 @@ class OperationContainer extends React.Component {
   }
   selectAllOperation () {
     // unselect all if it is already select all
-    if (this.props.list.length === this.props.selectedList.length) {
-      this.props.setSelectedEvent([])
+    if (this.props.list.length === Object.keys(this.props.selectedList).length) {
+      this.props.setSelectedEvent({})
       return
     }
-    this.props.setSelectedEvent(this.props.list)
+    const temp = {}
+    this.props.list.forEach(target => {
+      temp[target.href.substr(18)] = target
+    })
+    this.props.setSelectedEvent(temp)
   }
   // the render function
   render () {
     return (
       <Grid container className={this.props.classes.root} alignContent='center' alignItems='center' >
         <ConfirmModal show={this.state.showConfirm} title={this.state.title} message={this.state.message} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
-        <PermissionModal show={this.state.showPermission} number={this.props.selectedList.length} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
+        <PermissionModal show={this.state.showPermission} number={Object.keys(this.props.selectedList).length} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
+        <BookmodeModal show={this.state.showBookmode} selectedItems={this.props.selectedList} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
+        <Snackbar
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          key={`snack-bar-message`}
+          open={this.state.showSnackBar}
+          ContentProps={{
+            'aria-describedby': 'message-id'
+          }}
+          message={<span id='message-id'>{this.state.errorMessage}</span>}
+        />
         <Grid item xs={2}>
           <Tooltip title='Bookmode' classes={{ tooltip: this.props.classes.tooltip }}>
             <IconButton className={this.props.classes.button} aria-label='bookmode' onClick={this.bookModeOperation.bind(this)}>
@@ -174,15 +205,15 @@ class OperationContainer extends React.Component {
           </Tooltip>
         </Grid>
         <Grid item xs={4} style={{ textAlign: 'right' }}>
-          <label className={this.props.classes.label}> {`選擇 ${this.props.selectedList.length} 項`} </label>
+          <label className={this.props.classes.label}> {`選擇 ${Object.keys(this.props.selectedList).length} 項`} </label>
         </Grid>
       </Grid>
     )
   }
 }
 
-OperationContainer.propTypes = {
+OperationContent.propTypes = {
   classes: PropTypes.object.isRequired
 }
 
-export default withStyles(styles)(OperationContainer)
+export default withStyles(styles)(OperationContent)
