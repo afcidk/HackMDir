@@ -12,6 +12,7 @@
  *    ......
  *  }
  * ]
+/* =================================
  */
 var dirCache = []
 const writeContent = require('./api.js').writeContent
@@ -22,7 +23,6 @@ const writeContent = require('./api.js').writeContent
  * @param String href
  * @param JSON info of destination note {dirId: dirId, noteId: noteId}
  * @param JSON info of source note {dirId: dirId, noteId: noteId}
- * @returns JSON [src info, dest info]
  */
 function moveNote (title, href, dst = null, src = null) {
   if (src) { // drag in new note will not enter this scope

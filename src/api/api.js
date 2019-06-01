@@ -93,9 +93,6 @@ async function delNote (noteId) {
     if (hrefList.indexOf(id) !== -1) fail.push(id)
   })
 
-  // console.log('fail = ')
-  // console.log(fail)
-
   return fail
 }
 
@@ -104,7 +101,7 @@ async function delNote (noteId) {
  * @param JSON Content to write
  */
 function writeContent (key, value) {
-  const prefix = '###### tags: hkmdir-data\n\n'
+  const prefix = utils.common_prefix
   const keyFilter = ['last_tab', 'dir']
   if (keyFilter.indexOf(key) === -1) {
     console.log('error key')
@@ -147,7 +144,7 @@ async function changePermission (urls, perm) {
 /**
  * Merge multiple notes into bookmode
  * @param String Title of bookmode note
- * @param Array data [[title1, href1], [title2, href2], ...]
+ * @param Array data [{title: xxx, href: xxx}, .....]
  * @returns String Url of bookmode note
  */
 async function addBookmode (title, data) {
@@ -166,6 +163,8 @@ function getData (option) {
     return personalCache
   } else if (option === 'history') {
     return historyCache
+  } else if (option === 'directory') {
+    return dataCache
   } else {
     return undefined
   }
