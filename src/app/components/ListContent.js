@@ -60,7 +60,7 @@ class ListContent extends React.PureComponent {
   }
 
   componentWillMount () {
-    this.fetchData(this.props.tab)
+    this.fetchData(API.getData('last_tab'))
   }
 
   componentWillReceiveProps (nextProps) {

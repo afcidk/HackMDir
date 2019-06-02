@@ -15,6 +15,7 @@ import MenuItem from '@material-ui/core/MenuItem'
 import Paper from '@material-ui/core/Paper'
 import SearchIcon from '@material-ui/icons/Search'
 import InputBase from '@material-ui/core/InputBase'
+import API from '../../api/api.js'
 
 const styles = theme => ({
   root: {
@@ -72,6 +73,7 @@ class MainMenu extends React.PureComponent {
 
   changeTab (event) {
     this.props.setTab(event.target.value)
+    API.writeContent('last_tab', event.target.value)
   }
 
   changeShowDir () {
