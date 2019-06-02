@@ -65,8 +65,13 @@ function newDir (title) {
  */
 function moveDir (dst, src) {
   read()
-  dirCache.find((e) => e.dirId === dst).dirId = src
-  dirCache.find((e) => e.dirId === src).dirId = dst
+  let srcDir = dirCache.find((e) => e.dirId === src)
+  dirCache.forEach((e) => { e.dirId -= +(e.dirId > src) })
+  dirCache.splice(dirCache.indexOf(srcDir), 1)
+  dirCache.forEach((e) => { e.dirId += +(e.dirId >= dst) })
+  srcDir.dirId = dst
+  dirCache.push(srcDir)
+
   write()
 }
 
