@@ -13,10 +13,11 @@ import ExpandLess from '@material-ui/icons/ExpandLess'
 import ChevronRight from '@material-ui/icons/ChevronRight'
 
 import { sortableContainer, sortableElement } from 'react-sortable-hoc'
-import arrayMove from 'array-move'
+// import arrayMove from 'array-move'
 
 import ListDirNoteItem from './ListDirNoteItem.js'
-// import Directory from '../../api/directory.js'
+import Directory from '../../api/directory.js'
+import API from '../../api/api.js'
 
 const styles = theme => ({
   ul: {
@@ -94,7 +95,7 @@ const DirItem = sortableElement(
             <ListItemIcon>
               <DragHandle className={props.checked ? style.checkedStyle : null} />
             </ListItemIcon>
-            {state.open[sortIndex] ? <ExpandLess /> : <ChevronRight />}
+            {props.dirlistopen[sortIndex] ? <ExpandLess /> : <ChevronRight />}
             <ListItemText inset primary={`${dirName} - #${sortIndex}`} classes={{ primary: `${style.text} ${props.checked ? style.checkedStyle : null}` }} />
           </ListItem>
         </Grid>
@@ -110,10 +111,10 @@ const DirItem = sortableElement(
             // checked={props.checked}
           />
         </Grid>
-        <Collapse in={state.open[sortIndex]} timeout='auto' unmountOnExit>
+        <Collapse in={props.dirlistopen[sortIndex]} timeout='auto' unmountOnExit>
           <List component='div' disablePadding>
             <ListItem>
-              <ListDirNoteItem value={value} dirId={sortIndex} />
+              <ListDirNoteItem value={value} dirId={sortIndex} setDir={props.setDir} />
             </ListItem>
           </List>
         </Collapse>
@@ -134,7 +135,6 @@ const DirList = sortableContainer(
   }) => {
     return (
       <ul className={style.ul}>
-        {/* { this.props.newdir ? <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} /> : null } */}
         {props.dir.map((value, index) => {
           return (
             <DirItem
@@ -162,15 +162,15 @@ class ListDirItem extends React.Component {
   constructor (props) {
     super(props)
 
-    let newlists = []
-    props.dir.map((value) => {
-      newlists.push(value.title)
-    })
+    // let initdirlists = []
+    // props.dir.map((value) => {
+    //   initdirlists.push(value.title)
+    // })
 
     this.state = {
       displayCheckbox: props.displayCheckbox,
-      dirs: newlists,
-      open: props.open
+      // dirs: initdirlists,
+      open: this.props.dirlistopen
     }
 
     this.handleClick = this.handleClick.bind(this)
@@ -179,23 +179,11 @@ class ListDirItem extends React.Component {
     this.onSortEnd = this.onSortEnd.bind(this)
   }
 
-  // handleChange(event) {
-  //   this.setState({newDirName: event.target.value});
-  // }
-
-  // handleSubmit(event) {
-  //   this.handleAddList(this.state.newDirName);
-  //   console.log(this.state.newDirName)
-  //   console.log(this.state.newDirName.toString())
-  //   Directory.newDir(this.state.newDirName.toString());
-  //   event.preventDefault();
-  // }
-
   handleClick (index) {
-    const temp = this.state.open.slice()
+    const temp = this.props.dirlistopen
     temp[index] = !temp[index]
+    this.props.setDirOpen(temp)
     this.setState({ open: temp })
-    console.log('test', index, temp)
   };
 
   checkBoxonMouseOver () {
@@ -208,11 +196,33 @@ class ListDirItem extends React.Component {
 
   onSortEnd (oldIndex, newIndex) {
     console.log(oldIndex, newIndex)
-    // Directory.moveDir(oldIndex.newIndex, oldIndex.oldIndex)
+
+    Directory.moveDir(oldIndex.newIndex, oldIndex.oldIndex)
+    let result = API.getData('directory')
+    this.props.setDir(result)
+
+    let newopen = this.props.dirlistopen
+    let newindexsit = newopen[oldIndex.newIndex]
+    let i = 0
+    newopen[oldIndex.newIndex] = newopen[oldIndex.oldIndex]
+    if (oldIndex.newIndex > oldIndex.oldIndex) {
+      for (i = 0; i < (oldIndex.newIndex - oldIndex.oldIndex) - 1; i++) {
+        newopen[oldIndex.oldIndex + i] = newopen[oldIndex.oldIndex + 1 + i]
+      }
+      newopen[oldIndex.oldIndex + i] = newindexsit
+    } else if (oldIndex.newIndex < oldIndex.oldIndex) {
+      for (i = 0; i < (oldIndex.oldIndex - oldIndex.newIndex) - 1; i++) {
+        newopen[oldIndex.oldIndex - i] = newopen[oldIndex.oldIndex - 1 - i]
+      }
+      newopen[oldIndex.oldIndex - i] = newindexsit
+    }
+
     this.setState(({ dirs, open }) => ({
-      dirs: arrayMove(dirs, oldIndex.newIndex, oldIndex.oldIndex),
-      open: arrayMove(open, oldIndex.newIndex, oldIndex.oldIndex)
+      // dirs: arrayMove(dirs, oldIndex.newIndex, oldIndex.oldIndex),
+      open: newopen
     }))
+    this.props.setDirOpen(this.state.open)
+    console.log('state open ', this.state.open)
   };
 
   handleCheckboxClick (index) {

@@ -13,7 +13,7 @@ import OperationContent from './OperationContent.js'
 import Collapse from '@material-ui/core/Collapse'
 
 import API from '../../api/api.js'
-// import Directory from '../../api/directory.js'
+import Directory from '../../api/directory.js'
 import ListSubheader from '@material-ui/core/ListSubheader'
 
 // use memo to enhance the render performance
@@ -48,16 +48,15 @@ const styles = theme => ({
 class ListContent extends React.PureComponent {
   constructor (props) {
     super(props)
+
     this.state = {
       changingTab: false,
-      dirs: [],
-      open: [],
       newDirName: ''
     }
 
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
-    this.handleAddList = this.handleAddList.bind(this)
+    // this.handleAddList = this.handleAddList.bind(this)
   }
 
   componentWillMount () {
@@ -82,44 +81,66 @@ class ListContent extends React.PureComponent {
       result = API.getData('personal')
     } else if (tab === 'Directory') {
       result = API.getData('directory')
-      console.log(API.getData('directory'))
-      // result = [1]
     }
     // deal with the transition delay
     setTimeout(function () {
       setTimeout(function () {
         this.props.setItems(result)
-        this.setState({ changingTab: false })
+        this.props.setDir(result)
+
+        let initopenlists = []
+        let count = 0
+        this.props.dirlist.map(() => {
+          count = count + 1
+        })
+        for (let i = 0; i <= count - 1; i++) {
+          initopenlists.push(false)
+        }
+        this.props.setDirOpen(initopenlists)
+
+        this.setState({
+          changingTab: false
+        })
       }.bind(this), 100)
     }.bind(this), 100)
   }
 
-  handleAddList (newitem) {
-    let lists = this.state.dirs
-    let open = this.state.open
-    let newlists = []
-    let newopen = []
-    newlists.push(newitem)
-    for (let i = 0; i <= lists.length - 1; i++) {
-      newlists.push(lists[i])
-    }
-    newopen.push(false)
-    for (let i = 0; i <= open.length - 1; i++) {
-      newopen.push(open[i])
-    }
-    this.setState({
-      dirs: newlists,
-      open: newopen
-    })
-  };
+  // handleAddList (newitem) {
+  //   let lists = this.state.dirs
+  //   let open = this.state.open
+  //   let newlists = []
+  //   let newopen = []
+  //   newlists.push(newitem)
+  //   for (let i = 0; i <= lists.length - 1; i++) {
+  //     newlists.push(lists[i])
+  //   }
+  //   newopen.push(false)
+  //   for (let i = 0; i <= open.length - 1; i++) {
+  //     newopen.push(open[i])
+  //   }
+  //   this.setState({
+  //     dirs: newlists,
+  //     open: newopen
+  //   })
+  // };
 
   handleChange (event) {
     this.setState({ newDirName: event.target.value })
   }
 
   handleSubmit (event) {
-    this.handleAddList(this.state.newDirName)
-    // Directory.newDir(this.state.newDirName.toString())
+    // this.handleAddList(this.state.newDirName)
+    Directory.newDir(this.state.newDirName.toString())
+    let result = API.getData('directory')
+    this.props.setDir(result)
+
+    let openlists = []
+    openlists.push(false)
+    for (let i = 0; i < this.props.dirlistopen.length; i++) {
+      openlists.push(this.props.dirlistopen[i])
+    }
+    this.props.setDirOpen(openlists)
+
     this.props.setNewDir(false)
     event.preventDefault()
   }
@@ -128,7 +149,7 @@ class ListContent extends React.PureComponent {
   render () {
     console.log('ListContent render')
     // destructuring assignment
-    const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected, setNewDir } = this.props
+    const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected, setNewDir, dirlist, setDir, dirlistopen, setDirOpen } = this.props
     let updatedList = list.filter((item) => {
       return item.title.toString().toLowerCase().indexOf(this.props.search.toLowerCase()) !== -1
     })
@@ -150,7 +171,7 @@ class ListContent extends React.PureComponent {
               <div style={{ display: this.props.newdir ? 'block' : 'none' }}>
                 <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} />
               </div>
-              <ListDirItem dir={list} displayCheckbox={Object.keys(selectedList).length > 0} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} setNewDir={setNewDir} newdir={this.props.newdir} dirs={this.state.dirs} open={this.state.open} />
+              <ListDirItem dir={dirlist} setDir={setDir} dirlistopen={dirlistopen} setDirOpen={setDirOpen} setNewDir={setNewDir} newdir={this.props.newdir} displayCheckbox={Object.keys(selectedList).length > 0} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
             </div>
           </Slide>
         ) : (

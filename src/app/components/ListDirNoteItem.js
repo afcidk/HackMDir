@@ -1,7 +1,7 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { sortableContainer, sortableElement } from 'react-sortable-hoc'
-import arrayMove from 'array-move'
+// import arrayMove from 'array-move'
 
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
@@ -11,7 +11,8 @@ import Grid from '@material-ui/core/Grid'
 
 import DragHandle from '@material-ui/icons/DragHandle'
 
-// import Directory from '../../api/directory.js'
+import Directory from '../../api/directory.js'
+import API from '../../api/api.js'
 
 const styles = theme => ({
   root: {
@@ -124,7 +125,7 @@ class NoteContainer extends React.Component {
     super(props)
     this.state = {
       displayCheckbox: props.displayCheckbox,
-      notes: [],
+      // notes: [],
       dirId: -1
     }
 
@@ -142,20 +143,24 @@ class NoteContainer extends React.Component {
   };
 
   onSortEnd (oldIndex, newIndex) {
-    if (getCursorPosition()[0] > 320) {
-      this.props.value.notes.map((value, index) => {
-        if (index === oldIndex.oldIndex) {
+    this.props.value.notes.map((value, index) => {
+      if (index === oldIndex.oldIndex) {
+        if (getCursorPosition()[0] > 320) {
           console.log('Remove', value.title, value.href, this.props.dirId)
-          // Directory.moveNote(value.title, value.href, null, {dirId: this.props.dirId, noteId: oldIndex.oldIndex})
+          Directory.moveNote(value.title, value.href, { dirId: this.props.dirId, noteId: oldIndex.oldIndex })
+        } else {
+          console.log('move', value.title, value.href, this.props.dirId, oldIndex.newIndex)
+          Directory.moveNote(value.title, value.href, { dirId: this.props.dirId, noteId: oldIndex.oldIndex }, { dirId: this.props.dirId, noteId: oldIndex.newIndex })
         }
-      })
-    } else {
-      // Directory.moveNote(title, href, dst = {dirId: this.props.dirId, noteId: newIndex}, src = {dirId: this.props.dirId, noteId: oldIndex})
-    }
-    console.log('Remove', oldIndex.newIndex, oldIndex.oldIndex)
-    this.setState(({ notes }) => ({
-      notes: arrayMove(notes, oldIndex, newIndex)
-    }))
+      }
+    })
+    console.log('change', this.props.value.notes)
+    let result = []
+    result = API.getData('directory')
+    this.props.setDir(result)
+    // this.setState(({ notes }) => ({
+    //   notes: arrayMove(notes, oldIndex, newIndex)
+    // }))
   };
   render () {
     return (
