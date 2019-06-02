@@ -1,12 +1,11 @@
 /* eslint-env browser */
 // FIXME: move some functions to new file (utils)
 
+const utils = require('./utils.js')
 var dataUrl = ''
 var personalCache = ''
 var historyCache = ''
-var dataCache = { 'last_tab': 'recent', 'dir': {} }
-
-const utils = require('./utils.js')
+var dataCache = utils.defaultDataCache
 
 /**
  * Detect whether exists a logged in user
@@ -67,9 +66,6 @@ async function delHistoryNote (noteId) {
     if (hrefList.indexOf(id) !== -1) fail.push(id)
   })
 
-  // console.log('fail = ')
-  // console.log(fail)
-
   return fail
 }
 
@@ -101,7 +97,7 @@ async function delNote (noteId) {
  * @param JSON Content to write
  */
 function writeContent (key, value) {
-  const prefix = '###### tags: `hkmdir-data`\n\n'
+  const prefix = utils.common_prefix
   const keyFilter = ['last_tab', 'dir']
   if (keyFilter.indexOf(key) === -1) {
     console.log('error key')
@@ -164,9 +160,14 @@ function getData (option) {
   } else if (option === 'history') {
     return historyCache
   } else if (option === 'directory') {
-    return dataCache.dir
+    return dataCache.dir.sort((a, b) => { return a.dirId > b.dirId ? 1 : -1 })
+      .map(c => ({ title: c.title,
+        notes: c.notes.sort((d, e) => { return d.noteId > e.noteId ? 1 : -1 })
+          .map(f => ({ title: f.title, href: f.href })) }))
   } else if (option === 'last_tab') {
     return dataCache['last_tab']
+  } else if (option === 'directory-backend') {
+    return dataCache.dir
   } else {
     return undefined
   }

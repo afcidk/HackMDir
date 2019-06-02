@@ -13,7 +13,7 @@ import OperationContent from './OperationContent.js'
 import Collapse from '@material-ui/core/Collapse'
 
 import API from '../../api/api.js'
-// import Directory from '../../api/directory.js'
+import Directory from '../../api/directory.js'
 import ListSubheader from '@material-ui/core/ListSubheader'
 
 // use memo to enhance the render performance
@@ -119,7 +119,7 @@ class ListContent extends React.PureComponent {
 
   handleSubmit (event) {
     this.handleAddList(this.state.newDirName)
-    // Directory.newDir(this.state.newDirName.toString())
+    Directory.newDir(this.state.newDirName.toString())
     this.props.setNewDir(false)
     event.preventDefault()
   }
