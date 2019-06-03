@@ -139,7 +139,7 @@ const DirList = sortableContainer(
       <ul className={style.ul}>
         {props.dir.map((value, index) => {
           return (
-            <DragAndDrop handleDrop={handleDrop}>
+            <DragAndDrop handleDrop={handleDrop} dirId={index}>
               <DirItem
                 key={`item-${index}`}
                 index={index}
@@ -175,8 +175,7 @@ class ListDirItem extends React.Component {
       displayCheckbox: props.displayCheckbox,
       // dirs: initdirlists,
       open: this.props.dirlistopen,
-      currentMouseX: 0,
-      files: []
+      currentMouseX: 0
     }
 
     this.handleClick = this.handleClick.bind(this)
@@ -244,14 +243,10 @@ class ListDirItem extends React.Component {
     console.log('state open ', this.state.open)
   };
 
-  handleDrop (files) {
-    console.log(files)
-    let fileList = this.state.files
-    for (var i = 0; i < files.length; i++) {
-      if (!files[i].name) return
-      fileList.push(files[i].name)
-    }
-    this.setState({ files: fileList })
+  handleDrop (notes, dirId) {
+    Directory.moveNote(notes.getData('name'), notes.getData('href'), null, { dirId: dirId, noteId: 0 })
+    let result = API.getData('directory')
+    this.props.setDir(result)
   }
 
   handleCheckboxClick (index) {

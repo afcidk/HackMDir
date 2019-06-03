@@ -161,8 +161,7 @@ class NoteContainer extends React.Component {
       }
     })
     console.log('change', this.props.value.notes)
-    let result = []
-    result = API.getData('directory')
+    let result = API.getData('directory')
     this.props.setDir(result)
     // this.setState(({ notes }) => ({
     //   notes: arrayMove(notes, oldIndex, newIndex)
