@@ -6,6 +6,9 @@ import List from '@material-ui/core/List'
 import ListNoteItem from './ListNoteItem.js'
 import ListDirItem from './ListDirItem.js'
 import NewDirItem from './NewDirItem.js'
+import { FixedSizeList } from 'react-window'
+import AutoSizer from 'react-virtualized-auto-sizer'
+import { Scrollbars } from 'react-custom-scrollbars'
 
 import Slide from '@material-ui/core/Slide'
 
@@ -23,11 +26,12 @@ const MemoListNoteItem = React.memo(ListNoteItem)
 const styles = theme => ({
   root: {
     width: '320px',
-    height: '651px',
-    maxHeight: '651px',
+    height: `${window.innerHeight - 108}px`,
+    maxHeight: `${window.innerHeight - 108}px`,
     position: 'relative',
     overflow: 'auto',
-    padding: '0'
+    padding: '0',
+    backgroundColor: 'white'
   },
   spinner: {
     display: 'flex',
@@ -37,13 +41,22 @@ const styles = theme => ({
     alignItems: 'center',
     position: 'absolute',
     width: '100%',
-    height: '651px',
+    height: `${window.innerHeight - 108}px`,
     backgroundColor: 'rgba(0, 0, 0, 0.18)'
   },
   header: {
     padding: '0'
   }
 })
+
+const row = ({ index, style, data }) => {
+  const { updatedList, selectedList, selectItem, unSelectItem } = data
+  return (
+    <div style={style}>
+      <MemoListNoteItem key={`note-${index}`} title={updatedList[index].title} href={updatedList[index].href} displayCheckbox={Object.keys(selectedList).length > 0} checked={!!selectedList[updatedList[index].href.substr(18)]} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
+    </div>
+  )
+}
 
 class ListContent extends React.PureComponent {
   constructor (props) {
@@ -54,20 +67,23 @@ class ListContent extends React.PureComponent {
       newDirName: ''
     }
 
+    this.listRef = React.createRef()
+
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleScroll = this.handleScroll.bind(this)
     // this.handleAddList = this.handleAddList.bind(this)
   }
 
   componentWillMount () {
-    this.fetchData(API.getData('last_tab'))
+    this.fetchData(this.props.tab.current)
   }
 
   componentWillReceiveProps (nextProps) {
-    if (this.props.tab === nextProps.tab) {
+    if (this.props.tab.current === nextProps.tab.current) {
       return
     }
-    this.fetchData(nextProps.tab)
+    this.fetchData(nextProps.tab.current)
     // erase the selected items
     this.props.setSelected({})
   }
@@ -83,26 +99,24 @@ class ListContent extends React.PureComponent {
       result = API.getData('directory')
     }
     // deal with the transition delay
+    const enterDelay = result.length > 0 ? 100 : 0
+    const leaveDealy = this.props.tab.prev === 'Directory' ? (this.props.dirlist.length > 0 ? 100 : 0)
+      : (this.props.list.length > 0 ? 100 : 0)
     setTimeout(function () {
       setTimeout(function () {
-        this.props.setItems(result)
-        this.props.setDir(result)
-
-        let initopenlists = []
-        let count = 0
-        this.props.dirlist.map(() => {
-          count = count + 1
-        })
-        for (let i = 0; i <= count - 1; i++) {
-          initopenlists.push(false)
+        if (this.props.tab.current === 'Directory') {
+          this.props.setItems([])
+          this.props.setDir(result)
+          this.props.setDirOpen(new Array(this.props.dirlist.length).fill(false))
+        } else {
+          this.props.setItems(result)
+          this.props.setDir([])
         }
-        this.props.setDirOpen(initopenlists)
-
         this.setState({
           changingTab: false
         })
-      }.bind(this), 100)
-    }.bind(this), 100)
+      }.bind(this), enterDelay)
+    }.bind(this), leaveDealy)
   }
 
   // handleAddList (newitem) {
@@ -145,6 +159,11 @@ class ListContent extends React.PureComponent {
     event.preventDefault()
   }
 
+  handleScroll ({ target }) {
+    const { scrollTop } = target
+    this.listRef.current.scrollTo(scrollTop)
+  }
+
   // the render function
   render () {
     console.log('ListContent render')
@@ -154,43 +173,63 @@ class ListContent extends React.PureComponent {
       return item.title.toString().toLowerCase().indexOf(this.props.search.toLowerCase()) !== -1
     })
     return (
-      <List className={this.props.classes.root}>
-        <ListSubheader className={this.props.classes.header} key='operation-container'>
-          <Collapse in={Object.keys(selectedList).length > 0} mountOnEnter unmountOnExit style={{ transformOrigin: '0 0 0' }} timeout={100}>
-            <OperationContent tab={this.props.tab} list={list} selectedList={selectedList} deleteItemsEvent={deleteItems} setSelectedEvent={setSelected} />
-          </Collapse>
-        </ListSubheader>
-        {this.props.tab === 'Directory' ? (
-          <Slide
-            in={!this.state.changingTab}
-            direction='right'
-            mountOnEnter
-            unmountOnExit
-            timeout={100}>
-            <div>
-              <div style={{ display: this.props.newdir ? 'block' : 'none' }}>
-                <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} />
-              </div>
-              <ListDirItem dir={dirlist} setDir={setDir} dirlistopen={dirlistopen} setDirOpen={setDirOpen} setNewDir={setNewDir} newdir={this.props.newdir} displayCheckbox={Object.keys(selectedList).length > 0} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
-            </div>
-          </Slide>
-        ) : (
-          <Slide
-            in={!this.state.changingTab}
-            direction='right'
-            mountOnEnter
-            unmountOnExit
-            timeout={100}>
-            <div >
-              <React.Fragment>
-                {updatedList.map((target, index) => (
-                  <MemoListNoteItem key={`note-${index}`} title={target.title} href={target.href} displayCheckbox={Object.keys(selectedList).length > 0} checked={selectedList[target.href.substr(18)]} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
-                ))}
-              </React.Fragment>
-            </div>
-          </Slide>
-        )}
-      </List>
+      <div className={this.props.classes.root}>
+        <Slide
+          in={!this.state.changingTab}
+          direction='right'
+          mountOnEnter
+          unmountOnExit
+          timeout={100}>
+          <List className={this.props.classes.root}>
+            <Scrollbars
+              onScroll={this.handleScroll}
+              autoHide
+              autoHideTimeout={1000}
+              autoHideDuration={500}>
+              <ListSubheader className={this.props.classes.header} key='operation-container'>
+                <Collapse in={Object.keys(selectedList).length > 0} mountOnEnter unmountOnExit style={{ transformOrigin: '0 0 0' }} timeout={100}>
+                  <OperationContent tab={this.props.tab} list={updatedList} selectedList={selectedList} deleteItemsEvent={deleteItems} setSelectedEvent={setSelected} />
+                </Collapse>
+              </ListSubheader>
+              {this.props.tab.current === 'Directory' ? (
+                <div>
+                  <div style={{ display: this.props.newdir ? 'block' : 'none' }}>
+                    <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} />
+                  </div>
+                  <ListDirItem dir={dirlist} setDir={setDir} dirlistopen={dirlistopen} setDirOpen={setDirOpen} setNewDir={setNewDir} newdir={this.props.newdir} displayCheckbox={Object.keys(selectedList).length > 0} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
+                </div>
+              ) : (
+                <AutoSizer>
+                  {
+                    ({ height, width }) => {
+                      return (
+                        <React.Fragment>
+                          <FixedSizeList
+                            height={height}
+                            width={width - 12}
+                            ref={this.listRef}
+                            itemCount={updatedList.length}
+                            itemData={{
+                              updatedList,
+                              selectedList,
+                              selectItem,
+                              unSelectItem
+                            }}
+                            style={{ overflow: false }}
+                            itemSize={48}>
+                            {row}
+                          </FixedSizeList>
+                        </React.Fragment>
+                      )
+                    }
+                  }
+                </AutoSizer>
+              )
+              }
+            </Scrollbars>
+          </List>
+        </Slide>
+      </div>
     )
   }
 }

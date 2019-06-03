@@ -12,7 +12,7 @@ import Grid from '@material-ui/core/Grid'
 const styles = theme => ({
   text: {
     display: 'inline-block',
-    maxWidth: '180px',
+    width: '180px',
     height: '21px',
     fontSize: '14px',
     overflow: 'hidden',
@@ -44,6 +44,9 @@ class ListNoteItem extends React.PureComponent {
     this.state = {
       displayCheckbox: props.displayCheckbox
     }
+
+    this.handleCheckboxClick = this.handleCheckboxClick.bind(this)
+    this.handleListClick = this.handleListClick.bind(this)
   }
 
   componentWillReceiveProps (nextProps) {
@@ -79,7 +82,7 @@ class ListNoteItem extends React.PureComponent {
       <React.Fragment>
         <ListItem
           button
-          onClick={this.handleListClick.bind(this)}
+          onClick={this.handleListClick}
           style={{ backgroundColor: this.props.checked ? 'rgba(66, 33, 244, 0.18)' : null, height: '48px' }}>
           <Grid container spacing={16} justify='flex-start' alignContent='center' alignItems='center'>
             <Grid item xs={2}>
@@ -91,7 +94,7 @@ class ListNoteItem extends React.PureComponent {
               <ListItemText primary={this.props.title} classes={{ primary: `${this.props.classes.text} ${this.props.checked ? this.props.classes.checkedStyle : null}` }} />
             </Grid>
             <Grid item xs={2}>
-              <Checkbox style={{ color: '#4285f4' }} className={this.state.displayCheckbox ? `${this.props.classes.forceDisplay} ${this.props.classes.checkbox} test` : `${this.props.classes.checkbox}`} onClick={this.handleCheckboxClick.bind(this)} />
+              <Checkbox style={{ color: '#4285f4' }} className={this.state.displayCheckbox ? `${this.props.classes.forceDisplay} ${this.props.classes.checkbox} test` : `${this.props.classes.checkbox}`} onClick={this.handleCheckboxClick} checked={this.props.checked} />
             </Grid>
           </Grid>
         </ListItem>

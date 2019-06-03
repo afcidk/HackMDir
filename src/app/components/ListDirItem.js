@@ -85,8 +85,8 @@ const DirItem = sortableElement(
       style={{ backgroundColor: props.checked ? 'rgba(66, 33, 244, 0.18)' : null }}
       className={style.root}
     >
-      <Grid container spacing={16} justify='flex-start' alignContent='center' alignItems='center'>
-        <Grid item xs={10}>
+      <Grid container justify='flex-start' alignContent='center' alignItems='center'>
+        <Grid item xs={12}>
           <ListItem
             button
             onClick={() => {
@@ -98,27 +98,27 @@ const DirItem = sortableElement(
             </ListItemIcon>
             {props.dirlistopen[sortIndex] ? <ExpandLess /> : <ChevronRight />}
             <ListItemText inset primary={`${dirName} - #${sortIndex}`} classes={{ primary: `${style.text} ${props.checked ? style.checkedStyle : null}` }} />
+            <Checkbox
+              style={{ opacity: state.displayCheckbox ? 1 : 0, color: '#4285f4' }}
+              className={style.checkbox}
+              onMouseOver={checkBoxonMouseOver}
+              onMouseLeave={checkBoxonMouseLeave}
+              onClick={() => {
+                handleCheckboxClick(sortIndex)
+              }}
+              // checked={props.checked}
+            />
           </ListItem>
         </Grid>
-        <Grid item xs={2}>
-          <Checkbox
-            style={{ opacity: state.displayCheckbox ? 1 : 0, color: '#4285f4' }}
-            className={style.checkbox}
-            onMouseOver={checkBoxonMouseOver}
-            onMouseLeave={checkBoxonMouseLeave}
-            onClick={() => {
-              handleCheckboxClick(sortIndex)
-            }}
-            // checked={props.checked}
-          />
+        <Grid item xs={12}>
+          <Collapse in={props.dirlistopen[sortIndex]} timeout='auto' unmountOnExit>
+            <List component='div' disablePadding>
+              <ListItem>
+                <ListDirNoteItem value={value} dirId={sortIndex} setDir={props.setDir} />
+              </ListItem>
+            </List>
+          </Collapse>
         </Grid>
-        <Collapse in={props.dirlistopen[sortIndex]} timeout='auto' unmountOnExit>
-          <List component='div' disablePadding>
-            <ListItem>
-              <ListDirNoteItem value={value} dirId={sortIndex} setDir={props.setDir} />
-            </ListItem>
-          </List>
-        </Collapse>
       </Grid>
     </List>
   )
@@ -175,6 +175,7 @@ class ListDirItem extends React.Component {
       displayCheckbox: props.displayCheckbox,
       // dirs: initdirlists,
       open: this.props.dirlistopen,
+      currentMouseX: 0,
       files: []
     }
 
@@ -182,6 +183,7 @@ class ListDirItem extends React.Component {
     this.checkBoxonMouseOver = this.checkBoxonMouseOver.bind(this)
     this.checkBoxonMouseLeave = this.checkBoxonMouseLeave.bind(this)
     this.onSortEnd = this.onSortEnd.bind(this)
+    this.detectMouseMove = this.detectMouseMove.bind(this)
     this.handleDrop = this.handleDrop.bind(this)
   }
 
@@ -200,7 +202,18 @@ class ListDirItem extends React.Component {
     this.setState({ displayCheckbox: this.props.displayCheckbox })
   };
 
+  detectMouseMove (event) {
+    this.setState({ currentMouseX: event.clientX })
+  }
+
   onSortEnd (oldIndex, newIndex) {
+    // remove the dir if the user drag the dir outside the whole window
+    if (this.state.currentMouseX > 400) {
+      Directory.delDir(oldIndex.oldIndex)
+      const result = API.getData('directory')
+      this.props.setDir(result)
+      return
+    }
     console.log(oldIndex, newIndex)
 
     Directory.moveDir(oldIndex.newIndex, oldIndex.oldIndex)
@@ -267,6 +280,7 @@ class ListDirItem extends React.Component {
         onSortEnd={this.onSortEnd}
         handleClick={this.handleClick}
         state={this.state}
+        onSortMove={this.detectMouseMove}
         checkBoxonMouseOver={this.checkBoxonMouseOver}
         checkBoxonMouseLeave={this.checkBoxonMouseLeave}
         handleCheckboxClick={this.handleCheckboxClick}

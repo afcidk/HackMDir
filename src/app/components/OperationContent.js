@@ -55,6 +55,10 @@ class OperationContent extends React.PureComponent {
       disagreeEvent: null,
       loading: false
     }
+    this.bookModeOperation = this.bookModeOperation.bind(this)
+    this.permissionOperation = this.permissionOperation.bind(this)
+    this.deleteOperation = this.deleteOperation.bind(this)
+    this.selectAllOperation = this.selectAllOperation.bind(this)
   }
   bookModeOperation () {
     this.setState({
@@ -81,7 +85,7 @@ class OperationContent extends React.PureComponent {
   deleteOperation () {
     let text
     let title
-    switch (this.props.tab) {
+    switch (this.props.tab.current) {
       case 'Recent':
         title = '移除 Recent 中的紀錄'
         text = `您確定要將目前 ${Object.keys(this.props.selectedList).length} 項筆記移除嗎？`
@@ -103,7 +107,7 @@ class OperationContent extends React.PureComponent {
         try {
           this.setState({ loading: true })
           const noteIds = Object.keys(this.props.selectedList)
-          switch (this.props.tab) {
+          switch (this.props.tab.current) {
             case 'Recent':
               await API.delHistoryNote(noteIds)
               break
@@ -179,28 +183,28 @@ class OperationContent extends React.PureComponent {
         />
         <Grid item xs={2}>
           <Tooltip title='Bookmode' classes={{ tooltip: this.props.classes.tooltip }}>
-            <IconButton className={this.props.classes.button} aria-label='bookmode' onClick={this.bookModeOperation.bind(this)}>
+            <IconButton className={this.props.classes.button} aria-label='bookmode' onClick={this.bookModeOperation}>
               <LibraryBookIcon className={this.props.classes.icon} />
             </IconButton>
           </Tooltip>
         </Grid>
         <Grid item xs={2}>
           <Tooltip title='Delete' classes={{ tooltip: this.props.classes.tooltip }}>
-            <IconButton className={this.props.classes.button} aria-label='delete' onClick={this.deleteOperation.bind(this)}>
+            <IconButton className={this.props.classes.button} aria-label='delete' onClick={this.deleteOperation}>
               <DeleteIcon className={this.props.classes.icon} />
             </IconButton>
           </Tooltip>
         </Grid>
         <Grid item xs={2}>
           <Tooltip title='Permission' classes={{ tooltip: this.props.classes.tooltip }}>
-            <IconButton className={this.props.classes.button} aria-label='permission' onClick={this.permissionOperation.bind(this)}>
+            <IconButton className={this.props.classes.button} aria-label='permission' onClick={this.permissionOperation}>
               <LockIcon className={this.props.classes.icon} />
             </IconButton>
           </Tooltip>
         </Grid>
         <Grid item xs={2}>
           <Tooltip title='Select all' classes={{ tooltip: this.props.classes.tooltip }}>
-            <IconButton className={this.props.classes.button} aria-label='select-all' onClick={this.selectAllOperation.bind(this)}>
+            <IconButton className={this.props.classes.button} aria-label='select-all' onClick={this.selectAllOperation}>
               <CheckboxIcon className={this.props.classes.icon} />
             </IconButton>
           </Tooltip>

@@ -80,6 +80,8 @@ class BookmodeModal extends React.PureComponent {
       title: '',
       items: []
     }
+    this.handelChange = this.handelChange.bind(this)
+    this.onSortEnd = this.onSortEnd.bind(this)
   }
 
   componentWillReceiveProps (nextProps) {
@@ -106,13 +108,13 @@ class BookmodeModal extends React.PureComponent {
             id='bookmode-name'
             label='title'
             value={this.state.title}
-            onChange={this.handelChange.bind(this)}
+            onChange={this.handelChange}
             margin='normal'
           />
           <DialogContentText id='alert-dialog-description' className={this.props.classes.content}>
             請針對你所選擇的 {Object.keys(this.props.selectedItems).length} 項筆記進行排序
           </DialogContentText>
-          <SortableList items={this.state.items} onSortEnd={this.onSortEnd.bind(this)} lockAxis='y' />
+          <SortableList items={this.state.items} onSortEnd={this.onSortEnd} lockAxis='y' />
         </DialogContent>
         <DialogActions>
           <Button onClick={this.props.disagreeEvent}> 取消 </Button>
