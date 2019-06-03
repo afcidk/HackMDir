@@ -58,14 +58,20 @@ function getCursorPosition (e) {
 const NoteItem = sortableElement(
   ({
     noteName,
+    index,
     sortIndex,
     state,
     style,
     props,
     checkBoxonMouseOver,
-    checkBoxonMouseLeave
+    checkBoxonMouseLeave,
+    handleListClick
   }) => (
     <ListItem
+      button
+      onClick={(e) => {
+        handleListClick(e, index)
+      }}
       component='nav'
       style={{ backgroundColor: props.checked ? 'rgba(66, 33, 244, 0.18)' : null }}
       className={style.root}
@@ -99,7 +105,7 @@ const NoteItem = sortableElement(
 )
 
 const NoteList = sortableContainer(
-  ({ state, style, props, checkBoxonMouseOver, checkBoxonMouseLeave }) => {
+  ({ state, style, props, checkBoxonMouseOver, checkBoxonMouseLeave, handleListClick }) => {
     return (
       <ul>
         {props.value.notes.map((value, index) => (
@@ -113,6 +119,7 @@ const NoteList = sortableContainer(
             props={props}
             checkBoxonMouseOver={checkBoxonMouseOver}
             checkBoxonMouseLeave={checkBoxonMouseLeave}
+            handleListClick={handleListClick}
           />
         ))}
       </ul>
@@ -125,6 +132,7 @@ class NoteContainer extends React.Component {
     super(props)
     this.state = {
       displayCheckbox: props.displayCheckbox,
+      noteindex: -1,
       // notes: [],
       dirId: -1
     }
@@ -132,15 +140,21 @@ class NoteContainer extends React.Component {
     this.checkBoxonMouseOver = this.checkBoxonMouseOver.bind(this)
     this.checkBoxonMouseLeave = this.checkBoxonMouseLeave.bind(this)
     this.onSortEnd = this.onSortEnd.bind(this)
+    this.handleListClick = this.handleListClick.bind(this)
   }
 
   checkBoxonMouseOver () {
     this.setState({ displayCheckbox: true })
-  };
+  }
 
   checkBoxonMouseLeave () {
     this.setState({ displayCheckbox: this.props.displayCheckbox })
-  };
+  }
+
+  handleListClick (event, index) {
+    event.stopPropagation()
+    window.open(this.props.notes[index].href, '_blank')
+  }
 
   onSortEnd (oldIndex, newIndex) {
     this.props.value.notes.map((value, index) => {
@@ -172,6 +186,7 @@ class NoteContainer extends React.Component {
         state={this.state}
         checkBoxonMouseOver={this.checkBoxonMouseOver}
         checkBoxonMouseLeave={this.checkBoxonMouseLeave}
+        handleListClick={this.handleListClick}
       />
     )
   }
