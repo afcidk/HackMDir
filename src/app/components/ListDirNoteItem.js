@@ -145,7 +145,7 @@ class NoteContainer extends React.Component {
   onSortEnd (oldIndex, newIndex) {
     this.props.value.notes.map((value, index) => {
       if (index === oldIndex.oldIndex) {
-        if (getCursorPosition()[0] > 320) {
+        if (getCursorPosition()[0] > 308) {
           console.log('Remove', value.title, value.href, this.props.dirId)
           Directory.moveNote(value.title, value.href, { dirId: this.props.dirId, noteId: oldIndex.oldIndex })
         } else {

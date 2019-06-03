@@ -34,6 +34,8 @@ class PermissionModal extends React.PureComponent {
       read: 1,
       write: 1
     }
+    this.handleRead = this.handleRead.bind(this)
+    this.handleWrite = this.handleWrite.bind(this)
   }
 
   handleRead (event, value) {
@@ -59,7 +61,7 @@ class PermissionModal extends React.PureComponent {
                 <label className={this.props.classes.label}> Read </label>
               </Grid>
               <Grid item>
-                <ToggleButtonGroup value={this.state.read} exclusive onChange={this.handleRead.bind(this)}>
+                <ToggleButtonGroup value={this.state.read} exclusive onChange={this.handleRead}>
                   {
                     [1, 2, 3].map(index => (
                       <ToggleButton key={`read-permission-${index}`} value={index}>
@@ -75,7 +77,7 @@ class PermissionModal extends React.PureComponent {
                 <label className={this.props.classes.label}> Write </label>
               </Grid>
               <Grid item>
-                <ToggleButtonGroup value={this.state.write} exclusive onChange={this.handleWrite.bind(this)}>
+                <ToggleButtonGroup value={this.state.write} exclusive onChange={this.handleWrite}>
                   {
                     [1, 2, 3].map(index => (
                       <ToggleButton key={`write-permission-${index}`} value={index} disabled={this.state.read < index} >

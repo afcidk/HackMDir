@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
 import MainMenu from '../components/MainMenu.js'
-import { setTab } from '../redux/actions/Tab.js'
+import { setTab, setPrevTab } from '../redux/actions/Tab.js'
 import { setNewDir } from '../redux/actions/NewDir.js'
 import { setSearch } from '../redux/actions/Search.js'
 
@@ -15,6 +15,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     setTab: (target) => dispatch(setTab(target)),
+    setPrevTab: (target) => dispatch(setPrevTab(target)),
     setNewDir: (target) => dispatch(setNewDir(target)),
     setSearch: (target) => dispatch(setSearch(target))
   }

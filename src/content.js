@@ -13,20 +13,40 @@ const store = createStore(
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 )
 
+window.__HMDIR = {
+  display: false,
+  root: null,
+  mousemoving: false,
+  mousePrevX: 0
+}
+
 /* main function */
 const main = async function () {
   if (!API.isLoggedIn()) return
   await API.initCache()
+  // daemon the root component on root div
   const root = document.createElement('div')
   root.classList.add('hmdir_app')
   document.body.appendChild(root)
-  // daemon the root component on div
+  root.setAttribute('data-display', 'false')
+  window.__HMDIR.root = root
   ReactDOM.render(
     <Provider store={store}>
       <Root />
     </Provider>,
     root
   )
+  const mousemoveHandler = function (event) {
+    clearTimeout(window.__HMDIR.mousemoving)
+    window.__HMDIR.mousemoving = setTimeout(function () {
+      if (event.clientX < 300) {
+        window.__HMDIR.display = true
+        window.__HMDIR.root.focus()
+        document.removeEventListener('mousemove', mousemoveHandler)
+      }
+    }, 100)
+  }
+  document.addEventListener('mousemove', mousemoveHandler)
   // if (process.env.NODE_ENV !== 'production') {
   //   const { whyDidYouUpdate } = require('why-did-you-update')
   //   whyDidYouUpdate(React, { groupByComponent: true, collapseComponentGroups: true })

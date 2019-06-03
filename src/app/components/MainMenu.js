@@ -67,11 +67,14 @@ class MainMenu extends React.PureComponent {
       tabs: ['Recent', 'Personal', 'Directory'],
       keying: null
     }
-
+    props.setTab(API.getData('last_tab'))
     this.changeShowDir = this.changeShowDir.bind(this)
+    this.changeTab = this.changeTab.bind(this)
+    this.changeSearch = this.changeSearch.bind(this)
   }
 
   changeTab (event) {
+    this.props.setPrevTab(this.props.tab.current)
     this.props.setTab(event.target.value)
     API.writeContent('last_tab', event.target.value)
   }
@@ -88,6 +91,9 @@ class MainMenu extends React.PureComponent {
     keying = setTimeout(function () {
       this.props.setSearch(searchingText)
     }.bind(this), 250)
+  }
+  handleDisplay (event) {
+    window.__HMDIR.display = false
   }
 
   // the render function
@@ -108,16 +114,17 @@ class MainMenu extends React.PureComponent {
             <IconButton
               color='inherit'
               size='small'
-              aria-label='arrow-back'>
+              aria-label='arrow-back'
+              onClick={this.handleDisplay}>
               <ArrowBackIcon />
             </IconButton>
           </Grid>
-          <Grid item xs={this.props.tab === 'Directory' ? 6 : 8}>
+          <Grid item xs={this.props.tab.current === 'Directory' ? 6 : 8}>
             <form className={this.props.classes.form}>
               <FormControl>
                 <Select
-                  value={this.props.tab}
-                  onChange={this.changeTab.bind(this)}
+                  value={this.props.tab.current}
+                  onChange={this.changeTab}
                   inputProps={{
                     classes: {
                       icon: this.props.classes.triangle
@@ -138,7 +145,7 @@ class MainMenu extends React.PureComponent {
             </form>
           </Grid>
           {
-            this.props.tab === 'Directory' ? (
+            this.props.tab.current === 'Directory' ? (
               <Grid item xs={2}>
                 <IconButton
                   color='inherit'
@@ -168,7 +175,7 @@ class MainMenu extends React.PureComponent {
               <SearchIcon className={this.props.classes.searchIcon} />
             </Grid>
             <Grid item xs={9} container>
-              <InputBase onChange={this.changeSearch.bind(this)} style={{ fontSize: '16px' }} fullWidth placeholder={this.props.tab === 'Directory' ? 'Search directories & notes here ...' : 'Search notes here ...'} />
+              <InputBase onChange={this.changeSearch} style={{ fontSize: '16px' }} fullWidth placeholder={this.props.tab.current === 'Directory' ? 'Search directories & notes here ...' : 'Search notes here ...'} />
             </Grid>
           </Grid>
         </Grid>
