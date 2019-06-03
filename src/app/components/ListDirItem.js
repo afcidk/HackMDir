@@ -114,7 +114,7 @@ const DirItem = sortableElement(
           <Collapse in={props.dirlistopen[sortIndex]} timeout='auto' unmountOnExit>
             <List component='div' disablePadding>
               <ListItem>
-                <ListDirNoteItem value={value} dirId={sortIndex} setDir={props.setDir} />
+                <ListDirNoteItem value={value} dirId={sortIndex} setDir={props.setDir} notes={props.dir[sortIndex].notes} />
               </ListItem>
             </List>
           </Collapse>
