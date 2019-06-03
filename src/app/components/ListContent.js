@@ -50,10 +50,10 @@ const styles = theme => ({
 })
 
 const row = ({ index, style, data }) => {
-  const { list, selectedList, selectItem, unSelectItem } = data
+  const { updatedList, selectedList, selectItem, unSelectItem } = data
   return (
     <div style={style}>
-      <MemoListNoteItem key={`note-${index}`} title={list[index].title} href={list[index].href} displayCheckbox={Object.keys(selectedList).length > 0} checked={!!selectedList[list[index].href.substr(18)]} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
+      <MemoListNoteItem key={`note-${index}`} title={updatedList[index].title} href={updatedList[index].href} displayCheckbox={Object.keys(selectedList).length > 0} checked={!!selectedList[updatedList[index].href.substr(18)]} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
     </div>
   )
 }
@@ -208,9 +208,9 @@ class ListContent extends React.PureComponent {
                             height={height}
                             width={width - 12}
                             ref={this.listRef}
-                            itemCount={list.length}
+                            itemCount={updatedList.length}
                             itemData={{
-                              list,
+                              updatedList,
                               selectedList,
                               selectItem,
                               unSelectItem
