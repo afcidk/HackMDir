@@ -123,6 +123,12 @@ const NoteList = sortableContainer(
 class NoteContainer extends React.Component {
   constructor (props) {
     super(props)
+
+    let newlists = []
+    props.value.notes.map((value) => {
+      newlists.push(value.title)
+    })
+
     this.state = {
       displayCheckbox: props.displayCheckbox,
       // notes: [],
