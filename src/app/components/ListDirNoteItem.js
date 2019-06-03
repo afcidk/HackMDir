@@ -162,6 +162,7 @@ class NoteContainer extends React.Component {
     //   notes: arrayMove(notes, oldIndex, newIndex)
     // }))
   };
+
   render () {
     return (
       <NoteList

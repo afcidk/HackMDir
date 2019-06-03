@@ -16,6 +16,7 @@ import { sortableContainer, sortableElement } from 'react-sortable-hoc'
 // import arrayMove from 'array-move'
 
 import ListDirNoteItem from './ListDirNoteItem.js'
+import DragAndDrop from './DragAndDrop.js'
 import Directory from '../../api/directory.js'
 import API from '../../api/api.js'
 
@@ -131,26 +132,29 @@ const DirList = sortableContainer(
     style,
     checkBoxonMouseOver,
     checkBoxonMouseLeave,
-    handleCheckboxClick
+    handleCheckboxClick,
+    handleDrop
   }) => {
     return (
       <ul className={style.ul}>
         {props.dir.map((value, index) => {
           return (
-            <DirItem
-              key={`item-${index}`}
-              index={index}
-              value={value}
-              dirName={value.title}
-              sortIndex={index}
-              state={state}
-              handleClick={handleClick}
-              props={props}
-              style={style}
-              checkBoxonMouseOver={checkBoxonMouseOver}
-              checkBoxonMouseLeave={checkBoxonMouseLeave}
-              handleCheckboxClick={handleCheckboxClick}
-            />
+            <DragAndDrop handleDrop={handleDrop}>
+              <DirItem
+                key={`item-${index}`}
+                index={index}
+                value={value}
+                dirName={value.title}
+                sortIndex={index}
+                state={state}
+                handleClick={handleClick}
+                props={props}
+                style={style}
+                checkBoxonMouseOver={checkBoxonMouseOver}
+                checkBoxonMouseLeave={checkBoxonMouseLeave}
+                handleCheckboxClick={handleCheckboxClick}
+              />
+            </DragAndDrop>
           )
         })}
       </ul>
@@ -170,13 +174,15 @@ class ListDirItem extends React.Component {
     this.state = {
       displayCheckbox: props.displayCheckbox,
       // dirs: initdirlists,
-      open: this.props.dirlistopen
+      open: this.props.dirlistopen,
+      files: []
     }
 
     this.handleClick = this.handleClick.bind(this)
     this.checkBoxonMouseOver = this.checkBoxonMouseOver.bind(this)
     this.checkBoxonMouseLeave = this.checkBoxonMouseLeave.bind(this)
     this.onSortEnd = this.onSortEnd.bind(this)
+    this.handleDrop = this.handleDrop.bind(this)
   }
 
   handleClick (index) {
@@ -225,6 +231,16 @@ class ListDirItem extends React.Component {
     console.log('state open ', this.state.open)
   };
 
+  handleDrop (files) {
+    console.log(files)
+    let fileList = this.state.files
+    for (var i = 0; i < files.length; i++) {
+      if (!files[i].name) return
+      fileList.push(files[i].name)
+    }
+    this.setState({ files: fileList })
+  }
+
   handleCheckboxClick (index) {
     console.log(index)
     // event.stopPropagation()
@@ -254,6 +270,7 @@ class ListDirItem extends React.Component {
         checkBoxonMouseOver={this.checkBoxonMouseOver}
         checkBoxonMouseLeave={this.checkBoxonMouseLeave}
         handleCheckboxClick={this.handleCheckboxClick}
+        handleDrop={this.handleDrop}
       />
     )
   }
