@@ -144,18 +144,20 @@ class ListContent extends React.PureComponent {
 
   handleSubmit (event) {
     // this.handleAddList(this.state.newDirName)
-    Directory.newDir(this.state.newDirName.toString())
-    let result = API.getData('directory')
-    this.props.setDir(result)
+    let notsame = Directory.newDir(this.state.newDirName.toString())
+    if (notsame) {
+      let result = API.getData('directory')
+      this.props.setDir(result)
 
-    let openlists = []
-    openlists.push(false)
-    for (let i = 0; i < this.props.dirlistopen.length; i++) {
-      openlists.push(this.props.dirlistopen[i])
+      let openlists = []
+      openlists.push(false)
+      for (let i = 0; i < this.props.dirlistopen.length; i++) {
+        openlists.push(this.props.dirlistopen[i])
+      }
+      this.props.setDirOpen(openlists)
+
+      this.props.setNewDir(false)
     }
-    this.props.setDirOpen(openlists)
-
-    this.props.setNewDir(false)
     event.preventDefault()
   }
 

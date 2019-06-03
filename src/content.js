@@ -23,6 +23,24 @@ window.__HMDIR = {
 /* main function */
 const main = async function () {
   if (!API.isLoggedIn()) return
+
+  const handleLoad = function () {
+    const notelist = document.querySelectorAll('.item')
+    notelist.forEach((element) => {
+      element.draggable = true
+      element.ondragstart = (event) => {
+        event.stopPropagation()
+        while (element.tagName.toLocaleLowerCase() !== 'a') {
+          element = element.parentNode
+        }
+        event.dataTransfer.setData('href', element.href)
+        const text = element.querySelectorAll('.text')
+        event.dataTransfer.setData('name', text[0].innerText)
+      }
+    })
+  }
+  window.addEventListener('load', handleLoad)
+
   await API.initCache()
   // daemon the root component on root div
   const root = document.createElement('div')

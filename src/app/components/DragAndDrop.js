@@ -7,7 +7,8 @@ const styles = theme => ({
     position: 'relative'
   },
   block: {
-    border: 'dashed grey 4px',
+    margin: '2px',
+    border: 'dashed grey 2px',
     backgroundColor: 'rgba(255,255,255,.8)',
     position: 'absolute',
     top: 0,
@@ -15,15 +16,6 @@ const styles = theme => ({
     left: 0,
     right: 0,
     zIndex: 9999
-  },
-  text: {
-    position: 'bsolute',
-    top: '50%',
-    right: 0,
-    left: 0,
-    textAlign: 'center',
-    color: 'grey',
-    fontSize: 36
   }
 })
 
@@ -68,10 +60,8 @@ class DragAndDrop extends Component {
     e.preventDefault()
     e.stopPropagation()
     this.setState({ dragging: false })
-    console.log('drageanddrop ', e.dataTransfer)
-    console.log(e.dataTransfer.types)
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      this.props.handleDrop(e.dataTransfer.files)
+    if (e.dataTransfer.getData('name')) {
+      this.props.handleDrop(e.dataTransfer, this.props.dirId)
       e.dataTransfer.clearData()
       this.dragCounter = 0
     }
@@ -101,11 +91,7 @@ class DragAndDrop extends Component {
         ref={this.dropRef}
       >
         {this.state.dragging && (
-          <div className={this.props.classes.block}>
-            {/* <div className={this.props.classes.text}>
-              <div>drop here</div>
-            </div> */}
-          </div>
+          <div className={this.props.classes.block} />
         )}
         {this.props.children}
       </div>
