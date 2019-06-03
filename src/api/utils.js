@@ -82,8 +82,6 @@ async function getDOM (url) {
 async function newData (content) {
   const newPage = (await fetch('/new')).url
 
-  // FIXME: set timeout since the page may not be initialized soon
-  // FIXME: Add exception if the note cannot be created
   setTimeout(function () {
     writeData(newPage.replace('https://hackmd.io/', ''),
       content)

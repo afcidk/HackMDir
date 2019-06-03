@@ -49,12 +49,17 @@ function moveNote (title, href, src = null, dst = null) {
 /**
  * Create new directory (default at the end!)
  * @param String title
+ * @return Boolean Whether action succeed or not
  */
 function newDir (title) {
   read()
+  // No duplicate title!
+  if (dirCache.find((e) => e.title === title) !== -1) return false
   dirCache.forEach(e => { e.dirId += 1 })
   dirCache.push({ dirId: 0, title: title, notes: [] })
   write()
+
+  return true
 }
 
 /**
