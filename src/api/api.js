@@ -1,5 +1,4 @@
 /* eslint-env browser */
-// FIXME: move some functions to new file (utils)
 
 const utils = require('./utils.js')
 var dataUrl = ''
