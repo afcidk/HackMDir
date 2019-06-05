@@ -1,7 +1,6 @@
 /* eslint-env browser */
 
 const utils = require('./utils.js')
-var dataUrl = ''
 var personalCache = ''
 var historyCache = ''
 var dataCache = utils.defaultDataCache
@@ -19,7 +18,7 @@ async function isLoggedIn () {
 }
 
 async function initCache () {
-  dataUrl = await utils.getDataUrl()
+  await utils.getDataUrl()
   personalCache = await utils.getPersonal()
   historyCache = await utils.getHistory()
   dataCache = await utils.getData()
@@ -93,7 +92,7 @@ async function delNote (noteId) {
  * Write content to hkmdir-data (overwrite)
  * @param JSON Content to write
  */
-function writeContent (key, value) {
+async function writeContent (key, value) {
   const prefix = utils.common_prefix
   const keyFilter = ['last_tab', 'dir']
   if (keyFilter.indexOf(key) === -1) {
@@ -103,7 +102,12 @@ function writeContent (key, value) {
 
   dataCache[key] = value
 
-  utils.writeData(dataUrl.replace('https://hackmd.io/', ''), prefix + JSON.stringify(dataCache))
+  const url = await utils.getDataUrl()
+  const ret = utils.writeData(url.replace('https://hackmd.io/', ''), prefix + JSON.stringify(dataCache))
+  if (ret === false) {
+    console.log('Retrieve hkmdir-data error, flush dataCache')
+    await initCache()
+  }
 }
 
 /**

@@ -69,7 +69,7 @@ async function getRevision (noteId) {
  */
 async function getDOM (url) {
   const res = await fetch(url)
-  if (res.status === 404) return null
+  if (res.status === 404) return undefined
 
   const text = await res.text()
   return new DOMParser().parseFromString(text, 'text/html').firstElementChild
@@ -101,10 +101,10 @@ async function writeData (noteId, content) {
 
   socket.on('connect', async () => {
     const doc = await getDOM(`https://hackmd.io/${noteId}/publish`)
-    if (doc === null) {
-      getDataUrl()
-      writeData(dataUrl.replace('https://hackmd.io/', ''), content)
-      return
+    if (doc === undefined) {
+      await getDataUrl(true)
+      await writeData(dataUrl.replace('https://hackmd.io/', ''), content)
+      return false
     }
     const length = doc.querySelector('#doc').innerText.length
     var revision = await getRevision(noteId)
@@ -121,6 +121,8 @@ async function writeData (noteId, content) {
 
     socket.emit('permission', 'private')
   })
+
+  return true
 }
 
 /**
@@ -131,6 +133,9 @@ async function getDataUrl (force = false) {
   if (dataUrl && !force) return dataUrl
   const beforeRedirect = await fetch('/profile')
   const doc = await getDOM(`${beforeRedirect.url}/?q=hkmdir-data`)
+  if (doc === undefined) {
+    console.log(`Error: ${beforeRedirect.url}/?q=hkmdir-data`)
+  }
   const page = doc.querySelector('.content span')
 
   if (page === null) {
@@ -174,7 +179,7 @@ async function delHistory (note) {
   console.log(`delete history: ${note}`)
   const header = new Headers()
   header.append('x-requested-with', 'XMLHttpRequest')
-  // get the csfr token
+  // get the csrf token
   let token
   const metas = document.getElementsByTagName('meta')
   for (let i = 0; i < metas.length; i++) {
@@ -191,18 +196,16 @@ async function delHistory (note) {
 }
 
 async function getData () {
-  console.log(dataUrl)
   const doc = await fetch(`${dataUrl}/publish`)
   const text = await doc.text()
   var data = new DOMParser().parseFromString(text, 'text/html')
     .querySelector('#doc').innerText.replace(COMMON_PREFIX, '')
   delHistory(dataUrl.replace('https://hackmd.io/', ''))
 
-  console.log(data)
   try {
     return JSON.parse(data)
   } catch (e) {
-    console.log(data)
+    console.log('Wrong JSON format\n' + data)
     console.log(e)
     console.log('will clear hkmdir-data')
     writeData(dataUrl.replace('https://hackmd.io/', ''),
