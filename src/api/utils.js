@@ -23,6 +23,7 @@ async function asyncForEach (array, callback) {
 async function connect (noteId) {
   // Register realtime server
   var server = await fetch(`/realtime-reg/realtime?noteId=${noteId}`)
+  if (server.status === 500) return undefined
   server = await server.text()
   var url = JSON.parse(server)['url']
   url = url.replace('https://hackmd.io', '') + '/socket.io/'
@@ -97,8 +98,14 @@ async function newData (content) {
  */
 async function writeData (noteId, content) {
   const socket = await connect(noteId)
+
   socket.on('connect', async () => {
     const doc = await getDOM(`https://hackmd.io/${noteId}/publish`)
+    if (doc === null) {
+      getDataUrl()
+      writeData(dataUrl.replace('https://hackmd.io/', ''), content)
+      return
+    }
     const length = doc.querySelector('#doc').innerText.length
     var revision = await getRevision(noteId)
 
@@ -120,17 +127,17 @@ async function writeData (noteId, content) {
  * Initialize data note if not exist
  * @returns String url of data note
  */
-async function getDataUrl () {
-  if (dataUrl) return dataUrl
+async function getDataUrl (force = false) {
+  if (dataUrl && !force) return dataUrl
   const beforeRedirect = await fetch('/profile')
-  const doc = await getDOM(`${beforeRedirect.url}?q=hkmdir-data`)
-  const page = doc.querySelector('.content a')
+  const doc = await getDOM(`${beforeRedirect.url}/?q=hkmdir-data`)
+  const page = doc.querySelector('.content span')
 
   if (page === null) {
     console.log('page = null, will create new data file')
     dataUrl = await newData(`${COMMON_PREFIX}\n\n${JSON.stringify(DEFAULT_DATA_CACHE)}`)
   } else {
-    dataUrl = page.href
+    dataUrl = page.getAttribute('data-href')
   }
   delHistory(dataUrl.replace('https://hackmd.io/', ''))
 
@@ -184,6 +191,7 @@ async function delHistory (note) {
 }
 
 async function getData () {
+  console.log(dataUrl)
   const doc = await fetch(`${dataUrl}/publish`)
   const text = await doc.text()
   var data = new DOMParser().parseFromString(text, 'text/html')

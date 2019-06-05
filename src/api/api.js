@@ -13,15 +13,13 @@ var dataCache = utils.defaultDataCache
 async function isLoggedIn () {
   var cookie = document.cookie
 
-  // open data file at background, which supports socketio
-  dataUrl = await utils.getDataUrl()
-
   if (cookie.search('userid') !== -1 && cookie.search('loginstate') !== -1) return true
 
   return false
 }
 
 async function initCache () {
+  dataUrl = await utils.getDataUrl()
   personalCache = await utils.getPersonal()
   historyCache = await utils.getHistory()
   dataCache = await utils.getData()
