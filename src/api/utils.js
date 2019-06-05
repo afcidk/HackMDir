@@ -122,7 +122,8 @@ async function writeData (noteId, content) {
  */
 async function getDataUrl () {
   if (dataUrl) return dataUrl
-  var doc = await getDOM('/profile?q=hkmdir-data')
+  const beforeRedirect = await fetch('/profile')
+  const doc = await getDOM(`${beforeRedirect.url}?q=hkmdir-data`)
   const page = doc.querySelector('.content a')
 
   if (page === null) {
