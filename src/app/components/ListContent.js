@@ -108,6 +108,7 @@ class ListContent extends React.PureComponent {
           this.props.setItems([])
           this.props.setDir(result)
           this.props.setDirOpen(new Array(this.props.dirlist.length).fill(false))
+          this.props.setDirState(new Array(this.props.dirlist.length).fill(false))
         } else {
           this.props.setItems(result)
           this.props.setDir([])
@@ -145,6 +146,7 @@ class ListContent extends React.PureComponent {
   handleSubmit (event) {
     // this.handleAddList(this.state.newDirName)
     let notsame = Directory.newDir(this.state.newDirName.toString())
+    console.log(notsame)
     if (notsame) {
       let result = API.getData('directory')
       this.props.setDir(result)
@@ -170,7 +172,7 @@ class ListContent extends React.PureComponent {
   render () {
     console.log('ListContent render')
     // destructuring assignment
-    const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected, setNewDir, dirlist, setDir, dirlistopen, setDirOpen } = this.props
+    const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected, setNewDir, dirlist, setDir, dirlistopen, setDirOpen, dirliststate, setDirState } = this.props
     let updatedList = list.filter((item) => {
       return item.title.toString().toLowerCase().indexOf(this.props.search.toLowerCase()) !== -1
     })
@@ -198,7 +200,13 @@ class ListContent extends React.PureComponent {
                   <div style={{ display: this.props.newdir ? 'block' : 'none' }}>
                     <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} />
                   </div>
-                  <ListDirItem dir={dirlist} setDir={setDir} dirlistopen={dirlistopen} setDirOpen={setDirOpen} setNewDir={setNewDir} newdir={this.props.newdir} displayCheckbox={Object.keys(selectedList).length > 0} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
+                  <ListDirItem
+                    dir={dirlist} setDir={setDir}
+                    dirlistopen={dirlistopen} setDirOpen={setDirOpen}
+                    newdir={this.props.newdir} setNewDir={setNewDir}
+                    dirliststate={dirliststate} setDirState={setDirState}
+                    displayCheckbox={Object.keys(selectedList).length > 0}
+                    selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} selectedList={selectedList} />
                 </div>
               ) : (
                 <AutoSizer>

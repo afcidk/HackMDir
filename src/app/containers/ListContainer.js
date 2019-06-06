@@ -5,6 +5,7 @@ import { selectItem, unSelectItem, setSelected } from '../redux/actions/Selected
 import { setNewDir } from '../redux/actions/NewDir.js'
 import { setDir, deleteDir } from '../redux/actions/DirList.js'
 import { setDirOpen } from '../redux/actions/DirListOpen.js'
+import { setDirState } from '../redux/actions/DirState.js'
 import { setSearch } from '../redux/actions/Search.js'
 
 const mapStateToProps = (state) => {
@@ -15,6 +16,7 @@ const mapStateToProps = (state) => {
     newdir: state.NewDir,
     dirlist: state.DirList,
     dirlistopen: state.DirListOpen,
+    dirliststate: state.DirState,
     search: state.Search
   }
 }
@@ -30,6 +32,7 @@ const mapDispatchToProps = (dispatch) => {
     setDir: (target) => dispatch(setDir(target)),
     deleteDir: (target) => dispatch(deleteDir(target)),
     setDirOpen: (target) => dispatch(setDirOpen(target)),
+    setDirState: (target) => dispatch(setDirState(target)),
     setSearch: (target) => dispatch(setSearch(target))
   }
 }

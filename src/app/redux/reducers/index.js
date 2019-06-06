@@ -5,6 +5,7 @@ import Tab from './Tab.js'
 import NewDir from './NewDir.js'
 import DirList from './DirList.js'
 import DirListOpen from './DirListOpen.js'
+import DirState from './DirState.js'
 import Search from './Search.js'
 
 export default combineReducers({
@@ -14,5 +15,6 @@ export default combineReducers({
   NewDir,
   DirList,
   DirListOpen,
+  DirState,
   Search
 })

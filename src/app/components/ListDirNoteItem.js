@@ -36,6 +36,9 @@ const styles = theme => ({
   checkedStyle: {
     color: '#4285f4',
     fill: '#4285f4'
+  },
+  forceDisplay: {
+    opacity: '1 !important'
   }
 })
 
@@ -65,6 +68,7 @@ const NoteItem = sortableElement(
     props,
     checkBoxonMouseOver,
     checkBoxonMouseLeave,
+    handleCheckboxClick,
     handleListClick
   }) => (
     <ListItem
@@ -94,9 +98,13 @@ const NoteItem = sortableElement(
         <Grid item xs={2}>
           <Checkbox
             style={{ opacity: state.displayCheckbox ? 1 : 0, color: '#4285f4' }}
-            className={style.checkbox}
+            className={style.displayCheckbox ? `${style.forceDisplay} ${style.checkbox} test` : `${style.checkbox}`}
             onMouseOver={checkBoxonMouseOver}
             onMouseLeave={checkBoxonMouseLeave}
+            checked={state.noteCheck[sortIndex]}
+            onClick={(e) => {
+              handleCheckboxClick(e, sortIndex)
+            }}
           />
         </Grid>
       </Grid>
@@ -105,7 +113,7 @@ const NoteItem = sortableElement(
 )
 
 const NoteList = sortableContainer(
-  ({ state, style, props, checkBoxonMouseOver, checkBoxonMouseLeave, handleListClick }) => {
+  ({ state, style, props, checkBoxonMouseOver, checkBoxonMouseLeave, handleCheckboxClick, handleListClick }) => {
     return (
       <ul>
         {props.value.notes.map((value, index) => (
@@ -119,6 +127,7 @@ const NoteList = sortableContainer(
             props={props}
             checkBoxonMouseOver={checkBoxonMouseOver}
             checkBoxonMouseLeave={checkBoxonMouseLeave}
+            handleCheckboxClick={handleCheckboxClick}
             handleListClick={handleListClick}
           />
         ))}
@@ -134,11 +143,12 @@ class NoteContainer extends React.Component {
       displayCheckbox: props.displayCheckbox,
       noteindex: -1,
       // notes: [],
+      noteCheck: new Array(props.dirlistlen).fill(props.dirlistclick[props.dirId]),
       dirId: -1
     }
-
     this.checkBoxonMouseOver = this.checkBoxonMouseOver.bind(this)
     this.checkBoxonMouseLeave = this.checkBoxonMouseLeave.bind(this)
+    this.handleCheckboxClick = this.handleCheckboxClick.bind(this)
     this.onSortEnd = this.onSortEnd.bind(this)
     this.handleListClick = this.handleListClick.bind(this)
   }
@@ -149,6 +159,58 @@ class NoteContainer extends React.Component {
 
   checkBoxonMouseLeave () {
     this.setState({ displayCheckbox: this.props.displayCheckbox })
+  }
+
+  componentWillReceiveProps (nextProps) {
+    if (nextProps.dirlistclick[this.props.dirId]) {
+      if (!nextProps.dirliststate[this.props.dirId]) {
+        this.setState({ noteCheck: this.state.noteCheck })
+      } else {
+        this.setState({ noteCheck: new Array(this.props.dirlistlen).fill(true) })
+      }
+    } else {
+      if (this.props.dirlistclick[this.props.dirId] !== nextProps.dirlistclick[this.props.dirId]) {
+        this.setState({ noteCheck: new Array(this.props.dirlistlen).fill(false) })
+      }
+    }
+  }
+
+  handleCheckboxClick (event, index) {
+    event.stopPropagation()
+    const temp = this.state.noteCheck
+    if (event.target.checked) {
+      this.props.selectItemEvent({
+        title: this.props.notes[index].title,
+        href: this.props.notes[index].href
+      })
+      temp[index] = true
+      this.setState({ noteCheck: temp })
+      console.log(this.state.noteCheck)
+      if (JSON.stringify(temp) === JSON.stringify(new Array(this.props.dirlistlen).fill(true))) {
+        let clicklists = []
+        for (let i = 0; i < this.props.dirlistlen; i++) {
+          if (i === this.props.dirId) {
+            clicklists.push(true)
+          } else clicklists.push(this.props.dirliststate[i])
+        }
+        this.props.setDirState(clicklists)
+      }
+    } else {
+      this.props.unSelectItemEvent({
+        title: this.props.notes[index].title,
+        href: this.props.notes[index].href
+      })
+      temp[index] = false
+      this.setState({ noteCheck: temp })
+
+      let clicklists = []
+      for (let i = 0; i < this.props.dirlistlen; i++) {
+        if (i === this.props.dirId) {
+          clicklists.push(false)
+        } else clicklists.push(this.props.dirliststate[i])
+      }
+      this.props.setDirState(clicklists)
+    }
   }
 
   handleListClick (event, index) {
@@ -186,6 +248,7 @@ class NoteContainer extends React.Component {
         state={this.state}
         checkBoxonMouseOver={this.checkBoxonMouseOver}
         checkBoxonMouseLeave={this.checkBoxonMouseLeave}
+        handleCheckboxClick={this.handleCheckboxClick}
         handleListClick={this.handleListClick}
       />
     )
