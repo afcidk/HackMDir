@@ -64,6 +64,9 @@ const styles = theme => ({
     margin: '4px',
     backgroundColor: '#4285f4',
     color: 'white'
+  },
+  forceDisplay: {
+    opacity: '1 !important'
   }
 })
 
@@ -100,13 +103,13 @@ const DirItem = sortableElement(
             <ListItemText inset primary={`${dirName} - #${sortIndex}`} classes={{ primary: `${style.text} ${props.checked ? style.checkedStyle : null}` }} />
             <Checkbox
               style={{ opacity: state.displayCheckbox ? 1 : 0, color: '#4285f4' }}
-              className={style.checkbox}
+              className={state.displayCheckbox ? `${style.forceDisplay} ${style.checkbox} test` : `${style.checkbox}`}
               onMouseOver={checkBoxonMouseOver}
               onMouseLeave={checkBoxonMouseLeave}
-              onClick={() => {
-                handleCheckboxClick(sortIndex)
+              onClick={(e) => {
+                handleCheckboxClick(e, sortIndex)
               }}
-              // checked={props.checked}
+              checked={props.dirliststate[sortIndex]}
             />
           </ListItem>
         </Grid>
@@ -114,7 +117,13 @@ const DirItem = sortableElement(
           <Collapse in={props.dirlistopen[sortIndex]} timeout='auto' unmountOnExit>
             <List component='div' disablePadding>
               <ListItem>
-                <ListDirNoteItem value={value} dirId={sortIndex} setDir={props.setDir} notes={props.dir[sortIndex].notes} />
+                <ListDirNoteItem
+                  value={value}
+                  dirId={sortIndex} setDir={props.setDir}
+                  dirliststate={props.dirliststate} dirlistclick={state.dirlistclick} setDirState={props.setDirState}
+                  dirlistlen={props.dir.length}
+                  selectItemEvent={props.selectItemEvent} unSelectItemEvent={props.unSelectItemEvent} selectedList={props.selectedList}
+                  notes={props.dir[sortIndex].notes} />
               </ListItem>
             </List>
           </Collapse>
@@ -174,13 +183,15 @@ class ListDirItem extends React.Component {
     this.state = {
       displayCheckbox: props.displayCheckbox,
       // dirs: initdirlists,
-      open: this.props.dirlistopen,
+      open: props.dirlistopen,
+      dirlistclick: new Array(props.dirlistlen).fill(false),
       currentMouseX: 0
     }
 
     this.handleClick = this.handleClick.bind(this)
     this.checkBoxonMouseOver = this.checkBoxonMouseOver.bind(this)
     this.checkBoxonMouseLeave = this.checkBoxonMouseLeave.bind(this)
+    this.handleCheckboxClick = this.handleCheckboxClick.bind(this)
     this.onSortEnd = this.onSortEnd.bind(this)
     this.detectMouseMove = this.detectMouseMove.bind(this)
     this.handleDrop = this.handleDrop.bind(this)
@@ -213,7 +224,6 @@ class ListDirItem extends React.Component {
       this.props.setDir(result)
       return
     }
-    console.log(oldIndex, newIndex)
 
     Directory.moveDir(oldIndex.newIndex, oldIndex.oldIndex)
     let result = API.getData('directory')
@@ -249,20 +259,32 @@ class ListDirItem extends React.Component {
     this.props.setDir(result)
   }
 
-  handleCheckboxClick (index) {
-    console.log(index)
-    // event.stopPropagation()
-    // if (event.target.checked) {
-    //   this.props.selectItemEvent({
-    //     title: this.props.title,
-    //     href: this.props.href
-    //   })
-    // } else {
-    //   this.props.unSelectItemEvent({
-    //     title: this.props.title,
-    //     href: this.props.href
-    //   })
-    // }
+  handleCheckboxClick (event, index) {
+    event.stopPropagation()
+    let clicklists = []
+    for (let i = 0; i < this.props.dirliststate.length; i++) {
+      if (i === index) {
+        if (event.target.checked) {
+          clicklists.push(true)
+          for (let j = 0; j < this.props.dir[index].notes.length; j++) {
+            this.props.selectItemEvent({
+              title: this.props.dir[index].notes[j].title,
+              href: this.props.dir[index].notes[j].href
+            })
+          }
+        } else {
+          clicklists.push(false)
+          for (let j = 0; j < this.props.dir[index].notes.length; j++) {
+            this.props.unSelectItemEvent({
+              title: this.props.dir[index].notes[j].title,
+              href: this.props.dir[index].notes[j].href
+            })
+          }
+        }
+      } else clicklists.push(this.props.dirliststate[i])
+    }
+    this.props.setDirState(clicklists)
+    this.setState({ dirlistclick: clicklists })
   }
 
   // the render function
