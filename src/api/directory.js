@@ -24,6 +24,7 @@ const getData = require('./api.js').getData
  * @param String href
  * @param JSON info of destination note {dirId: dirId, noteId: noteId}
  * @param JSON info of source note {dirId: dirId, noteId: noteId}
+ * @returns Boolean Whether exists duplicate note or not
  */
 function moveNote (title, href, src = null, dst = null) {
   read()
@@ -39,11 +40,13 @@ function moveNote (title, href, src = null, dst = null) {
   if (dst) { // remove note will not enter this scope
     let dstNotes = dirCache.find((e) => e.dirId === dst.dirId).notes
     dstNotes.forEach(e => { e.noteId += +(e.noteId >= dst.noteId) })
+    if (dstNotes.findIndex(e => e.href === href) === -1) return false
     dstNotes.push({ noteId: dst.noteId, title: title, href: href })
   }
   // dirCache.forEach(e => console.table(e.notes))
 
   write()
+  return true
 }
 
 /**
@@ -54,7 +57,7 @@ function moveNote (title, href, src = null, dst = null) {
 function newDir (title) {
   read()
   // No duplicate title!
-  if (dirCache.find((e) => e.title === title) !== -1) return false
+  if (dirCache.findIndex((e) => e.title === title) !== -1) return false
   dirCache.forEach(e => { e.dirId += 1 })
   dirCache.push({ dirId: 0, title: title, notes: [] })
   write()
