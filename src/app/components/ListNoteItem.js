@@ -26,7 +26,7 @@ const styles = theme => ({
     opacity: 0,
     color: '#4285f4',
     '&:hover': {
-      opacity: 1
+      opacity: '1'
     }
   },
   forceDisplay: {
@@ -63,12 +63,13 @@ class ListNoteItem extends React.PureComponent {
   handleCheckboxClick (event) {
     event.stopPropagation()
     if (event.target.checked) {
-      this.props.selectItemEvent({
+      this.props.selectNoteEvent({
         title: this.props.title,
         href: this.props.href
       })
     } else {
-      this.props.unSelectItemEvent({
+      console.log(this.props.unSelectNoteEvent)
+      this.props.unSelectNoteEvent({
         title: this.props.title,
         href: this.props.href
       })
@@ -93,9 +94,15 @@ class ListNoteItem extends React.PureComponent {
             <Grid item xs={8}>
               <ListItemText primary={this.props.title} classes={{ primary: `${this.props.classes.text} ${this.props.checked ? this.props.classes.checkedStyle : null}` }} />
             </Grid>
-            <Grid item xs={2}>
-              <Checkbox style={{ color: '#4285f4' }} className={this.state.displayCheckbox ? `${this.props.classes.forceDisplay} ${this.props.classes.checkbox} test` : `${this.props.classes.checkbox}`} onClick={this.handleCheckboxClick} checked={this.props.checked} />
-            </Grid>
+            {
+              this.props.selectable ? (
+                <Grid item xs={2}>
+                  <Checkbox style={{ color: '#4285f4' }} className={this.state.displayCheckbox ? `${this.props.classes.forceDisplay} ${this.props.classes.checkbox} test` : `${this.props.classes.checkbox}`} onClick={this.handleCheckboxClick} checked={this.props.checked} />
+                </Grid>
+              ) : (
+                null
+              )
+            }
           </Grid>
         </ListItem>
       </React.Fragment>

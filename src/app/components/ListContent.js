@@ -12,7 +12,7 @@ import { Scrollbars } from 'react-custom-scrollbars'
 
 import Slide from '@material-ui/core/Slide'
 
-import OperationContent from './OperationContent.js'
+import OperationContainer from '../containers/OperationContainer.js'
 import Collapse from '@material-ui/core/Collapse'
 
 import API from '../../api/api.js'
@@ -50,10 +50,11 @@ const styles = theme => ({
 })
 
 const row = ({ index, style, data }) => {
-  const { updatedList, selectedList, selectItem, unSelectItem } = data
+  const { list, selectNote, unSelectNote } = data
+  console.log(list)
   return (
     <div style={style}>
-      <MemoListNoteItem key={`note-${index}`} title={updatedList[index].title} href={updatedList[index].href} displayCheckbox={Object.keys(selectedList).length > 0} checked={!!selectedList[updatedList[index].href.substr(18)]} selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} />
+      <MemoListNoteItem key={`note-${index}`} selectable title={list.filteredNotes[index].title} href={list.filteredNotes[index].href} displayCheckbox={Object.keys(list.selectedNotes).length > 0} checked={!!list.selectedNotes[list.filteredNotes[index].href.substr(18)]} selectNoteEvent={selectNote} unSelectNoteEvent={unSelectNote} />
     </div>
   )
 }
@@ -68,6 +69,8 @@ class ListContent extends React.PureComponent {
     }
 
     this.listRef = React.createRef()
+    // init the list redux state first
+    props.initList([])
 
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
@@ -85,7 +88,7 @@ class ListContent extends React.PureComponent {
     }
     this.fetchData(nextProps.tab.current)
     // erase the selected items
-    this.props.setSelected({})
+    this.props.setSelectedNotes({})
   }
 
   fetchData (tab) {
@@ -100,18 +103,17 @@ class ListContent extends React.PureComponent {
     }
     // deal with the transition delay
     const enterDelay = result.length > 0 ? 100 : 0
-    const leaveDealy = this.props.tab.prev === 'Directory' ? (this.props.dirlist.length > 0 ? 100 : 0)
+    const leaveDealy = this.props.tab.prev === 'Directory' ? (Object.keys(this.props.dir).length > 0 ? 100 : 0)
       : (this.props.list.length > 0 ? 100 : 0)
     setTimeout(function () {
       setTimeout(function () {
         if (this.props.tab.current === 'Directory') {
-          this.props.setItems([])
-          this.props.setDir(result)
-          this.props.setDirOpen(new Array(this.props.dirlist.length).fill(false))
-          this.props.setDirState(new Array(this.props.dirlist.length).fill(false))
+          this.props.setNotes([])
+          // init dir state
+          this.props.setDir({ current: result, prev: {} })
         } else {
-          this.props.setItems(result)
-          this.props.setDir([])
+          this.props.setNotes(result)
+          this.props.setDir({ current: [], prev: {} })
         }
         this.setState({
           changingTab: false
@@ -120,47 +122,19 @@ class ListContent extends React.PureComponent {
     }.bind(this), leaveDealy)
   }
 
-  // handleAddList (newitem) {
-  //   let lists = this.state.dirs
-  //   let open = this.state.open
-  //   let newlists = []
-  //   let newopen = []
-  //   newlists.push(newitem)
-  //   for (let i = 0; i <= lists.length - 1; i++) {
-  //     newlists.push(lists[i])
-  //   }
-  //   newopen.push(false)
-  //   for (let i = 0; i <= open.length - 1; i++) {
-  //     newopen.push(open[i])
-  //   }
-  //   this.setState({
-  //     dirs: newlists,
-  //     open: newopen
-  //   })
-  // };
-
   handleChange (event) {
     this.setState({ newDirName: event.target.value })
   }
 
   handleSubmit (event) {
-    // this.handleAddList(this.state.newDirName)
-    let notsame = Directory.newDir(this.state.newDirName.toString())
-    console.log(notsame)
-    if (notsame) {
-      let result = API.getData('directory')
-      this.props.setDir(result)
-
-      let openlists = []
-      openlists.push(false)
-      for (let i = 0; i < this.props.dirlistopen.length; i++) {
-        openlists.push(this.props.dirlistopen[i])
-      }
-      this.props.setDirOpen(openlists)
-
+    event.preventDefault()
+    const status = Directory.newDir(this.state.newDirName.toString())
+    if (status) {
+      const result = API.getData('directory')
+      this.props.setDir({ current: result, prev: this.props.dir })
+      this.props.newDir(this.state.newDirName)
       this.props.setNewDir(false)
     }
-    event.preventDefault()
   }
 
   handleScroll ({ target }) {
@@ -171,11 +145,13 @@ class ListContent extends React.PureComponent {
   // the render function
   render () {
     console.log('ListContent render')
+    console.log(this.props.list)
     // destructuring assignment
-    const { list, selectedList, selectItem, unSelectItem, deleteItems, setSelected, setNewDir, dirlist, setDir, dirlistopen, setDirOpen, dirliststate, setDirState } = this.props
-    let updatedList = list.filter((item) => {
-      return item.title.toString().toLowerCase().indexOf(this.props.search.toLowerCase()) !== -1
-    })
+    const {
+      list, selectNote, unSelectNote,
+      dir, setNewDir, setDir, setDirOpen, setDirCheck, setDirNoteCheck,
+      deleteDir
+    } = this.props
     return (
       <div className={this.props.classes.root}>
         <Slide
@@ -191,22 +167,24 @@ class ListContent extends React.PureComponent {
               autoHideTimeout={1000}
               autoHideDuration={500}>
               <ListSubheader className={this.props.classes.header} key='operation-container'>
-                <Collapse in={Object.keys(selectedList).length > 0} mountOnEnter unmountOnExit style={{ transformOrigin: '0 0 0' }} timeout={100}>
-                  <OperationContent tab={this.props.tab} list={updatedList} selectedList={selectedList} deleteItemsEvent={deleteItems} setSelectedEvent={setSelected} />
+                <Collapse in={Object.keys(list.selectedNotes).length > 0} mountOnEnter unmountOnExit style={{ transformOrigin: '0 0 0' }} timeout={100}>
+                  <OperationContainer tab={this.props.tab} />
                 </Collapse>
               </ListSubheader>
               {this.props.tab.current === 'Directory' ? (
                 <div>
-                  <div style={{ display: this.props.newdir ? 'block' : 'none' }}>
+                  <Collapse
+                    in={this.props.newdir}
+                    timeout={100}
+                    mountOnEnter
+                    unmountOnExit>
                     <NewDirItem handleSubmit={this.handleSubmit} handleChange={this.handleChange} />
-                  </div>
+                  </Collapse>
                   <ListDirItem
-                    dir={dirlist} setDir={setDir}
-                    dirlistopen={dirlistopen} setDirOpen={setDirOpen}
-                    newdir={this.props.newdir} setNewDir={setNewDir}
-                    dirliststate={dirliststate} setDirState={setDirState}
-                    displayCheckbox={Object.keys(selectedList).length > 0}
-                    selectItemEvent={selectItem} unSelectItemEvent={unSelectItem} selectedList={selectedList} />
+                    setDir={setDir} newdir={this.props.newdir} setNewDir={setNewDir} deleteDir={deleteDir}
+                    dir={dir} setDirCheck={setDirCheck} setDirNoteCheck={setDirNoteCheck} setDirOpen={setDirOpen}
+                    displayCheckbox={Object.keys(list.selectedNotes).length > 0}
+                    selectNoteEvent={selectNote} unSelectNoteEvent={unSelectNote} selectedNotes={list.selectedNotes} />
                 </div>
               ) : (
                 <AutoSizer>
@@ -218,12 +196,11 @@ class ListContent extends React.PureComponent {
                             height={height}
                             width={width - 12}
                             ref={this.listRef}
-                            itemCount={updatedList.length}
+                            itemCount={list.filteredNotes.length}
                             itemData={{
-                              updatedList,
-                              selectedList,
-                              selectItem,
-                              unSelectItem
+                              list,
+                              selectNote,
+                              unSelectNote
                             }}
                             style={{ overflow: false }}
                             itemSize={48}>

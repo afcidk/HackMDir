@@ -54,7 +54,7 @@ function moveNote (title, href, src = null, dst = null) {
 function newDir (title) {
   read()
   // No duplicate title!
-  if (dirCache.find((e) => e.title === title) !== -1) return false
+  if (dirCache.findIndex((e) => e.title === title) !== -1) return false
   dirCache.forEach(e => { e.dirId += 1 })
   dirCache.push({ dirId: 0, title: title, notes: [] })
   write()

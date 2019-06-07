@@ -1,28 +1,22 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
+import Button from '@material-ui/core/Button'
 import Grid from '@material-ui/core/Grid'
-
-import DragHandle from '@material-ui/icons/DragHandle'
+import Input from '@material-ui/core/Input'
 
 const styles = theme => ({
   newDir: {
-    paddingRight: '8px',
-    paddingLeft: '8px',
-    paddingTop: '8px',
-    paddingBottom: '8px'
+    boxShadow: '0 9px 18px rgba(0, 0, 0, 0.18)',
+    padding: '4px 20px 4px 6px',
+    height: '48px'
   },
   input: {
-    borderRadius: '4px',
-    borderColor: '#4285f4'
+    fontSize: '16px'
   },
   button: {
-    borderRadius: '4px',
-    borderColor: '#4285f4',
-    margin: '4px',
     backgroundColor: '#4285f4',
-    color: 'white'
+    color: 'white',
+    fontSize: '12px'
   }
 })
 
@@ -30,18 +24,29 @@ class NewDirItem extends React.PureComponent {
   // the render function
   render () {
     return (
-      <Grid container spacing={16} justify='flex-start' alignContent='center' alignItems='center'>
-        <Grid item xs={12}>
-          <ListItem>
-            <ListItemIcon>
-              <DragHandle />
-            </ListItemIcon>
-            <form onSubmit={this.props.handleSubmit} className={this.props.classes.newDir}>
-              <input className={this.props.classes.input} type='text' onChange={this.props.handleChange} />
-              <input className={this.props.classes.button} type='submit' value='Add' />
-            </form>
-          </ListItem>
+      <Grid component='form' container justify='flex-start' alignContent='center' alignItems='center' onSubmit={this.props.handleSubmit} className={this.props.classes.newDir}>
+        <Grid item xs={1} />
+        <Grid item xs={7}>
+          <Input
+            fullWidth
+            autoFocus
+            placeholder='New Dir'
+            inputProps={{
+              'aria-label': 'Description',
+              style: {
+                fontSize: '14px'
+              }
+            }}
+            onChange={this.props.handleChange}
+          />
         </Grid>
+        <Grid item xs={1} />
+        <Grid item xs={3}>
+          <Button variant='contained' color='primary' className={this.props.classes.button} onClick={this.props.handleSubmit} type='submit'>
+            Add
+          </Button>
+        </Grid>
+        <Grid item xs={1} />
       </Grid>
     )
   }

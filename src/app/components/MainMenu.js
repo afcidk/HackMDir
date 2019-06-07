@@ -11,6 +11,7 @@ import CreateNewFolderIcon from '@material-ui/icons/CreateNewFolder'
 import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
+import Grow from '@material-ui/core/Grow'
 
 import Paper from '@material-ui/core/Paper'
 import SearchIcon from '@material-ui/icons/Search'
@@ -41,7 +42,7 @@ const styles = theme => ({
       borderBottomColor: 'white'
     }
   },
-  selectItem: {
+  selectNote: {
     fontSize: '14px'
   },
   triangle: {
@@ -80,6 +81,9 @@ class MainMenu extends React.PureComponent {
   }
 
   changeShowDir () {
+    if (Object.keys(this.props.list.selectedNotes).length > 0) {
+      return
+    }
     this.props.setNewDir(!this.props.newdir)
   }
   changeSearch (event) {
@@ -89,7 +93,7 @@ class MainMenu extends React.PureComponent {
       clearTimeout(keying)
     }
     keying = setTimeout(function () {
-      this.props.setSearch(searchingText)
+      this.props.searchNotes(searchingText)
     }.bind(this), 250)
   }
   handleDisplay (event) {
@@ -119,7 +123,7 @@ class MainMenu extends React.PureComponent {
               <ArrowBackIcon />
             </IconButton>
           </Grid>
-          <Grid item xs={this.props.tab.current === 'Directory' ? 6 : 8}>
+          <Grid item xs={6}>
             <form className={this.props.classes.form}>
               <FormControl>
                 <Select
@@ -136,7 +140,7 @@ class MainMenu extends React.PureComponent {
                     <MenuItem
                       value={this.state.tabs[index]}
                       key={this.state.tabs[index]}
-                      className={this.props.classes.selectItem}>
+                      className={this.props.classes.selectNote}>
                       {this.state.tabs[index]}
                     </MenuItem>
                   ))}
@@ -144,22 +148,19 @@ class MainMenu extends React.PureComponent {
               </FormControl>
             </form>
           </Grid>
-          {
-            this.props.tab.current === 'Directory' ? (
-              <Grid item xs={2}>
-                <IconButton
-                  color='inherit'
-                  size='small'
-                  aria-label='new-dir'>
-                  <CreateNewFolderIcon
-                    onClick={() => {
-                      this.changeShowDir()
-                    }}
-                  />
-                </IconButton>
-              </Grid>
-            ) : null
-          }
+          <Grid item xs={2}>
+            <Grow
+              in={this.props.tab.current === 'Directory'}
+              timeout={200}>
+              <IconButton
+                color='inherit'
+                size='small'
+                aria-label='new-dir'
+                onClick={this.changeShowDir}>
+                <CreateNewFolderIcon />
+              </IconButton>
+            </Grow>
+          </Grid>
           <Grid item xs={2}>
             <IconButton
               color='inherit'
