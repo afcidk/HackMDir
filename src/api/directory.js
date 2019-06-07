@@ -91,6 +91,17 @@ function delDir (dirId) {
   write()
 }
 
+/**
+ * Rename the title of a directory
+ * @param Integer directory ID
+ * @param String title
+ */
+function renameDir (dirId, title) {
+  read()
+  dirCache.find(e => e.dirId === dirId).title = title
+  write()
+}
+
 function write () {
   writeContent('dir', dirCache)
 }
@@ -103,5 +114,6 @@ module.exports = {
   moveNote: moveNote,
   newDir: newDir,
   moveDir: moveDir,
-  delDir: delDir
+  delDir: delDir,
+  renameDir: renameDir
 }
