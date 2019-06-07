@@ -32,7 +32,7 @@ class Root extends React.Component {
             const mousemoveHandler = function (event) {
               clearTimeout(window.__HMDIR.mousemoving)
               window.__HMDIR.mousemoving = setTimeout(function () {
-                if (event.clientX < 300) {
+                if (event.clientX < 300 && event.clientY > 60) {
                   window.__HMDIR.display = true
                   window.__HMDIR.root.focus()
                   document.removeEventListener('mousemove', mousemoveHandler)

@@ -23,23 +23,53 @@ window.__HMDIR = {
 /* main function */
 const main = async function () {
   if (!API.isLoggedIn()) return
-
-  const handleLoad = function () {
-    const notelist = document.querySelectorAll('.item')
-    notelist.forEach((element) => {
+  // use observer to observe the dom injection
+  if (window.location.href === 'https://hackmd.io/') {
+    const observer = new window.MutationObserver(function (mutations) {
+      mutations.forEach(mutation => {
+        if (mutation.type === 'childList') {
+          const noteList = document.querySelectorAll('.item')
+          console.log(noteList)
+          noteList.forEach((element) => {
+            element.draggable = true
+            element.ondragstart = (event) => {
+              event.stopPropagation()
+              while (element.tagName.toLocaleLowerCase() !== 'a') {
+                element = element.parentNode
+              }
+              const title = element.querySelector('.text').textContent
+              event.dataTransfer.setData('href', element.href)
+              event.dataTransfer.setData('title', title)
+            }
+          })
+          observer.disconnect()
+        }
+      })
+    })
+    // observe only child list
+    observer.observe(document.body.querySelector('#overview-page > div'), {
+      attributes: false,
+      childList: true,
+      characterData: false
+    })
+  }
+  // directly add drag attribute if thr url is in '/recent'
+  if (window.location.href === 'https://hackmd.io/recent') {
+    const noteList = document.querySelectorAll('.item')
+    console.log(noteList)
+    noteList.forEach((element) => {
       element.draggable = true
       element.ondragstart = (event) => {
         event.stopPropagation()
         while (element.tagName.toLocaleLowerCase() !== 'a') {
           element = element.parentNode
         }
+        const title = element.querySelector('.text').textContent
         event.dataTransfer.setData('href', element.href)
-        const text = element.querySelectorAll('.text')
-        event.dataTransfer.setData('name', text[0].innerText)
+        event.dataTransfer.setData('title', title)
       }
     })
   }
-  window.addEventListener('load', handleLoad)
 
   await API.initCache()
   // daemon the root component on root div
@@ -57,7 +87,7 @@ const main = async function () {
   const mousemoveHandler = function (event) {
     clearTimeout(window.__HMDIR.mousemoving)
     window.__HMDIR.mousemoving = setTimeout(function () {
-      if (event.clientX < 300) {
+      if (event.clientX < 300 && event.clientY > 60) {
         window.__HMDIR.display = true
         window.__HMDIR.root.focus()
         document.removeEventListener('mousemove', mousemoveHandler)

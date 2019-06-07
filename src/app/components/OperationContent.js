@@ -8,13 +8,17 @@ import LibraryBookIcon from '@material-ui/icons/LibraryBooks'
 import DeleteIcon from '@material-ui/icons/Delete'
 import LockIcon from '@material-ui/icons/Lock'
 import CheckboxIcon from '@material-ui/icons/CheckBox'
+import CloseIcon from '@material-ui/icons/Close'
+import FolderIcon from '@material-ui/icons/Folder'
 import Tooltip from '@material-ui/core/Tooltip'
 import ConfirmModal from './ConfirmModal.js'
 import PermissionModal from './PermissionModal.js'
 import BookmodeModal from './BookmodeModal.js'
+import GroupNotesModal from './GroupNotesModal.js'
 import Snackbar from '@material-ui/core/Snackbar'
 
 import API from '../../api/api.js'
+import Directory from '../../api/directory.js'
 
 const styles = theme => ({
   root: {
@@ -47,6 +51,7 @@ class OperationContent extends React.PureComponent {
       showConfirm: false,
       showBookmode: false,
       showPermission: false,
+      showGroupNote: false,
       showSnackBar: false,
       errorMessage: '',
       title: '',
@@ -58,7 +63,9 @@ class OperationContent extends React.PureComponent {
     this.bookModeOperation = this.bookModeOperation.bind(this)
     this.permissionOperation = this.permissionOperation.bind(this)
     this.deleteOperation = this.deleteOperation.bind(this)
+    this.groupNoteOperation = this.groupNoteOperation.bind(this)
     this.selectAllOperation = this.selectAllOperation.bind(this)
+    this.handleCloseSnakcbar = this.handleCloseSnakcbar.bind(this)
   }
   bookModeOperation () {
     this.setState({
@@ -69,11 +76,10 @@ class OperationContent extends React.PureComponent {
           const resultUrl = await API.addBookmode(title, sortedNotes)
           // open the result note in other tab
           window.open(resultUrl, '_target')
-          this.props.setSelectedEvent({})
+          this.props.setSelectedNotes({})
           this.setState({ showBookmode: false, loading: false })
         } catch (error) {
           console.log(error)
-          this.props.setSelectedEvent({})
           this.setState({ showBookmode: false, loading: false, errorMessage: error.message, showSnackBar: true })
         }
       }.bind(this),
@@ -88,15 +94,15 @@ class OperationContent extends React.PureComponent {
     switch (this.props.tab.current) {
       case 'Recent':
         title = '移除 Recent 中的紀錄'
-        text = `您確定要將目前 ${Object.keys(this.props.selectedList).length} 項筆記移除嗎？`
+        text = `您確定要將目前 ${Object.keys(this.props.list.selectedNotes).length} 項筆記移除嗎？`
         break
       case 'Personal':
         title = '刪除 Personal 中的筆記'
-        text = `您確定要將目前 ${Object.keys(this.props.selectedList).length} 項筆記刪除嗎？`
+        text = `您確定要將目前 ${Object.keys(this.props.list.selectedNotes).length} 項筆記刪除嗎？`
         break
       case 'Directory':
         title = '刪除 Directory 中的資料夾/筆記'
-        text = `您確定要將目前 ${Object.keys(this.props.selectedList).length} 項資料夾/筆記刪除嗎？`
+        text = `您確定要將目前 ${Object.keys(this.props.list.selectedNotes).length} 項資料夾/筆記刪除嗎？`
         break
     }
     this.setState({
@@ -106,7 +112,7 @@ class OperationContent extends React.PureComponent {
       agreeEvent: async function () {
         try {
           this.setState({ loading: true })
-          const noteIds = Object.keys(this.props.selectedList)
+          const noteIds = Object.keys(this.props.list.selectedNotes)
           switch (this.props.tab.current) {
             case 'Recent':
               await API.delHistoryNote(noteIds)
@@ -115,14 +121,19 @@ class OperationContent extends React.PureComponent {
               await API.delNote(noteIds)
               break
             case 'Directory':
+              await API.delNote(noteIds)
               break
           }
-          this.props.deleteItemsEvent(Object.values(this.props.selectedList))
-          this.props.setSelectedEvent({})
+          // direct remove the redux state if the tab is not Directory
+          if (this.props.tab.current !== 'Directory') {
+            this.props.deleteNotes(Object.values(this.props.list.selectedNotes))
+          } else {
+            // delete dir note
+          }
+          this.props.setSelectedNotes({})
           this.setState({ showConfirm: false, loading: false })
         } catch (error) {
           console.log(error)
-          this.props.setSelectedEvent({})
           this.setState({ showConfirm: false, loading: false, errorMessage: error.message, showSnackBar: true })
         }
       }.bind(this),
@@ -137,13 +148,12 @@ class OperationContent extends React.PureComponent {
       agreeEvent: async function (data) {
         try {
           this.setState({ loading: true })
-          const noteIds = this.props.selectedList.map(target => (target.href))
+          const noteIds = Object.values(this.props.list.selectedNotes).map(target => (target.href))
           await API.changePermission(noteIds, data.write + data.read * 10)
-          this.props.setSelectedEvent([])
+          this.props.setSelectedNotes([])
           this.setState({ showPermission: false, loading: false })
         } catch (error) {
           console.log(error)
-          this.props.setSelectedEvent([])
           this.setState({ showConfirm: false, loading: false, errorMessage: error.message, showSnackBar: true })
         }
       }.bind(this),
@@ -152,17 +162,48 @@ class OperationContent extends React.PureComponent {
       }.bind(this)
     })
   }
+  groupNoteOperation () {
+    this.setState({
+      showGroupNote: true,
+      agreeEvent: async function (data) {
+        try {
+          this.setState({ loading: true })
+          // create the dir first
+          const status = Directory.newDir(data)
+          console.log('status: ', status)
+          if (!status) {
+            throw Error('當前存在相同的資料夾名稱！請重新命名！')
+          }
+          // move the notes to the dir
+          Object.values(this.props.list.selectedNotes).forEach(target => {
+            Directory.moveNote(target.title, target.href, null, { dirId: 0, noteId: 0 })
+          })
+          this.props.setSelectedNotes([])
+          this.setState({ showGroupNote: false, loading: false })
+        } catch (error) {
+          console.log(error)
+          this.setState({ showGroupNote: false, loading: false, errorMessage: error.message, showSnackBar: true })
+        }
+      }.bind(this),
+      disagreeEvent: function () {
+        this.setState({ showGroupNote: false })
+      }.bind(this)
+    })
+  }
   selectAllOperation () {
     // unselect all if it is already select all
-    if (this.props.list.length === Object.keys(this.props.selectedList).length) {
-      this.props.setSelectedEvent({})
+    if (this.props.list.filteredNotes.length === Object.keys(this.props.list.selectedNotes).length) {
+      this.props.setSelectedNotes({})
       return
     }
     const temp = {}
-    this.props.list.forEach(target => {
+    this.props.list.filteredNotes.forEach(target => {
       temp[target.href.substr(18)] = target
     })
-    this.props.setSelectedEvent(temp)
+    this.props.setSelectedNotes(temp)
+  }
+  handleCloseSnakcbar () {
+    this.setState({ showSnackBar: false })
   }
   // the render function
   render () {
@@ -170,9 +211,11 @@ class OperationContent extends React.PureComponent {
     return (
       <Grid container className={this.props.classes.root} alignContent='center' alignItems='center' >
         <ConfirmModal show={this.state.showConfirm} title={this.state.title} message={this.state.message} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
-        <PermissionModal show={this.state.showPermission} number={Object.keys(this.props.selectedList).length} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
-        <BookmodeModal show={this.state.showBookmode} selectedItems={this.props.selectedList} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
+        <PermissionModal show={this.state.showPermission} number={Object.keys(this.props.list.selectedNotes).length} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
+        <BookmodeModal show={this.state.showBookmode} selectedItems={this.props.list.selectedNotes} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
+        <GroupNotesModal show={this.state.showGroupNote} selectedItems={this.props.list.selectedNotes} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
         <Snackbar
+          autoHideDuration={6000}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           key={`snack-bar-message`}
           open={this.state.showSnackBar}
@@ -180,6 +223,17 @@ class OperationContent extends React.PureComponent {
             'aria-describedby': 'message-id'
           }}
           message={<span id='message-id'>{this.state.errorMessage}</span>}
+          action={[
+            <IconButton
+              key='close'
+              aria-label='Close'
+              color='inherit'
+              onClick={this.handleCloseSnakcbar}
+            >
+              <CloseIcon />
+            </IconButton>
+          ]}
+          onClose={this.handleCloseSnakcbar}
         />
         <Grid item xs={2}>
           <Tooltip title='Bookmode' classes={{ tooltip: this.props.classes.tooltip }}>
@@ -202,6 +256,17 @@ class OperationContent extends React.PureComponent {
             </IconButton>
           </Tooltip>
         </Grid>
+        {
+          this.props.tab.current !== 'Directory' ? (
+            <Grid item xs={2}>
+              <Tooltip title='Group note' classes={{ tooltip: this.props.classes.tooltip }}>
+                <IconButton className={this.props.classes.button} aria-label='group-note' onClick={this.groupNoteOperation}>
+                  <FolderIcon className={this.props.classes.icon} />
+                </IconButton>
+              </Tooltip>
+            </Grid>
+          ) : (null)
+        }
         <Grid item xs={2}>
           <Tooltip title='Select all' classes={{ tooltip: this.props.classes.tooltip }}>
             <IconButton className={this.props.classes.button} aria-label='select-all' onClick={this.selectAllOperation}>
@@ -209,8 +274,8 @@ class OperationContent extends React.PureComponent {
             </IconButton>
           </Tooltip>
         </Grid>
-        <Grid item xs={4} style={{ textAlign: 'right' }}>
-          <label className={this.props.classes.label}> {`選擇 ${Object.keys(this.props.selectedList).length} 項`} </label>
+        <Grid item xs={this.props.tab.current === 'Directory' ? 4 : 2} style={{ textAlign: 'right' }}>
+          <label className={this.props.classes.label}> {`選擇 ${Object.keys(this.props.list.selectedNotes).length} 項`} </label>
         </Grid>
       </Grid>
     )
