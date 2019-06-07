@@ -40,12 +40,12 @@ function moveNote (title, href, src = null, dst = null) {
   if (dst) { // remove note will not enter this scope
     let dstNotes = dirCache.find((e) => e.dirId === dst.dirId).notes
     dstNotes.forEach(e => { e.noteId += +(e.noteId >= dst.noteId) })
-    if (dstNotes.findIndex(e => e.href === href) === -1) return false
+    if (dstNotes.findIndex(e => e.href === href) !== -1) return false
     dstNotes.push({ noteId: dst.noteId, title: title, href: href })
   }
   // dirCache.forEach(e => console.table(e.notes))
-
   write()
+
   return true
 }
 
