@@ -24,6 +24,7 @@ const getData = require('./api.js').getData
  * @param String href
  * @param JSON info of destination note {dirId: dirId, noteId: noteId}
  * @param JSON info of source note {dirId: dirId, noteId: noteId}
+ * @returns Boolean Whether exists duplicate note or not
  */
 function moveNote (title, href, src = null, dst = null) {
   read()
@@ -39,11 +40,13 @@ function moveNote (title, href, src = null, dst = null) {
   if (dst) { // remove note will not enter this scope
     let dstNotes = dirCache.find((e) => e.dirId === dst.dirId).notes
     dstNotes.forEach(e => { e.noteId += +(e.noteId >= dst.noteId) })
+    if (dstNotes.findIndex(e => e.href === href) !== -1) return false
     dstNotes.push({ noteId: dst.noteId, title: title, href: href })
   }
   // dirCache.forEach(e => console.table(e.notes))
-
   write()
+
+  return true
 }
 
 /**
@@ -88,6 +91,17 @@ function delDir (dirId) {
   write()
 }
 
+/**
+ * Rename the title of a directory
+ * @param Integer directory ID
+ * @param String title
+ */
+function renameDir (dirId, title) {
+  read()
+  dirCache.find(e => e.dirId === dirId).title = title
+  write()
+}
+
 function write () {
   writeContent('dir', dirCache)
 }
@@ -100,5 +114,6 @@ module.exports = {
   moveNote: moveNote,
   newDir: newDir,
   moveDir: moveDir,
-  delDir: delDir
+  delDir: delDir,
+  renameDir: renameDir
 }

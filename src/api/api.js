@@ -151,8 +151,8 @@ async function addBookmode (title, data) {
     content += `- [${ele.title}](${ele.href})\n`
   })
   const url = await utils.newData(content)
-  const bmUrl = await fetch(`${url}/publish`)
-  return bmUrl.url.replace('/s/', '/c/')
+  const publish = await fetch(`${url}/publish`)
+  return publish.url.replace('type=view', '') + 'type=book'
 }
 
 function getData (option) {
