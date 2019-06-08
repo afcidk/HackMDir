@@ -1,3 +1,4 @@
+/* global event */
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
@@ -19,8 +20,7 @@ import ListDirNoteItem from './ListDirNoteItem.js'
 import DragAndDrop from './DragAndDrop.js'
 import Directory from '../../api/directory.js'
 import API from '../../api/api.js'
-import { Input } from '@material-ui/core';
-import { object } from 'prop-types';
+import { Input } from '@material-ui/core'
 
 const styles = theme => ({
   ul: {
@@ -112,7 +112,7 @@ const DirItem = SortableElement(
               }}
               onMouseUp={() => {
                 handleDirRelease()
-                if(state.isShortClick == true){
+                if (state.isShortClick === true) {
                   handleClick(dirName)
                 }
               }}
@@ -123,8 +123,8 @@ const DirItem = SortableElement(
               <ListItemIcon>
                 {props.dir[dirName].open ? <ExpandLess className={props.dir[dirName].check.dir ? style.checkedStyle : null} style={{ color: 'black' }} /> : <ChevronRight className={props.dir[dirName].check.dir ? style.checkedStyle : null} style={{ color: 'black' }} />}
               </ListItemIcon>
-              {props.dir[dirName].isRenaming ?
-                <Input
+              {props.dir[dirName].isRenaming
+                ? <Input
                   autoFocus
                   placeholder='Enter a new name'
                   inputProps={{
@@ -134,23 +134,22 @@ const DirItem = SortableElement(
                     }
                   }}
                   onBlur={() => {
-                    if (event.target.value == '') {
-                      
-                    } 
-                    else {
-                      if(Directory.renameDir(sortIndex, event.target.value)){
-                        const dirNameConfig = {prev: dirName, new: event.target.value}
+                    if (event.target.value === '') {
+
+                    } else {
+                      if (Directory.renameDir(sortIndex, event.target.value)) {
+                        const dirNameConfig = { prev: dirName, new: event.target.value }
                         props.renameDir(dirNameConfig)
                         Directory.renameDir(sortIndex, event.target.value)
-                      } else{
-                        //alert('A same directory name exists. Please enter an unique name!')
+                      } else {
+                        // alert('A same directory name exists. Please enter an unique name!')
                       }
                     }
                   }}
-                />:
-                <ListItemText inset primary={dirName} classes={{ primary: `${style.text} ${props.dir[dirName].check.dir ? style.checkedStyle : null}` }} />
+                />
+                : <ListItemText inset primary={dirName} classes={{ primary: `${style.text} ${props.dir[dirName].check.dir ? style.checkedStyle : null}` }} />
               }
-              
+
               <Checkbox
                 style={{ color: '#4285f4' }}
                 className={props.displayCheckbox ? `${style.forceDisplay} ${style.checkbox} test` : `${style.checkbox}`}
@@ -227,7 +226,7 @@ class ListDirItem extends React.Component {
       displayCheckbox: props.displayCheckbox,
       currentMouseX: 0,
       dirPressTimer: null,
-      isShortClick: true,
+      isShortClick: true
     }
 
     this.handleClick = this.handleClick.bind(this)
@@ -240,15 +239,15 @@ class ListDirItem extends React.Component {
     this.onSortStart = this.onSortStart.bind(this)
     this.shouldCancelStart = this.shouldCancelStart.bind(this)
   }
-  
+
   shouldCancelStart () {
     var flag = false
     Object.keys(this.props.dir).map(key => {
-      if(this.props.dir[key].isRenaming) {
+      if (this.props.dir[key].isRenaming) {
         flag = true
       }
     })
-    if(flag){
+    if (flag) {
       return true
     }
     return false
@@ -277,7 +276,7 @@ class ListDirItem extends React.Component {
     this.setState({ currentMouseX: event.clientX })
   }
 
-  onSortStart() {
+  onSortStart () {
     clearTimeout(this.state.dirPressTimer)
   }
 

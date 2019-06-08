@@ -21,6 +21,7 @@ async function asyncForEach (array, callback) {
  * @returns Websocket instance(io)
  */
 async function connect (noteId) {
+  // console.log(`connect to ${noteId}`)
   // Register realtime server
   var server = await fetch(`/realtime-reg/realtime?noteId=${noteId}`)
   if (server.status === 500) return undefined
@@ -176,7 +177,7 @@ async function getPersonal () {
 }
 
 async function delHistory (note) {
-  console.log(`delete history: ${note}`)
+  // console.log(`delete history: ${note}`)
   const header = new Headers()
   header.append('x-requested-with', 'XMLHttpRequest')
   // get the csrf token

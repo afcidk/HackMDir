@@ -182,7 +182,7 @@ class ListContent extends React.PureComponent {
                   </Collapse>
                   <ListDirItem
                     setDir={setDir} newdir={this.props.newdir} setNewDir={setNewDir} deleteDir={deleteDir}
-                    dir={dir} setDirCheck={setDirCheck} setDirNoteCheck={setDirNoteCheck} setDirOpen={setDirOpen} setIsRenaming={setIsRenaming} 
+                    dir={dir} setDirCheck={setDirCheck} setDirNoteCheck={setDirNoteCheck} setDirOpen={setDirOpen} setIsRenaming={setIsRenaming}
                     displayCheckbox={Object.keys(list.selectedNotes).length > 0}
                     selectNoteEvent={selectNote} unSelectNoteEvent={unSelectNote} selectedNotes={list.selectedNotes} renameDir={renameDir} />
                 </div>

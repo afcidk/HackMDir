@@ -27,6 +27,8 @@ const getData = require('./api.js').getData
  * @returns Boolean Whether exists duplicate note or not
  */
 function moveNote (title, href, src = null, dst = null) {
+  console.log('moveNote:')
+  console.table(src, dst)
   read()
   // dirCache.forEach(e => console.table(e.notes))
   if (src) { // drag in new note will not enter this scope
@@ -47,6 +49,19 @@ function moveNote (title, href, src = null, dst = null) {
   write()
 
   return true
+}
+
+/* Delete multiple notes in dirCache
+ * @param Array of String NoteId
+ */
+function delNote (noteIds) {
+  read()
+  dirCache.forEach(dir => {
+    dir.notes = dir.notes.filter(e =>
+      !noteIds.includes(e.href.replace('https://hackmd.io/', ''))
+    )
+  })
+  write()
 }
 
 /**
@@ -84,6 +99,7 @@ function moveDir (dst, src) {
  * @param Integer dirId
  */
 function delDir (dirId) {
+  console.log(`delDir: ${dirId}`)
   read()
   var target = dirCache.find((e) => e.dirId === dirId)
   dirCache.splice(dirCache.indexOf(target), 1)
@@ -113,10 +129,9 @@ function read () {
   dirCache = getData('directory-backend')
 }
 
-
-
 module.exports = {
   moveNote: moveNote,
+  delNote: delNote,
   newDir: newDir,
   moveDir: moveDir,
   delDir: delDir,

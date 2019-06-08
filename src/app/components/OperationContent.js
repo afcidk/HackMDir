@@ -122,6 +122,7 @@ class OperationContent extends React.PureComponent {
               break
             case 'Directory':
               await API.delNote(noteIds)
+              Directory.delNote(noteIds)
               break
           }
           // direct remove the redux state if the tab is not Directory
