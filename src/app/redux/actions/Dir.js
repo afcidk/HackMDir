@@ -13,6 +13,12 @@
  * }
  */
 
+ // { dirID: string, status: boolean }
+export const setIsRenaming = target => ({
+  type: 'SET_ISRENAMING',
+  payload: target
+})
+
 export const setDir = target => ({
   type: 'SET_DIR',
   payload: target

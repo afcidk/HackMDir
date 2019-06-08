@@ -150,7 +150,7 @@ class ListContent extends React.PureComponent {
     const {
       list, selectNote, unSelectNote,
       dir, setNewDir, setDir, setDirOpen, setDirCheck, setDirNoteCheck,
-      deleteDir
+      deleteDir, renameDir, setIsRenaming
     } = this.props
     return (
       <div className={this.props.classes.root}>
@@ -182,9 +182,9 @@ class ListContent extends React.PureComponent {
                   </Collapse>
                   <ListDirItem
                     setDir={setDir} newdir={this.props.newdir} setNewDir={setNewDir} deleteDir={deleteDir}
-                    dir={dir} setDirCheck={setDirCheck} setDirNoteCheck={setDirNoteCheck} setDirOpen={setDirOpen}
+                    dir={dir} setDirCheck={setDirCheck} setDirNoteCheck={setDirNoteCheck} setDirOpen={setDirOpen} setIsRenaming={setIsRenaming} 
                     displayCheckbox={Object.keys(list.selectedNotes).length > 0}
-                    selectNoteEvent={selectNote} unSelectNoteEvent={unSelectNote} selectedNotes={list.selectedNotes} />
+                    selectNoteEvent={selectNote} unSelectNoteEvent={unSelectNote} selectedNotes={list.selectedNotes} renameDir={renameDir} />
                 </div>
               ) : (
                 <AutoSizer>

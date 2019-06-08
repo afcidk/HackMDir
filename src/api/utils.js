@@ -211,7 +211,7 @@ async function getData () {
     console.log(e)
     console.log('will clear hkmdir-data')
     writeData(dataUrl.replace('https://hackmd.io/', ''),
-      `${COMMON_PREFIX}\n\n${JSON.strigify(DEFAULT_DATA_CACHE)}`)
+      `${COMMON_PREFIX}\n\n${JSON.stringify(DEFAULT_DATA_CACHE)}`)
     return DEFAULT_DATA_CACHE
   }
 
