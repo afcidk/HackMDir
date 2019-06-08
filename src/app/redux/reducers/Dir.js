@@ -9,7 +9,8 @@
  *      dir: boolean,
  *      notes: [boolean]
  *    }
- *    open: boolean
+ *    open: boolean,
+ *    isRenaming: boolean
  *  }
  * }
  */
@@ -29,7 +30,8 @@ export default (state = {}, action) => {
               dir: prevDir.check.dir,
               notes: Object.assign({}, prevDir.check.notes)
             },
-            open: prevDir.open
+            open: prevDir.open,
+            isRenaming: false
           }
         } else {
           initTemp[dir.title] = {
@@ -40,7 +42,8 @@ export default (state = {}, action) => {
               dir: false,
               notes: {}
             },
-            open: false
+            open: false,
+            isRenaming: false
           }
           dir.notes.forEach(note => {
             initTemp[dir.title].check.notes[note.href.substr(18)] = false
@@ -58,7 +61,8 @@ export default (state = {}, action) => {
             dir: false,
             notes: []
           },
-          open: false
+          open: false,
+          isRenaming: false
         }
       }
     case 'RENAME_DIR':
@@ -67,7 +71,8 @@ export default (state = {}, action) => {
         ...restRenameDir,
         [action.payload.new]: {
           ...removedDirValue,
-          title: action.payload.new
+          title: action.payload.new,
+          isRenaming: false
         }
       }
     case 'DELETE_DIR':
@@ -157,6 +162,14 @@ export default (state = {}, action) => {
             dir: action.payload.status
           },
           open: action.payload.status ? true : state[action.payload.dirID].check.open
+        }
+      }
+    case 'SET_ISRENAMING':
+      return {
+        ...state,
+        [action.payload.dirID]: {
+          ...state[action.payload.dirID],
+          isRenaming: action.payload.status
         }
       }
     default:

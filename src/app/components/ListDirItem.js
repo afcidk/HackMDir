@@ -19,6 +19,8 @@ import ListDirNoteItem from './ListDirNoteItem.js'
 import DragAndDrop from './DragAndDrop.js'
 import Directory from '../../api/directory.js'
 import API from '../../api/api.js'
+import { Input } from '@material-ui/core';
+import { object } from 'prop-types';
 
 const styles = theme => ({
   ul: {
@@ -87,10 +89,14 @@ const DirItem = SortableElement(
     dirName,
     sortIndex,
     handleClick,
+    handleDirPress,
+    handleDirRelease,
     style,
     props,
+    state,
     handleCheckboxClick
   }) => {
+    console.log(props.dir)
     return (
       <List
         style={{ backgroundColor: props.dir[dirName].check.dir ? 'rgba(221, 215, 253)' : null }}
@@ -101,8 +107,14 @@ const DirItem = SortableElement(
             <ListItem
               button
               className={props.classes.dirStyle}
-              onClick={() => {
-                handleClick(dirName)
+              onMouseDown={() => {
+                handleDirPress(dirName)
+              }}
+              onMouseUp={() => {
+                handleDirRelease()
+                if(state.isShortClick == true){
+                  handleClick(dirName)
+                }
               }}
             >
               <ListItemIcon>
@@ -111,7 +123,34 @@ const DirItem = SortableElement(
               <ListItemIcon>
                 {props.dir[dirName].open ? <ExpandLess className={props.dir[dirName].check.dir ? style.checkedStyle : null} style={{ color: 'black' }} /> : <ChevronRight className={props.dir[dirName].check.dir ? style.checkedStyle : null} style={{ color: 'black' }} />}
               </ListItemIcon>
-              <ListItemText inset primary={dirName} classes={{ primary: `${style.text} ${props.dir[dirName].check.dir ? style.checkedStyle : null}` }} />
+              {props.dir[dirName].isRenaming ?
+                <Input
+                  autoFocus
+                  placeholder='Enter a new name'
+                  inputProps={{
+                    'aria-label': 'Description',
+                    style: {
+                      fontSize: '14px'
+                    }
+                  }}
+                  onBlur={() => {
+                    if (event.target.value == '') {
+                      
+                    } 
+                    else {
+                      if(Directory.renameDir(sortIndex, event.target.value)){
+                        const dirNameConfig = {prev: dirName, new: event.target.value}
+                        props.renameDir(dirNameConfig)
+                        Directory.renameDir(sortIndex, event.target.value)
+                      } else{
+                        //alert('A same directory name exists. Please enter an unique name!')
+                      }
+                    }
+                  }}
+                />:
+                <ListItemText inset primary={dirName} classes={{ primary: `${style.text} ${props.dir[dirName].check.dir ? style.checkedStyle : null}` }} />
+              }
+              
               <Checkbox
                 style={{ color: '#4285f4' }}
                 className={props.displayCheckbox ? `${style.forceDisplay} ${style.checkbox} test` : `${style.checkbox}`}
@@ -146,6 +185,8 @@ const DirItem = SortableElement(
 const DirList = SortableContainer(
   ({
     handleClick,
+    handleDirPress,
+    handleDirRelease,
     state,
     props,
     style,
@@ -165,6 +206,8 @@ const DirList = SortableContainer(
                 sortIndex={index}
                 state={state}
                 handleClick={handleClick}
+                handleDirPress={handleDirPress}
+                handleDirRelease={handleDirRelease}
                 props={props}
                 style={style}
                 handleCheckboxClick={handleCheckboxClick}
@@ -182,14 +225,48 @@ class ListDirItem extends React.Component {
     super(props)
     this.state = {
       displayCheckbox: props.displayCheckbox,
-      currentMouseX: 0
+      currentMouseX: 0,
+      dirPressTimer: null,
+      isShortClick: true,
     }
 
     this.handleClick = this.handleClick.bind(this)
+    this.handleDirPress = this.handleDirPress.bind(this)
+    this.handleDirRelease = this.handleDirRelease.bind(this)
     this.handleCheckboxClick = this.handleCheckboxClick.bind(this)
     this.onSortEnd = this.onSortEnd.bind(this)
     this.detectMouseMove = this.detectMouseMove.bind(this)
     this.handleDrop = this.handleDrop.bind(this)
+    this.onSortStart = this.onSortStart.bind(this)
+    this.shouldCancelStart = this.shouldCancelStart.bind(this)
+  }
+  
+  shouldCancelStart () {
+    var flag = false
+    Object.keys(this.props.dir).map(key => {
+      if(this.props.dir[key].isRenaming) {
+        flag = true
+      }
+    })
+    if(flag){
+      return true
+    }
+    return false
+  }
+
+  handleDirPress (dirName) {
+    this.state.isShortClick = true
+    this.state.dirPressTimer = setTimeout(() => {
+      console.log('long press activated!')
+      this.state.isShortClick = false
+      this.props.setIsRenaming({ dirID: dirName, status: true })
+    }, 1000)
+  }
+  handleDirRelease () {
+    clearTimeout(this.state.dirPressTimer)
+    Object.keys(this.props.dir).map(key => {
+      console.log(this.props.dir[key].isRenaming)
+    })
   }
 
   handleClick (dirname) {
@@ -198,6 +275,10 @@ class ListDirItem extends React.Component {
 
   detectMouseMove (event) {
     this.setState({ currentMouseX: event.clientX })
+  }
+
+  onSortStart() {
+    clearTimeout(this.state.dirPressTimer)
   }
 
   onSortEnd ({ oldIndex, newIndex }) {
@@ -244,11 +325,15 @@ class ListDirItem extends React.Component {
         style={this.props.classes}
         props={this.props}
         onSortEnd={this.onSortEnd}
+        onSortStart={this.onSortStart}
         handleClick={this.handleClick}
+        handleDirPress={this.handleDirPress}
+        handleDirRelease={this.handleDirRelease}
         state={this.state}
         onSortMove={this.detectMouseMove}
         handleCheckboxClick={this.handleCheckboxClick}
         handleDrop={this.handleDrop}
+        shouldCancelStart={this.shouldCancelStart}
       />
     )
   }
