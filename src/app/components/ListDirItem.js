@@ -98,6 +98,7 @@ const DirItem = SortableElement(
     state,
     handleCheckboxClick
   }) => {
+    console.log(props.dir)
     return (
       <List
         style={{ backgroundColor: props.dir[dirName].check.dir ? 'rgba(221, 215, 253)' : null }}
@@ -232,6 +233,19 @@ class ListDirItem extends React.Component {
     this.handleDrop = this.handleDrop.bind(this)
     this.onSortStart = this.onSortStart.bind(this)
     this.shouldCancelStart = this.shouldCancelStart.bind(this)
+  }
+  
+  shouldCancelStart () {
+    var flag = false
+    Object.keys(this.props.dir).map(key => {
+      if(this.props.dir[key].isRenaming) {
+        flag = true
+      }
+    })
+    if(flag){
+      return true
+    }
+    return false
   }
 
   shouldCancelStart () {

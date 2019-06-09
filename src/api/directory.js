@@ -129,6 +129,8 @@ function read () {
   dirCache = getData('directory-backend')
 }
 
+
+
 module.exports = {
   moveNote: moveNote,
   delNote: delNote,
