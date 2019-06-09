@@ -13,6 +13,12 @@
  * }
  */
 
+ // searchText: string
+export const setSearchText = target => ({
+  type: 'SET_SEARCHTEXT',
+  payload: target
+})
+
 // { dirID: string, status: boolean }
 export const setIsRenaming = target => ({
   type: 'SET_ISRENAMING',

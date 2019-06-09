@@ -94,6 +94,8 @@ class MainMenu extends React.PureComponent {
     }
     keying = setTimeout(function () {
       this.props.searchNotes(searchingText)
+      //this.props.setSearchText(searchingText)
+      this.props.setSearch(searchingText)
     }.bind(this), 250)
   }
   handleDisplay (event) {

@@ -85,6 +85,7 @@ const styles = theme => ({
 
 const DirItem = SortableElement(
   ({
+    dir,
     value,
     dirName,
     sortIndex,
@@ -97,7 +98,6 @@ const DirItem = SortableElement(
     state,
     handleCheckboxClick
   }) => {
-    console.log(props.dir)
     return (
       <List
         style={{ backgroundColor: props.dir[dirName].check.dir ? 'rgba(221, 215, 253)' : null }}
@@ -135,8 +135,8 @@ const DirItem = SortableElement(
                     }
                   }}
                   onBlur={() => { handleRenameDir(event, sortIndex, dirName) }}
-                />:
-                <ListItemText inset primary={dirName} classes={{ primary: `${style.text} ${props.dir[dirName].check.dir ? style.checkedStyle : null}` }} />
+                />
+                : <ListItemText inset primary={dirName} classes={{ primary: `${style.text} ${props.dir[dirName].check.dir ? style.checkedStyle : null}` }} />
               }
 
               <Checkbox
@@ -172,6 +172,7 @@ const DirItem = SortableElement(
 
 const DirList = SortableContainer(
   ({
+    dir,
     handleRenameDir,
     handleClick,
     handleDirPress,
@@ -184,7 +185,7 @@ const DirList = SortableContainer(
   }) => {
     return (
       <ul className={style.ul}>
-        {Object.values(props.dir).sort((a, b) => a.loc - b.loc).map((value, index) => {
+        {Object.values(dir).sort((a, b) => a.loc - b.loc).map((value, index) => {
           return (
             <DragAndDrop handleDrop={handleDrop} dirId={index} key={`dir-item-${value.title}-${index}`}>
               <DirItem
@@ -201,6 +202,7 @@ const DirList = SortableContainer(
                 style={style}
                 handleCheckboxClick={handleCheckboxClick}
                 handleRenameDir={handleRenameDir}
+                dir={dir}
               />
             </DragAndDrop>
           )
@@ -248,14 +250,13 @@ class ListDirItem extends React.Component {
   handleRenameDir (event, sortIndex, dirName) {
     if (event.target.value === '') {
 
-    } 
-    else {
-      if(Directory.renameDir(sortIndex, event.target.value)){
-        const dirNameConfig = {prev: dirName, new: event.target.value}
+    } else {
+      if (Directory.renameDir(sortIndex, event.target.value)) {
+        const dirNameConfig = { prev: dirName, new: event.target.value }
         this.props.renameDir(dirNameConfig)
         Directory.renameDir(sortIndex, event.target.value)
-      } else{
-        //alert('A same directory name exists. Please enter an unique name!')
+      } else {
+        // alert('A same directory name exists. Please enter an unique name!')
       }
     }
   }
@@ -266,11 +267,10 @@ class ListDirItem extends React.Component {
     this.state.dirPressTimer = setTimeout(() => {
       console.log('long press activated!')
       Object.keys(this.props.dir).map(key => {
-        if (Object.values(this.props.dir[key].check.notes).includes(true) || this.props.dir[key].check.dir == true)
-        isChecked = true
+        if (Object.values(this.props.dir[key].check.notes).includes(true) || this.props.dir[key].check.dir === true) { isChecked = true }
       })
       this.state.isShortClick = false
-      if (!isChecked){
+      if (!isChecked) {
         this.props.setIsRenaming({ dirID: dirName, status: true })
       }
     }, 1000)
@@ -348,6 +348,7 @@ class ListDirItem extends React.Component {
         handleDrop={this.handleDrop}
         shouldCancelStart={this.shouldCancelStart}
         handleRenameDir={this.handleRenameDir}
+        dir={this.props.dir}
       />
     )
   }

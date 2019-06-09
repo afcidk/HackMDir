@@ -13,6 +13,7 @@
  *    isRenaming: boolean
  *  }
  * }
+ * SearchText: string
  */
 
 export default (state = {}, action) => {
@@ -171,6 +172,11 @@ export default (state = {}, action) => {
           ...state[action.payload.dirID],
           isRenaming: action.payload.status
         }
+      }
+    case 'SET_SEARCHTEXT':
+      return {
+        ...state,
+        searchText: action.payload
       }
     default:
       return state

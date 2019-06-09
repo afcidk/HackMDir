@@ -60,7 +60,7 @@ const row = ({ index, style, data }) => {
 }
 
 class ListContent extends React.PureComponent {
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     this.state = {
@@ -78,11 +78,11 @@ class ListContent extends React.PureComponent {
     // this.handleAddList = this.handleAddList.bind(this)
   }
 
-  componentWillMount () {
+  componentWillMount() {
     this.fetchData(this.props.tab.current)
   }
 
-  componentWillReceiveProps (nextProps) {
+  componentWillReceiveProps(nextProps) {
     if (this.props.tab.current === nextProps.tab.current) {
       return
     }
@@ -91,7 +91,7 @@ class ListContent extends React.PureComponent {
     this.props.setSelectedNotes({})
   }
 
-  fetchData (tab) {
+  fetchData(tab) {
     let result = []
     this.setState({ changingTab: true })
     if (tab === 'Recent') {
@@ -122,11 +122,11 @@ class ListContent extends React.PureComponent {
     }.bind(this), leaveDealy)
   }
 
-  handleChange (event) {
+  handleChange(event) {
     this.setState({ newDirName: event.target.value })
   }
 
-  handleSubmit (event) {
+  handleSubmit(event) {
     event.preventDefault()
     const status = Directory.newDir(this.state.newDirName.toString())
     if (status) {
@@ -137,21 +137,37 @@ class ListContent extends React.PureComponent {
     }
   }
 
-  handleScroll ({ target }) {
+  handleScroll({ target }) {
     const { scrollTop } = target
     this.listRef.current.scrollTo(scrollTop)
   }
 
   // the render function
-  render () {
+  render() {
     console.log('ListContent render')
     console.log(this.props.list)
     // destructuring assignment
     const {
       list, selectNote, unSelectNote,
       dir, setNewDir, setDir, setDirOpen, setDirCheck, setDirNoteCheck,
-      deleteDir, renameDir, setIsRenaming
+      deleteDir, renameDir, setIsRenaming, search
     } = this.props
+
+    let filteredDir = dir
+    if (search) {
+      console.log('searching', search)
+      let dirKeys = Object.keys(dir)
+      let matchingKeys = dirKeys.filter((key) => {
+        return key.toString().toLocaleLowerCase().indexOf(search) !== -1
+      })
+      filteredDir = Object.keys(dir)
+        .filter(key => matchingKeys.includes(key))
+        .reduce((obj, key) => {
+          obj[key] = dir[key];
+          return obj;
+        }, {});
+    }
+
     return (
       <div className={this.props.classes.root}>
         <Slide
@@ -182,36 +198,36 @@ class ListContent extends React.PureComponent {
                   </Collapse>
                   <ListDirItem
                     setDir={setDir} newdir={this.props.newdir} setNewDir={setNewDir} deleteDir={deleteDir}
-                    dir={dir} setDirCheck={setDirCheck} setDirNoteCheck={setDirNoteCheck} setDirOpen={setDirOpen} setIsRenaming={setIsRenaming}
+                    dir={filteredDir} setDirCheck={setDirCheck} setDirNoteCheck={setDirNoteCheck} setDirOpen={setDirOpen} setIsRenaming={setIsRenaming}
                     displayCheckbox={Object.keys(list.selectedNotes).length > 0}
                     selectNoteEvent={selectNote} unSelectNoteEvent={unSelectNote} selectedNotes={list.selectedNotes} renameDir={renameDir} />
                 </div>
               ) : (
-                <AutoSizer>
-                  {
-                    ({ height, width }) => {
-                      return (
-                        <React.Fragment>
-                          <FixedSizeList
-                            height={height}
-                            width={width - 12}
-                            ref={this.listRef}
-                            itemCount={list.filteredNotes.length}
-                            itemData={{
-                              list,
-                              selectNote,
-                              unSelectNote
-                            }}
-                            style={{ overflow: false }}
-                            itemSize={48}>
-                            {row}
-                          </FixedSizeList>
-                        </React.Fragment>
-                      )
+                  <AutoSizer>
+                    {
+                      ({ height, width }) => {
+                        return (
+                          <React.Fragment>
+                            <FixedSizeList
+                              height={height}
+                              width={width - 12}
+                              ref={this.listRef}
+                              itemCount={list.filteredNotes.length}
+                              itemData={{
+                                list,
+                                selectNote,
+                                unSelectNote
+                              }}
+                              style={{ overflow: false }}
+                              itemSize={48}>
+                              {row}
+                            </FixedSizeList>
+                          </React.Fragment>
+                        )
+                      }
                     }
-                  }
-                </AutoSizer>
-              )
+                  </AutoSizer>
+                )
               }
             </Scrollbars>
           </List>

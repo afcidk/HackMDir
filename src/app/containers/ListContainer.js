@@ -2,7 +2,8 @@ import { connect } from 'react-redux'
 import List from '../components/ListContent.js'
 import { initList, setNotes, selectNote, unSelectNote, searchNotes, setSelectedNotes } from '../redux/actions/List.js'
 import { setNewDir } from '../redux/actions/NewDir.js'
-import { setDirCheck, setDirNoteCheck, setDirOpen, newDir, setDir, deleteDir, renameDir, setIsRenaming } from '../redux/actions/Dir.js'
+import { setDirCheck, setDirNoteCheck, setDirOpen, newDir, setDir, deleteDir, renameDir, setIsRenaming, setSearchText} from '../redux/actions/Dir.js'
+import { setSearch } from '../redux/actions/Search.js'
 
 const mapStateToProps = (state) => {
   return {
@@ -10,8 +11,8 @@ const mapStateToProps = (state) => {
     // selectedNotes: state.SelectedList,
     tab: state.Tab,
     newdir: state.NewDir,
-    dir: state.Dir
-    // search: state.Search
+    dir: state.Dir,
+    search: state.Search
   }
 }
 
@@ -23,6 +24,9 @@ const mapDispatchToProps = (dispatch) => {
     unSelectNote: (target) => dispatch(unSelectNote(target)),
     searchNotes: (target) => dispatch(searchNotes(target)),
     setSelectedNotes: (target) => dispatch(setSelectedNotes(target)),
+    setSearchText: (target) => dispatch(setSearchText(target)),
+    setSearch: (target) => dispatch(setSearch(target)),
+
 
     setNewDir: (target) => dispatch(setNewDir(target)),
     setDir: (target) => dispatch(setDir(target)),
