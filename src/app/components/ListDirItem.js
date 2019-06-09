@@ -91,6 +91,7 @@ const DirItem = SortableElement(
     handleClick,
     handleDirPress,
     handleDirRelease,
+    handleRenameDir,
     style,
     props,
     state,
@@ -133,21 +134,9 @@ const DirItem = SortableElement(
                       fontSize: '14px'
                     }
                   }}
-                  onBlur={() => {
-                    if (event.target.value === '') {
-
-                    } else {
-                      if (Directory.renameDir(sortIndex, event.target.value)) {
-                        const dirNameConfig = { prev: dirName, new: event.target.value }
-                        props.renameDir(dirNameConfig)
-                        Directory.renameDir(sortIndex, event.target.value)
-                      } else {
-                        // alert('A same directory name exists. Please enter an unique name!')
-                      }
-                    }
-                  }}
-                />
-                : <ListItemText inset primary={dirName} classes={{ primary: `${style.text} ${props.dir[dirName].check.dir ? style.checkedStyle : null}` }} />
+                  onBlur={() => { handleRenameDir(event, sortIndex, dirName) }}
+                />:
+                <ListItemText inset primary={dirName} classes={{ primary: `${style.text} ${props.dir[dirName].check.dir ? style.checkedStyle : null}` }} />
               }
 
               <Checkbox
@@ -183,6 +172,7 @@ const DirItem = SortableElement(
 
 const DirList = SortableContainer(
   ({
+    handleRenameDir,
     handleClick,
     handleDirPress,
     handleDirRelease,
@@ -210,6 +200,7 @@ const DirList = SortableContainer(
                 props={props}
                 style={style}
                 handleCheckboxClick={handleCheckboxClick}
+                handleRenameDir={handleRenameDir}
               />
             </DragAndDrop>
           )
@@ -229,6 +220,7 @@ class ListDirItem extends React.Component {
       isShortClick: true
     }
 
+    this.handleRenameDir = this.handleRenameDir.bind(this)
     this.handleClick = this.handleClick.bind(this)
     this.handleDirPress = this.handleDirPress.bind(this)
     this.handleDirRelease = this.handleDirRelease.bind(this)
@@ -253,12 +245,34 @@ class ListDirItem extends React.Component {
     return false
   }
 
+  handleRenameDir (event, sortIndex, dirName) {
+    if (event.target.value === '') {
+
+    } 
+    else {
+      if(Directory.renameDir(sortIndex, event.target.value)){
+        const dirNameConfig = {prev: dirName, new: event.target.value}
+        this.props.renameDir(dirNameConfig)
+        Directory.renameDir(sortIndex, event.target.value)
+      } else{
+        //alert('A same directory name exists. Please enter an unique name!')
+      }
+    }
+  }
+
   handleDirPress (dirName) {
     this.state.isShortClick = true
+    let isChecked = false
     this.state.dirPressTimer = setTimeout(() => {
       console.log('long press activated!')
+      Object.keys(this.props.dir).map(key => {
+        if (Object.values(this.props.dir[key].check.notes).includes(true) || this.props.dir[key].check.dir == true)
+        isChecked = true
+      })
       this.state.isShortClick = false
-      this.props.setIsRenaming({ dirID: dirName, status: true })
+      if (!isChecked){
+        this.props.setIsRenaming({ dirID: dirName, status: true })
+      }
     }, 1000)
   }
   handleDirRelease () {
@@ -333,6 +347,7 @@ class ListDirItem extends React.Component {
         handleCheckboxClick={this.handleCheckboxClick}
         handleDrop={this.handleDrop}
         shouldCancelStart={this.shouldCancelStart}
+        handleRenameDir={this.handleRenameDir}
       />
     )
   }
