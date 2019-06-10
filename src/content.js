@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom'
 import Root from './app/Root.js'
 import { createStore } from 'redux'
 import { Provider } from 'react-redux'
+import { SnackbarProvider } from 'notistack'
+import Snackbar from '@material-ui/core/Snackbar'
+import SnackbarContent from '@material-ui/core/SnackbarContent'
 import reducers from './app/redux/reducers'
 import API from './api/api.js'
 
@@ -70,8 +73,53 @@ const main = async function () {
       }
     })
   }
-
+  const initMessage = document.createElement('div')
+  initMessage.id = 'init-message'
+  document.body.appendChild(initMessage)
+  ReactDOM.render(
+    <Snackbar
+      anchorOrigin={{
+        vertical: 'top',
+        horizontal: 'center'
+      }}
+      open
+      autoHideDuration={2000}
+      onClose={function () { ReactDOM.unmountComponentAtNode(initMessage) }}
+      style={{ margin: '16px' }}>
+      <SnackbarContent
+        aria-describedby='client-snackbar'
+        message={
+          <span style={{ fontSize: '14px' }}> Initializing HackMDir ... </span>
+        }
+      />
+    </Snackbar>,
+    initMessage
+  )
   await API.initCache()
+  document.body.removeChild(initMessage)
+  const completeMessage = document.createElement('div')
+  completeMessage.id = 'complete-message'
+  document.body.appendChild(completeMessage)
+  ReactDOM.render(
+    <Snackbar
+      anchorOrigin={{
+        vertical: 'top',
+        horizontal: 'center'
+      }}
+      autoHideDuration={2000}
+      onClose={function () { ReactDOM.unmountComponentAtNode(completeMessage); document.body.removeChild(completeMessage) }}
+      open
+      style={{ margin: '16px' }}>
+      <SnackbarContent
+        aria-describedby='client-snackbar'
+        message={
+          <span style={{ fontSize: '14px' }}> Complete initializing HackMDir ! </span>
+        }
+      />
+    </Snackbar>,
+    completeMessage
+  )
+
   // daemon the root component on root div
   const root = document.createElement('div')
   root.classList.add('hmdir_app')
@@ -80,7 +128,14 @@ const main = async function () {
   window.__HMDIR.root = root
   ReactDOM.render(
     <Provider store={store}>
-      <Root />
+      <SnackbarProvider
+        maxSnack={3}
+        transitionDuration={100}
+        autoHideDuration={6000}
+        preventDuplicate
+      >
+        <Root />
+      </SnackbarProvider>
     </Provider>,
     root
   )

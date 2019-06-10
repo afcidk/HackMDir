@@ -6,7 +6,7 @@
   "scripts": {
     "install": "scripts/install-git-hooks",
     "fix": "npx standard --fix",
-    "dev": "NODE_ENV=development webpack --config webpack.dev.js --mode=development --watch",
+    "dev": "webpack --config webpack.dev.js --mode=development --watch ",
     "build": "webpack --config webpack.prod.js"
   },
   "repository": {
@@ -37,8 +37,7 @@
     "css-loader": "^2.1.1",
     "html-loader": "^0.5.5",
     "node-sass": "^4.12.0",
-    "postcss-loader": "^3.0.0",
-    "postcss-pxtorem": "^4.0.1",
+    "notistack": "^0.8.6",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-custom-scrollbars": "^4.2.1",
@@ -56,7 +55,7 @@
     "webpack": "^4.32.1",
     "webpack-cli": "^3.3.2",
     "webpack-dev-server": "^3.4.1",
-    "webpack-reload-extension": "0.0.6",
+    "webpack-extension-reloader": "^1.1.0",
     "why-did-you-update": "^1.0.6"
   },
   "dependencies": {

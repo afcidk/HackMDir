@@ -34,7 +34,7 @@ export default (state = {
       const hrefs = action.payload.map(target => target.href)
       return {
         ...state,
-        notes: state.list.filter(target => !hrefs.includes(target.href)),
+        notes: state.notes.filter(target => !hrefs.includes(target.href)),
         filteredNotes: state.filteredNotes.filter(target => !hrefs.includes(target.href))
       }
     case 'SET_SELECTED_NOTES':

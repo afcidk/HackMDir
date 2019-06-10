@@ -11,7 +11,9 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import { Scrollbars } from 'react-custom-scrollbars'
 
 import List from '@material-ui/core/List'
-import ListNoteItem from './ListNoteItem'
+import ListNoteItem from '../list/ListNoteItem'
+import Grid from '@material-ui/core/Grid'
+import FolderIcon from '@material-ui/icons/Folder'
 import CircularProgress from '@material-ui/core/CircularProgress'
 
 import { TextField } from '@material-ui/core'
@@ -25,7 +27,8 @@ const styles = theme => ({
     }
   },
   content: {
-    fontSize: '14px'
+    fontSize: '14px',
+    textAlign: 'left'
   }
 })
 
@@ -46,20 +49,36 @@ class GroupNotesModal extends React.PureComponent {
   // the render function
   render () {
     return (
-      <Dialog open={this.props.show} aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
+      <Dialog maxWidth='xs' fullWidth open={this.props.show} aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
         <DialogContent>
           <DialogTitle id='alert-dialog-title' className={this.props.classes.header}>
-            合併筆記
+            <Grid container justify='flex-start' alignContent='center' alignItems='center'>
+              <Grid item xs={2}>
+                <FolderIcon />
+              </Grid>
+              <Grid item xs={10}>
+                Group
+              </Grid>
+            </Grid>
           </DialogTitle>
           <TextField
-            id='group-notes-name'
-            label='title'
+            id='bookmode-name'
+            label='Directory Name'
+            placeholder='Enter the name here ...'
             value={this.state.title}
-            onChange={this.handleChange}
+            onChange={this.handelChange}
             margin='normal'
+            variant='outlined'
+            fullWidth
+            autoFocus
+            InputProps={{
+              classes: {
+                input: this.props.classes.content
+              }
+            }}
           />
           <DialogContentText id='alert-dialog-description' className={this.props.classes.content}>
-            接下來將對以下 {Object.keys(this.props.selectedItems).length} 項筆記合併到一個資料夾中
+            Grouping the following {Object.keys(this.props.selectedItems).length} notes to one directory
           </DialogContentText>
           <List className={this.props.classes.list}>
             <Scrollbars
@@ -71,16 +90,16 @@ class GroupNotesModal extends React.PureComponent {
               autoHideDuration={500}>
               {
                 Object.values(this.props.selectedItems).map((target, index) => {
-                  return <ListNoteItem selectable={false} key={`grouping-note-${index}`} title={target.title} href={target.href} />
+                  return <ListNoteItem draggable={false} selectable={false} key={`grouping-note-${index}`} title={target.title} href={target.href} />
                 })
               }
             </Scrollbars>
           </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.props.disagreeEvent}> 取消 </Button>
+          <Button onClick={this.props.disagreeEvent}> Cancel </Button>
           <Button onClick={() => { this.props.agreeEvent(this.state.title, this.state.items) }}>
-            {this.props.loading ? <CircularProgress size={14} /> : '確定'}
+            {this.props.loading ? <CircularProgress size={14} /> : 'Submit'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -9,8 +9,8 @@ const SRC_DIR = path.resolve(__dirname, 'src')
 module.exports = {
   mode: 'production',
   entry: {
-    content: ['babel-polyfill', SRC_DIR + '/content.js'],
-    background: ['babel-polyfill', SRC_DIR + '/background.js']
+    background: ['babel-polyfill', SRC_DIR + '/background.js'],
+    content: ['babel-polyfill', SRC_DIR + '/content.js']
   },
   output: {
     path: DIST_DIR,
@@ -26,13 +26,20 @@ module.exports = {
   ],
   optimization: {
     minimize: true,
-    minimizer: [new TerserPlugin({
-      terserOptions: {
-        output: {
-          comments: false
+    minimizer: [
+      new TerserPlugin({
+        extractComments: true,
+        cache: true,
+        parallel: true,
+        sourceMap: true, // Must be set to true if using source-maps in production
+        terserOptions: {
+          extractComments: 'all',
+          compress: {
+            drop_console: true
+          }
         }
-      }
-    })]
+      })
+    ]
   },
   resolve: { extensions: ['.js', '.jsx'] },
   module: {
@@ -45,7 +52,7 @@ module.exports = {
       },
       {
         test: /\.(scss|sass)$/,
-        use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader']
+        use: ['style-loader', 'css-loader', 'sass-loader']
       },
       {
         test: /\.(html)$/,

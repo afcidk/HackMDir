@@ -22,6 +22,10 @@ export default (state = {}, action) => {
       const initTemp = {}
       action.payload.current.forEach((dir, index) => {
         const prevDir = action.payload.prev[dir.title]
+        const noteChecks = {}
+        Object.values(dir.notes).forEach(note => {
+          noteChecks[note.href.substr(18)] = false
+        })
         if (prevDir) {
           initTemp[dir.title] = {
             loc: index,
@@ -29,7 +33,7 @@ export default (state = {}, action) => {
             notes: dir.notes.slice(),
             check: {
               dir: prevDir.check.dir,
-              notes: Object.assign({}, prevDir.check.notes)
+              notes: Object.assign({}, noteChecks, prevDir.check.notes)
             },
             open: prevDir.open,
             isRenaming: false
@@ -53,9 +57,13 @@ export default (state = {}, action) => {
       })
       return Object.assign({}, initTemp)
     case 'NEW_DIR':
+      Object.values(state).forEach(target => {
+        target.loc += +(target.loc >= 0)
+      })
       return {
         ...state,
         [action.payload]: {
+          loc: 0,
           title: action.payload,
           notes: [],
           check: {

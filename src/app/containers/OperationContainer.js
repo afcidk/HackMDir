@@ -3,16 +3,13 @@ import OperationContent from '../components/OperationContent.js'
 import { initList, setNotes, deleteNotes, setSelectedNotes, selectNote, unSelectNote, searchNotes } from '../redux/actions/List.js'
 import { setNewDir } from '../redux/actions/NewDir.js'
 import { setDirCheck, setDirNoteCheck, setDirOpen, newDir, setDir, deleteDir, deleteDirNote } from '../redux/actions/Dir.js'
-// import { searchNotes } from '../redux/actions/Search.js'
 
 const mapStateToProps = (state) => {
   return {
     list: state.List,
-    // selectedNotes: state.SelectedList,
     tab: state.Tab,
     newdir: state.NewDir,
     dir: state.Dir
-    // search: state.Search
   }
 }
 

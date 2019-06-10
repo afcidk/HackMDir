@@ -115,7 +115,7 @@ function delDir (dirId) {
  */
 function renameDir (dirId, title) {
   read()
-  if (dirCache.findIndex(e => e.title === title) !== -1) return false
+  if (dirCache.findIndex(e => e.title === title && dirId !== e.dirId) !== -1) return false
   dirCache.find(e => e.dirId === dirId).title = title
   write()
   return true
@@ -128,8 +128,6 @@ function write () {
 function read () {
   dirCache = getData('directory-backend')
 }
-
-
 
 module.exports = {
   moveNote: moveNote,

@@ -13,7 +13,7 @@
  * }
  */
 
- // searchText: string
+// searchText: string
 export const setSearchText = target => ({
   type: 'SET_SEARCHTEXT',
   payload: target
@@ -60,7 +60,7 @@ export const setDirOpen = target => ({
   payload: target
 })
 
-// { dirID: string, note: string, status: boolean }
+// { dirID: string, noteID: string, status: boolean }
 export const setDirNoteCheck = target => ({
   type: 'SET_DIR_NOTE_CHECK',
   payload: target

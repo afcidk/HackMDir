@@ -8,6 +8,8 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogTitle from '@material-ui/core/DialogTitle'
+import DeleteIcon from '@material-ui/icons/Delete'
+import Grid from '@material-ui/core/Grid'
 import CircularProgress from '@material-ui/core/CircularProgress'
 
 const styles = theme => ({
@@ -19,7 +21,8 @@ const styles = theme => ({
     }
   },
   content: {
-    fontSize: '14px'
+    fontSize: '14px',
+    textAlign: 'left'
   }
 })
 
@@ -27,19 +30,26 @@ class ConfirmModal extends React.PureComponent {
   // the render function
   render () {
     return (
-      <Dialog open={this.props.show} aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
+      <Dialog maxWidth='xs' fullWidth open={this.props.show} aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
         <DialogContent>
           <DialogTitle id='alert-dialog-title' className={this.props.classes.header}>
-            {this.props.title}
+            <Grid container justify='flex-start' alignContent='center' alignItems='center'>
+              <Grid item xs={2}>
+                <DeleteIcon />
+              </Grid>
+              <Grid item xs={10}>
+                {this.props.title}
+              </Grid>
+            </Grid>
           </DialogTitle>
           <DialogContentText id='alert-dialog-description' className={this.props.classes.content}>
             {this.props.message}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.props.disagreeEvent}> 取消 </Button>
+          <Button onClick={this.props.disagreeEvent}> Cancel </Button>
           <Button onClick={this.props.agreeEvent}>
-            {this.props.loading ? <CircularProgress size={14} /> : '確定'}
+            {this.props.loading ? <CircularProgress size={14} /> : 'Submit'}
           </Button>
         </DialogActions>
       </Dialog>
