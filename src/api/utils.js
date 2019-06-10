@@ -84,11 +84,7 @@ async function getDOM (url) {
 async function newData (content) {
   const newPage = (await fetch('/new')).url
 
-  setTimeout(function () {
-    writeData(newPage.replace('https://hackmd.io/', ''),
-      content)
-  }, 10000)
-
+  writeData(newPage.replace('https://hackmd.io/', ''), content)
   return newPage
 }
 
