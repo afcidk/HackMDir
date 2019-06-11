@@ -4,7 +4,8 @@ import { withStyles } from '@material-ui/core/styles'
 const styles = theme => ({
   root: {
     display: 'block',
-    position: 'relative'
+    position: 'relative',
+    width: '100%'
   },
   block: {
     margin: '2px',

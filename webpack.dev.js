@@ -1,6 +1,6 @@
 const path = require('path')
 const webpack = require('webpack')
-const ChromeExtensionReloader = require('webpack-reload-extension')
+const ChromeExtensionReloader = require('webpack-extension-reloader')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const DIST_DIR = path.resolve(__dirname, 'dist')
@@ -11,8 +11,8 @@ module.exports = {
   mode: 'development',
   watch: true,
   entry: {
-    content: ['babel-polyfill', SRC_DIR + '/content.js'],
-    background: ['babel-polyfill', SRC_DIR + '/background.js']
+    background: ['babel-polyfill', SRC_DIR + '/background.js'],
+    content: ['babel-polyfill', SRC_DIR + '/content.js']
   },
   output: {
     path: DIST_DIR,
@@ -22,19 +22,12 @@ module.exports = {
   },
   plugins: [
     new ChromeExtensionReloader({
-      port: 9090,
-      reloadPage: true,
-      entries: {
-        backgroundScript: 'background',
-        contentScript: 'content',
-        reloadPage: true
-      }
+      manifest: SRC_DIR + '/manifest.json'
     }),
     new webpack.optimize.ModuleConcatenationPlugin(),
     new CopyWebpackPlugin([
       { from: './src/manifest.json' },
-      { from: './src/icons/', to: './icons' },
-      { from: './src/svgs', to: './svgs' }
+      { from: './src/icons/', to: './icons' }
     ])
   ],
   resolve: { extensions: ['.js', '.jsx'] },
@@ -48,7 +41,7 @@ module.exports = {
       },
       {
         test: /\.(scss|sass)$/,
-        use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader']
+        use: ['style-loader', 'css-loader', 'sass-loader']
       },
       {
         test: /\.(html)$/,

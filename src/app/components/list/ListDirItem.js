@@ -12,15 +12,17 @@ import Grid from '@material-ui/core/Grid'
 import FolderIcon from '@material-ui/icons/Folder'
 import ExpandLess from '@material-ui/icons/ExpandLess'
 import ChevronRight from '@material-ui/icons/ChevronRight'
+import CustomSnackbar from '../CustomSnackbar.js'
 
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 // import arrayMove from 'array-move'
 
 import ListDirNoteItem from './ListDirNoteItem.js'
 import DragAndDrop from './DragAndDrop.js'
-import Directory from '../../api/directory.js'
-import API from '../../api/api.js'
+import Directory from '../../../api/directory.js'
+import API from '../../../api/api.js'
 import { Input } from '@material-ui/core'
+import { withSnackbar } from 'notistack'
 
 const styles = theme => ({
   ul: {
@@ -37,6 +39,10 @@ const styles = theme => ({
   },
   dirStyle: {
     height: '48px'
+  },
+  noteListStyle: {
+    width: '100%',
+    padding: '0'
   },
   text: {
     display: 'inline-block',
@@ -85,9 +91,7 @@ const styles = theme => ({
 
 const DirItem = SortableElement(
   ({
-    dir,
     value,
-    dirName,
     sortIndex,
     handleClick,
     handleDirPress,
@@ -101,31 +105,37 @@ const DirItem = SortableElement(
     console.log(props.dir)
     return (
       <List
-        style={{ backgroundColor: props.dir[dirName].check.dir ? 'rgba(221, 215, 253)' : null }}
+        style={{ backgroundColor: value.check.dir ? 'rgba(221, 215, 253)' : null }}
         className={style.root}
       >
-        <Grid container justify='flex-start' alignContent='center' alignItems='center'>
-          <Grid item xs={12}>
-            <ListItem
-              button
-              className={props.classes.dirStyle}
-              onMouseDown={() => {
-                handleDirPress(dirName)
-              }}
-              onMouseUp={() => {
-                handleDirRelease()
-                if (state.isShortClick === true) {
-                  handleClick(dirName)
-                }
-              }}
-            >
-              <ListItemIcon>
-                <FolderIcon className={props.dir[dirName].check.dir ? style.checkedStyle : null} />
-              </ListItemIcon>
-              <ListItemIcon>
-                {props.dir[dirName].open ? <ExpandLess className={props.dir[dirName].check.dir ? style.checkedStyle : null} style={{ color: 'black' }} /> : <ChevronRight className={props.dir[dirName].check.dir ? style.checkedStyle : null} style={{ color: 'black' }} />}
-              </ListItemIcon>
-              {props.dir[dirName].isRenaming
+        <ListItem
+          button
+          className={props.classes.dirStyle}
+          onMouseDown={(e) => {
+            handleDirPress(e, value.title)
+          }}
+          onMouseUp={() => {
+            handleDirRelease()
+            if (state.isShortClick === true) {
+              handleClick(value.title)
+            }
+          }}
+        >
+          <Grid container spacing={16} justify='flex-start' alignItems='center' alignContent='center'>
+            <Grid item container xs={3}>
+              <Grid item xs={8} container justify='flex-start' alignItems='center' alignContent='center'>
+                <ListItemIcon>
+                  <FolderIcon className={value.check.dir ? style.checkedStyle : null} />
+                </ListItemIcon>
+              </Grid>
+              <Grid item xs={4} container justify='flex-start' alignItems='center' alignContent='center'>
+                <ListItemIcon>
+                  {value.open ? <ExpandLess className={value.check.dir ? style.checkedStyle : null} style={{ color: 'black', fontSize: '14px' }} /> : <ChevronRight className={value.check.dir ? style.checkedStyle : null} style={{ color: 'black', fontSize: '14px' }} />}
+                </ListItemIcon>
+              </Grid>
+            </Grid>
+            <Grid item xs={7}>
+              {value.isRenaming
                 ? <Input
                   autoFocus
                   placeholder='Enter a new name'
@@ -135,37 +145,33 @@ const DirItem = SortableElement(
                       fontSize: '14px'
                     }
                   }}
-                  onBlur={() => { handleRenameDir(event, sortIndex, dirName) }}
+                  onBlur={() => { handleRenameDir(event, sortIndex, value.title) }}
                 />
-                : <ListItemText inset primary={dirName} classes={{ primary: `${style.text} ${props.dir[dirName].check.dir ? style.checkedStyle : null}` }} />
+                : <ListItemText primary={value.title} classes={{ primary: `${style.text} ${value.check.dir ? style.checkedStyle : null}` }} />
               }
-
+            </Grid>
+            <Grid xs={2} item>
               <Checkbox
                 style={{ color: '#4285f4' }}
                 className={props.displayCheckbox ? `${style.forceDisplay} ${style.checkbox} test` : `${style.checkbox}`}
                 onClick={(e) => {
-                  handleCheckboxClick(e, dirName)
+                  handleCheckboxClick(e, value.title)
                 }}
-                checked={props.dir[dirName].check.dir}
+                checked={value.check.dir}
               />
-            </ListItem>
+            </Grid>
           </Grid>
-          <Grid item xs={12}>
-            <Collapse in={props.dir[dirName].open} timeout={100} mountOnEnter unmountOnExit>
-              <List component='div' disablePadding>
-                <ListItem className={style.li} >
-                  <ListDirNoteItem
-                    value={value}
-                    dirId={sortIndex} setDir={props.setDir}
-                    dir={props.dir} setDirNoteCheck={props.setDirNoteCheck}
-                    selectNoteEvent={props.selectNoteEvent} unSelectNoteEvent={props.unSelectNoteEvent} selectedNotes={props.selectedNotes}
-                    dirContent={props.dir[dirName]}
-                    displayCheckbox={props.displayCheckbox} />
-                </ListItem>
-              </List>
-            </Collapse>
-          </Grid>
-        </Grid>
+        </ListItem>
+        <Collapse in={value.open} timeout={100} mountOnEnter unmountOnExit>
+          <ListItem className={props.classes.noteListStyle}>
+            <ListDirNoteItem
+              dirId={sortIndex} setDir={props.setDir} setNewDir={props.setNewDir}
+              dir={props.dir} setDirNoteCheck={props.setDirNoteCheck}
+              selectNoteEvent={props.selectNoteEvent} unSelectNoteEvent={props.unSelectNoteEvent} selectedNotes={props.selectedNotes}
+              dirContent={value}
+              displayCheckbox={props.displayCheckbox} />
+          </ListItem>
+        </Collapse>
       </List>
     )
   }
@@ -193,7 +199,6 @@ const DirList = SortableContainer(
                 key={`item-${index}`}
                 index={index}
                 value={value}
-                dirName={value.title}
                 sortIndex={index}
                 state={state}
                 handleClick={handleClick}
@@ -234,19 +239,6 @@ class ListDirItem extends React.Component {
     this.onSortStart = this.onSortStart.bind(this)
     this.shouldCancelStart = this.shouldCancelStart.bind(this)
   }
-  
-  shouldCancelStart () {
-    var flag = false
-    Object.keys(this.props.dir).map(key => {
-      if(this.props.dir[key].isRenaming) {
-        flag = true
-      }
-    })
-    if(flag){
-      return true
-    }
-    return false
-  }
 
   shouldCancelStart () {
     var flag = false
@@ -270,12 +262,19 @@ class ListDirItem extends React.Component {
         this.props.renameDir(dirNameConfig)
         Directory.renameDir(sortIndex, event.target.value)
       } else {
-        // alert('A same directory name exists. Please enter an unique name!')
+        this.props.enqueueSnackbar('', {
+          children: (key) => (
+            <CustomSnackbar id={key} message='You are not allowed to rename a directory repeatedly, please rename again!' />
+          )
+        })
       }
     }
   }
 
-  handleDirPress (dirName) {
+  handleDirPress (event, dirName) {
+    if (event.which === 3 || event.button === 2) {
+      return
+    }
     this.state.isShortClick = true
     let isChecked = false
     this.state.dirPressTimer = setTimeout(() => {
@@ -368,4 +367,4 @@ class ListDirItem extends React.Component {
   }
 }
 
-export default withStyles(styles)(ListDirItem)
+export default withStyles(styles)(withSnackbar(ListDirItem))

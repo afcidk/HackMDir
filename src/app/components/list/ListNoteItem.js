@@ -6,10 +6,14 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 import DescriptionIcon from '@material-ui/icons/Description'
+import DragHandleIcon from '@material-ui/icons/DragHandle'
 import Checkbox from '@material-ui/core/Checkbox'
 import Grid from '@material-ui/core/Grid'
 
 const styles = theme => ({
+  root: {
+    zIndex: 99999999
+  },
   text: {
     display: 'inline-block',
     width: '180px',
@@ -84,8 +88,16 @@ class ListNoteItem extends React.PureComponent {
         <ListItem
           button
           onClick={this.handleListClick}
+          className={this.props.classes.root}
           style={{ backgroundColor: this.props.checked ? 'rgba(66, 33, 244, 0.18)' : null, height: '48px' }}>
           <Grid container spacing={16} justify='flex-start' alignContent='center' alignItems='center'>
+            {this.props.draggable ? (
+              <Grid item xs={2}>
+                <ListItemIcon>
+                  <DragHandleIcon />
+                </ListItemIcon>
+              </Grid>) : null
+            }
             <Grid item xs={2}>
               <ListItemIcon>
                 <DescriptionIcon className={this.props.checked ? this.props.classes.checkedStyle : null} />

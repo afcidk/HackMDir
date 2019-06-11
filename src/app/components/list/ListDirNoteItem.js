@@ -7,14 +7,15 @@ import ListItemText from '@material-ui/core/ListItemText'
 import Checkbox from '@material-ui/core/Checkbox'
 import Grid from '@material-ui/core/Grid'
 
-import Directory from '../../api/directory.js'
-import API from '../../api/api.js'
+import Directory from '../../../api/directory.js'
+import API from '../../../api/api.js'
 
 const styles = theme => ({
   root: {
     zIndex: '99999999',
     cursor: 'pointer',
-    height: '48px'
+    height: '48px',
+    width: '100%'
   },
   ul: {
     padding: '0',
@@ -79,7 +80,6 @@ const NoteItem = SortableElement(
         onClick={(e) => {
           handleListClick(e, index)
         }}
-        component='li'
         style={{ backgroundColor: props.dir[props.dirContent.title].check.notes[props.dirContent.notes[sortIndex].href.substr(18)] ? 'rgba(221, 215, 253)' : null }}
         className={style.root}
       >
@@ -92,7 +92,7 @@ const NoteItem = SortableElement(
         >
           <Grid item xs={3} />
           <Grid item xs={7}>
-            <ListItemText primary={noteName} classes={{ primary: `${style.text} ${props.dir[props.dirContent.title].check.notes[props.dirContent.notes[sortIndex].href.substr(18)] ? style.checkedStyle : null}` }} />
+            <ListItemText primary={noteName} classes={{ primary: `${style.text} ${props.dirContent.check.notes[props.dirContent.notes[sortIndex].href.substr(18)] ? style.checkedStyle : null}` }} />
           </Grid>
           <Grid item xs={2}>
             <Checkbox
@@ -112,14 +112,15 @@ const NoteItem = SortableElement(
 
 const NoteList = SortableContainer(
   ({ state, style, props, handleCheckboxClick, handleListClick }) => {
+    console.log(props)
     return (
       <ul className={style.ul}>
-        {props.value.notes.map((value, index) => (
+        {props.dirContent.notes.map((note, index) => (
           <NoteItem
             key={`item-${index}`}
             index={index}
             sortIndex={index}
-            noteName={value.title}
+            noteName={note.title}
             state={state}
             style={style}
             props={props}
@@ -155,6 +156,7 @@ class NoteContainer extends React.Component {
     // select item
     if (event.target.checked) {
       this.props.selectNoteEvent(this.props.dirContent.notes[index])
+      console.log(this.props)
       this.props.setNewDir(false)
     } else {
       this.props.unSelectNoteEvent(this.props.dirContent.notes[index])
@@ -167,7 +169,7 @@ class NoteContainer extends React.Component {
   }
 
   onSortEnd ({ oldIndex, newIndex }) {
-    const targetNote = this.props.value.notes[oldIndex]
+    const targetNote = this.props.dirContent.notes[oldIndex]
     if (getCursorPosition()[0] > 400) {
       Directory.moveNote(targetNote.title, targetNote.href, { dirId: this.props.dirId, noteId: oldIndex })
     } else {

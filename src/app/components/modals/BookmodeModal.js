@@ -5,37 +5,24 @@ import PropTypes from 'prop-types'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Grid from '@material-ui/core/Grid'
 
 import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemText from '@material-ui/core/ListItemText'
-import DescriptionIcon from '@material-ui/icons/Description'
+import ListNoteItem from '../list/ListNoteItem.js'
+import Scrollbars from 'react-custom-scrollbars'
 import CircularProgress from '@material-ui/core/CircularProgress'
+import LibraryBookIcon from '@material-ui/icons/LibraryBooks'
 
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 import arrayMove from 'array-move'
 import { TextField } from '@material-ui/core'
 
-const SortableItem = SortableElement(({ title }) => {
+const SortableItem = SortableElement(({ title, href }) => {
   return (
     <React.Fragment>
-      <ListItem style={{ zIndex: 999999 }}>
-        <Grid container spacing={16} justify='flex-start' alignContent='center' alignItems='center'>
-          <Grid item xs={2}>
-            <ListItemIcon>
-              <DescriptionIcon />
-            </ListItemIcon>
-          </Grid>
-          <Grid item xs={8}>
-            <ListItemText primary={title} />
-          </Grid>
-        </Grid>
-      </ListItem>
+      <ListNoteItem draggable selectable={false} title={title} href={href} />
     </React.Fragment>
 
   )
@@ -44,18 +31,26 @@ const SortableItem = SortableElement(({ title }) => {
 const SortableList = SortableContainer(({ items }) => {
   return (
     <List>
-      {
-        items.map((target, index) => {
-          return (
-            <SortableItem
-              key={`bookmode-note-${index}`}
-              index={index}
-              sortIndex={index}
-              title={target.title}
-              href={target.href} />
-          )
-        })
-      }
+      <Scrollbars
+        autoHeight
+        autoHeightMin={48}
+        autoHeightMax={144}
+        autoHide
+        autoHideTimeout={1000}
+        autoHideDuration={500}>
+        {
+          items.map((target, index) => {
+            return (
+              <SortableItem
+                key={`bookmode-note-${index}`}
+                index={index}
+                sortIndex={index}
+                title={target.title}
+                href={target.href} />
+            )
+          })
+        }
+      </Scrollbars>
     </List>
   )
 })
@@ -68,8 +63,9 @@ const styles = theme => ({
       fontSize: '18px'
     }
   },
-  content: {
-    fontSize: '14px'
+  textField: {
+    fontSize: '14px',
+    textAlign: 'left'
   }
 })
 
@@ -99,27 +95,40 @@ class BookmodeModal extends React.PureComponent {
   // the render function
   render () {
     return (
-      <Dialog open={this.props.show} aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
+      <Dialog maxWidth='xs' fullWidth open={this.props.show} aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
         <DialogContent>
           <DialogTitle id='alert-dialog-title' className={this.props.classes.header}>
-            建立 Bookmode
+            <Grid container justify='flex-start' alignContent='center' alignItems='center'>
+              <Grid item xs={2}>
+                <LibraryBookIcon />
+              </Grid>
+              <Grid item xs={10}>
+                Bookmode
+              </Grid>
+            </Grid>
           </DialogTitle>
           <TextField
             id='bookmode-name'
-            label='title'
+            label='Bookmode title'
+            placeholder='Enter the name here ...'
             value={this.state.title}
             onChange={this.handelChange}
             margin='normal'
+            variant='outlined'
+            fullWidth
+            autoFocus
+            InputProps={{
+              classes: {
+                input: this.props.classes.textField
+              }
+            }}
           />
-          <DialogContentText id='alert-dialog-description' className={this.props.classes.content}>
-            請針對你所選擇的 {Object.keys(this.props.selectedItems).length} 項筆記進行排序
-          </DialogContentText>
-          <SortableList items={this.state.items} onSortEnd={this.onSortEnd} lockAxis='y' />
+          <SortableList items={this.state.items} onSortEnd={this.onSortEnd} lockAxis='y' distance={1} />
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.props.disagreeEvent}> 取消 </Button>
+          <Button onClick={this.props.disagreeEvent}> Cancel </Button>
           <Button onClick={() => { this.props.agreeEvent(this.state.title, this.state.items) }}>
-            {this.props.loading ? <CircularProgress size={14} /> : '確定'}
+            {this.props.loading ? <CircularProgress size={14} /> : 'Submit'}
           </Button>
         </DialogActions>
       </Dialog>

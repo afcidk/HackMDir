@@ -10,7 +10,10 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogContentText from '@material-ui/core/DialogContentText'
+import Divider from '@material-ui/core/Divider'
 import CircularProgress from '@material-ui/core/CircularProgress'
+import LockIcon from '@material-ui/icons/Lock'
 
 const styles = theme => ({
   header: {
@@ -19,6 +22,10 @@ const styles = theme => ({
       textAlign: 'left',
       fontSize: '18px'
     }
+  },
+  content: {
+    fontSize: '14px',
+    textAlign: 'left'
   },
   label: {
     fontSize: '14px',
@@ -50,11 +57,22 @@ class PermissionModal extends React.PureComponent {
   render () {
     const permissionType = ['Owner', 'Signed-in', 'Guest']
     return (
-      <Dialog maxWidth='xs' open={this.props.show} aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
+      <Dialog maxWidth='xs' fullWidth open={this.props.show} aria-labelledby='alert-dialog-title' aria-describedby='alert-dialog-description'>
         <DialogContent>
           <DialogTitle id='alert-dialog-title' className={this.props.classes.header}>
-            請設定當前 {this.props.number} 項的筆記權限
+            <Grid container justify='flex-start' alignContent='center' alignItems='center'>
+              <Grid item xs={2}>
+                <LockIcon />
+              </Grid>
+              <Grid item xs={10}>
+                Permission
+              </Grid>
+            </Grid>
           </DialogTitle>
+          <DialogContentText id='alert-dialog-description' className={this.props.classes.content}>
+            Please set the current {this.props.number} notes of permission.
+          </DialogContentText>
+          <Divider style={{ margin: '16px 0' }} />
           <Grid container justify='center'>
             <Grid item container justify='center' xs={12}>
               <Grid item xs={4}>

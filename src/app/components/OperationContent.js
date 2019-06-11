@@ -8,14 +8,14 @@ import LibraryBookIcon from '@material-ui/icons/LibraryBooks'
 import DeleteIcon from '@material-ui/icons/Delete'
 import LockIcon from '@material-ui/icons/Lock'
 import CheckboxIcon from '@material-ui/icons/CheckBox'
-import CloseIcon from '@material-ui/icons/Close'
 import FolderIcon from '@material-ui/icons/Folder'
 import Tooltip from '@material-ui/core/Tooltip'
-import ConfirmModal from './ConfirmModal.js'
-import PermissionModal from './PermissionModal.js'
-import BookmodeModal from './BookmodeModal.js'
-import GroupNotesModal from './GroupNotesModal.js'
-import Snackbar from '@material-ui/core/Snackbar'
+import ConfirmModal from './modals/ConfirmModal.js'
+import PermissionModal from './modals/PermissionModal.js'
+import BookmodeModal from './modals/BookmodeModal.js'
+import GroupNotesModal from './modals/GroupNotesModal.js'
+import CustomSnackbar from './CustomSnackbar.js'
+import { withSnackbar } from 'notistack'
 
 import API from '../../api/api.js'
 import Directory from '../../api/directory.js'
@@ -52,8 +52,6 @@ class OperationContent extends React.PureComponent {
       showBookmode: false,
       showPermission: false,
       showGroupNote: false,
-      showSnackBar: false,
-      errorMessage: '',
       title: '',
       message: '',
       agreeEvent: null,
@@ -74,13 +72,23 @@ class OperationContent extends React.PureComponent {
         try {
           this.setState({ loading: true })
           const resultUrl = await API.addBookmode(title, sortedNotes)
-          // open the result note in other tab
-          window.open(resultUrl, '_target')
+          // delay open the result note in other tab
+          const timeout = function (ms) {
+            return new Promise(resolve => setTimeout(resolve, ms))
+          }
+          await timeout(5000)
+          const formatUrl = `${resultUrl.split('?')[0]}/${encodeURIComponent(sortedNotes[0].href)}?type=book`
+          window.open(formatUrl, '_target')
           this.props.setSelectedNotes({})
           this.setState({ showBookmode: false, loading: false })
         } catch (error) {
           console.log(error)
-          this.setState({ showBookmode: false, loading: false, errorMessage: error.message, showSnackBar: true })
+          this.setState({ showBookmode: false, loading: false })
+          this.props.enqueueSnackbar('', {
+            children: (key) => (
+              <CustomSnackbar id={key} message={error.message} />
+            )
+          })
         }
       }.bind(this),
       disagreeEvent: function () {
@@ -93,16 +101,16 @@ class OperationContent extends React.PureComponent {
     let title
     switch (this.props.tab.current) {
       case 'Recent':
-        title = '移除 Recent 中的紀錄'
-        text = `您確定要將目前 ${Object.keys(this.props.list.selectedNotes).length} 項筆記移除嗎？`
+        title = 'Remove Records.'
+        text = `Notes will be removed PERMANENTLY`
         break
       case 'Personal':
-        title = '刪除 Personal 中的筆記'
-        text = `您確定要將目前 ${Object.keys(this.props.list.selectedNotes).length} 項筆記刪除嗎？`
+        title = 'Delete Notes.'
+        text = `Notes will be delete PERMANENTLY!`
         break
       case 'Directory':
-        title = '刪除 Directory 中的資料夾/筆記'
-        text = `您確定要將目前 ${Object.keys(this.props.list.selectedNotes).length} 項資料夾/筆記刪除嗎？`
+        title = 'Delete Directories/Notes.'
+        text = `Directories/Notes will be delete PERMANENTLY`
         break
     }
     this.setState({
@@ -130,12 +138,24 @@ class OperationContent extends React.PureComponent {
             this.props.deleteNotes(Object.values(this.props.list.selectedNotes))
           } else {
             // delete dir note
+            const hrefs = Object.values(this.props.list.selectedNotes).map(target => target.href)
+            Object.values(this.props.dir).forEach(dir => {
+              const note = dir.notes.findIndex(note => hrefs.includes(note.href))
+              if (note) {
+                this.props.deleteDirNote({ dirID: dir.title, href: note.href })
+              }
+            })
           }
           this.props.setSelectedNotes({})
           this.setState({ showConfirm: false, loading: false })
         } catch (error) {
           console.log(error)
-          this.setState({ showConfirm: false, loading: false, errorMessage: error.message, showSnackBar: true })
+          this.setState({ showConfirm: false, loading: false })
+          this.props.enqueueSnackbar('', {
+            children: (key) => (
+              <CustomSnackbar id={key} message={error.message} />
+            )
+          })
         }
       }.bind(this),
       disagreeEvent: function () {
@@ -155,7 +175,12 @@ class OperationContent extends React.PureComponent {
           this.setState({ showPermission: false, loading: false })
         } catch (error) {
           console.log(error)
-          this.setState({ showConfirm: false, loading: false, errorMessage: error.message, showSnackBar: true })
+          this.setState({ showPermission: false, loading: false })
+          this.props.enqueueSnackbar('', {
+            children: (key) => (
+              <CustomSnackbar id={key} message={error.message} />
+            )
+          })
         }
       }.bind(this),
       disagreeEvent: function () {
@@ -173,7 +198,7 @@ class OperationContent extends React.PureComponent {
           const status = Directory.newDir(data)
           console.log('status: ', status)
           if (!status) {
-            throw Error('當前存在相同的資料夾名稱！請重新命名！')
+            throw Error('There exists same directory, please rename again!')
           }
           // move the notes to the dir
           Object.values(this.props.list.selectedNotes).forEach(target => {
@@ -183,7 +208,12 @@ class OperationContent extends React.PureComponent {
           this.setState({ showGroupNote: false, loading: false })
         } catch (error) {
           console.log(error)
-          this.setState({ showGroupNote: false, loading: false, errorMessage: error.message, showSnackBar: true })
+          this.setState({ showGroupNote: false, loading: false })
+          this.props.enqueueSnackbar('', {
+            children: (key) => (
+              <CustomSnackbar id={key} message={error.message} />
+            )
+          })
         }
       }.bind(this),
       disagreeEvent: function () {
@@ -192,16 +222,49 @@ class OperationContent extends React.PureComponent {
     })
   }
   selectAllOperation () {
-    // unselect all if it is already select all
-    if (this.props.list.filteredNotes.length === Object.keys(this.props.list.selectedNotes).length) {
-      this.props.setSelectedNotes({})
-      return
+    if (this.props.tab.current !== 'Directory') {
+      // unselect all if it is already select all
+      if (this.props.list.filteredNotes.length === Object.keys(this.props.list.selectedNotes).length) {
+        this.props.setSelectedNotes({})
+        return
+      }
+      const temp = {}
+      this.props.list.filteredNotes.forEach(target => {
+        temp[target.href.substr(18)] = target
+      })
+      this.props.setSelectedNotes(temp)
+    } else {
+      console.log(this.props)
+      const temp = {}
+      const dirs = Object.values(this.props.dir)
+      let flag = false
+      // check if all notes are selected
+      for (let i = 0; i < dirs.length; ++i) {
+        if (Object.values(dirs[i].check.notes).includes(false)) {
+          flag = true
+          break
+        }
+      }
+      if (flag) {
+        dirs.forEach(dir => {
+          dir.notes.forEach(note => {
+            // check note
+            this.props.setDirNoteCheck({ dirID: dir.title, noteID: note.href.substr(18), status: true })
+            // select note
+            temp[note.href.substr(18)] = note
+          })
+        })
+        this.props.setSelectedNotes(temp)
+      } else {
+        dirs.forEach(dir => {
+          dir.notes.forEach(note => {
+            // check note
+            this.props.setDirNoteCheck({ dirID: dir.title, noteID: note.href.substr(18), status: false })
+          })
+        })
+        this.props.setSelectedNotes({})
+      }
     }
-    const temp = {}
-    this.props.list.filteredNotes.forEach(target => {
-      temp[target.href.substr(18)] = target
-    })
-    this.props.setSelectedNotes(temp)
   }
   handleCloseSnakcbar () {
     this.setState({ showSnackBar: false })
@@ -215,27 +278,6 @@ class OperationContent extends React.PureComponent {
         <PermissionModal show={this.state.showPermission} number={Object.keys(this.props.list.selectedNotes).length} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
         <BookmodeModal show={this.state.showBookmode} selectedItems={this.props.list.selectedNotes} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
         <GroupNotesModal show={this.state.showGroupNote} selectedItems={this.props.list.selectedNotes} agreeEvent={this.state.agreeEvent} disagreeEvent={this.state.disagreeEvent} loading={this.state.loading} />
-        <Snackbar
-          autoHideDuration={6000}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          key={`snack-bar-message`}
-          open={this.state.showSnackBar}
-          ContentProps={{
-            'aria-describedby': 'message-id'
-          }}
-          message={<span id='message-id'>{this.state.errorMessage}</span>}
-          action={[
-            <IconButton
-              key='close'
-              aria-label='Close'
-              color='inherit'
-              onClick={this.handleCloseSnakcbar}
-            >
-              <CloseIcon />
-            </IconButton>
-          ]}
-          onClose={this.handleCloseSnakcbar}
-        />
         <Grid item xs={2}>
           <Tooltip title='Bookmode' classes={{ tooltip: this.props.classes.tooltip }}>
             <IconButton className={this.props.classes.button} aria-label='bookmode' onClick={this.bookModeOperation}>
@@ -284,7 +326,8 @@ class OperationContent extends React.PureComponent {
 }
 
 OperationContent.propTypes = {
-  classes: PropTypes.object.isRequired
+  classes: PropTypes.object.isRequired,
+  enqueueSnackbar: PropTypes.func.isRequired
 }
 
-export default withStyles(styles)(OperationContent)
+export default withStyles(styles)(withSnackbar(OperationContent))

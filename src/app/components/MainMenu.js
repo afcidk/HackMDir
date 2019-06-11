@@ -93,9 +93,11 @@ class MainMenu extends React.PureComponent {
       clearTimeout(keying)
     }
     keying = setTimeout(function () {
-      this.props.searchNotes(searchingText)
-      //this.props.setSearchText(searchingText)
-      this.props.setSearch(searchingText)
+      if (this.props.tab.current !== 'Directory') {
+        this.props.searchNotes(searchingText)
+      } else {
+        this.props.setSearch(searchingText)
+      }
     }.bind(this), 250)
   }
   handleDisplay (event) {
@@ -178,7 +180,7 @@ class MainMenu extends React.PureComponent {
               <SearchIcon className={this.props.classes.searchIcon} />
             </Grid>
             <Grid item xs={9} container>
-              <InputBase onChange={this.changeSearch} style={{ fontSize: '16px' }} fullWidth placeholder={this.props.tab.current === 'Directory' ? 'Search directories & notes here ...' : 'Search notes here ...'} />
+              <InputBase onChange={this.changeSearch} style={{ fontSize: '16px' }} fullWidth placeholder={this.props.tab.current === 'Directory' ? 'Search directories here ...' : 'Search notes here ...'} />
             </Grid>
           </Grid>
         </Grid>

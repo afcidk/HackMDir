@@ -12,12 +12,14 @@ import { Scrollbars } from 'react-custom-scrollbars'
 
 import Slide from '@material-ui/core/Slide'
 
-import OperationContainer from '../containers/OperationContainer.js'
+import OperationContainer from '../../containers/OperationContainer.js'
 import Collapse from '@material-ui/core/Collapse'
 
-import API from '../../api/api.js'
-import Directory from '../../api/directory.js'
+import API from '../../../api/api.js'
+import Directory from '../../../api/directory.js'
 import ListSubheader from '@material-ui/core/ListSubheader'
+import CustomSnackbar from '../CustomSnackbar.js'
+import { withSnackbar } from 'notistack'
 
 // use memo to enhance the render performance
 const MemoListNoteItem = React.memo(ListNoteItem)
@@ -26,8 +28,8 @@ const MemoListNoteItem = React.memo(ListNoteItem)
 const styles = theme => ({
   root: {
     width: '320px',
-    height: `${window.innerHeight - 108}px`,
-    maxHeight: `${window.innerHeight - 108}px`,
+    height: 'calc(100vh - 108px)',
+    maxHeight: 'calc(100vh - 108px)',
     position: 'relative',
     overflow: 'auto',
     padding: '0',
@@ -41,7 +43,7 @@ const styles = theme => ({
     alignItems: 'center',
     position: 'absolute',
     width: '100%',
-    height: `${window.innerHeight - 108}px`,
+    height: `calc(100vh - 108px)`,
     backgroundColor: 'rgba(0, 0, 0, 0.18)'
   },
   header: {
@@ -60,7 +62,7 @@ const row = ({ index, style, data }) => {
 }
 
 class ListContent extends React.PureComponent {
-  constructor(props) {
+  constructor (props) {
     super(props)
 
     this.state = {
@@ -78,11 +80,11 @@ class ListContent extends React.PureComponent {
     // this.handleAddList = this.handleAddList.bind(this)
   }
 
-  componentWillMount() {
+  componentWillMount () {
     this.fetchData(this.props.tab.current)
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps (nextProps) {
     if (this.props.tab.current === nextProps.tab.current) {
       return
     }
@@ -91,7 +93,7 @@ class ListContent extends React.PureComponent {
     this.props.setSelectedNotes({})
   }
 
-  fetchData(tab) {
+  fetchData (tab) {
     let result = []
     this.setState({ changingTab: true })
     if (tab === 'Recent') {
@@ -122,11 +124,11 @@ class ListContent extends React.PureComponent {
     }.bind(this), leaveDealy)
   }
 
-  handleChange(event) {
+  handleChange (event) {
     this.setState({ newDirName: event.target.value })
   }
 
-  handleSubmit(event) {
+  handleSubmit (event) {
     event.preventDefault()
     const status = Directory.newDir(this.state.newDirName.toString())
     if (status) {
@@ -134,38 +136,44 @@ class ListContent extends React.PureComponent {
       this.props.setDir({ current: result, prev: this.props.dir })
       this.props.newDir(this.state.newDirName)
       this.props.setNewDir(false)
+    } else {
+      this.props.enqueueSnackbar('', {
+        children: (key) => (
+          <CustomSnackbar id={key} message='You are not allowed to create a directory repeatedly, please enter another name!' />
+        )
+      })
     }
   }
 
-  handleScroll({ target }) {
+  handleScroll ({ target }) {
     const { scrollTop } = target
     this.listRef.current.scrollTo(scrollTop)
   }
 
   // the render function
-  render() {
+  render () {
     console.log('ListContent render')
-    console.log(this.props.list)
+    console.log(this.props)
     // destructuring assignment
     const {
       list, selectNote, unSelectNote,
       dir, setNewDir, setDir, setDirOpen, setDirCheck, setDirNoteCheck,
       deleteDir, renameDir, setIsRenaming, search
     } = this.props
-
-    let filteredDir = dir
+    let filteredDir
+    console.log('searching', search)
     if (search) {
-      console.log('searching', search)
       let dirKeys = Object.keys(dir)
       let matchingKeys = dirKeys.filter((key) => {
         return key.toString().toLocaleLowerCase().indexOf(search) !== -1
       })
-      filteredDir = Object.keys(dir)
-        .filter(key => matchingKeys.includes(key))
-        .reduce((obj, key) => {
-          obj[key] = dir[key];
-          return obj;
-        }, {});
+      filteredDir = matchingKeys.reduce((obj, key) => {
+        obj[key] = dir[key]
+        return obj
+      }, {})
+      console.log(filteredDir)
+    } else {
+      filteredDir = dir
     }
 
     return (
@@ -203,31 +211,31 @@ class ListContent extends React.PureComponent {
                     selectNoteEvent={selectNote} unSelectNoteEvent={unSelectNote} selectedNotes={list.selectedNotes} renameDir={renameDir} />
                 </div>
               ) : (
-                  <AutoSizer>
-                    {
-                      ({ height, width }) => {
-                        return (
-                          <React.Fragment>
-                            <FixedSizeList
-                              height={height}
-                              width={width - 12}
-                              ref={this.listRef}
-                              itemCount={list.filteredNotes.length}
-                              itemData={{
-                                list,
-                                selectNote,
-                                unSelectNote
-                              }}
-                              style={{ overflow: false }}
-                              itemSize={48}>
-                              {row}
-                            </FixedSizeList>
-                          </React.Fragment>
-                        )
-                      }
+                <AutoSizer>
+                  {
+                    ({ height, width }) => {
+                      return (
+                        <React.Fragment>
+                          <FixedSizeList
+                            height={height}
+                            width={width - 12}
+                            ref={this.listRef}
+                            itemCount={list.filteredNotes.length}
+                            itemData={{
+                              list,
+                              selectNote,
+                              unSelectNote
+                            }}
+                            style={{ overflow: false }}
+                            itemSize={48}>
+                            {row}
+                          </FixedSizeList>
+                        </React.Fragment>
+                      )
                     }
-                  </AutoSizer>
-                )
+                  }
+                </AutoSizer>
+              )
               }
             </Scrollbars>
           </List>
@@ -241,4 +249,4 @@ ListContent.propTypes = {
   classes: PropTypes.object.isRequired
 }
 
-export default withStyles(styles)(ListContent)
+export default withStyles(styles)(withSnackbar(ListContent))
