@@ -1,6 +1,6 @@
 {
   "name": "HackMDir",
-  "version": "1.0",
+  "version": "1.0.2",
   "description": "Manage your HackMD notes in a better way.",
   "permissions": ["activeTab", "declarativeContent", "storage", "tabs"],
   "background": {

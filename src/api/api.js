@@ -62,8 +62,8 @@ async function delHistoryNote (noteId) {
     if (hrefList.indexOf(id) !== -1) fail.push(id)
   })
 
-  if (fail !== []) return delHistoryNote(fail)
-  return true
+  if (fail.length > 0) return delHistoryNote(fail)
+  return []
 }
 
 /**
@@ -86,8 +86,8 @@ async function delNote (noteId) {
     if (hrefList.indexOf(id) !== -1) fail.push(id)
   })
 
-  if (fail !== []) return delNote(fail)
-  return true
+  if (fail.length > 0) return delNote(fail)
+  return []
 }
 
 /**
