@@ -7,6 +7,7 @@
  *          href: string
  *       }
  *    },
+ *    searchKey: string
  *    filteredNotes: [{ title: string, href: string }...]
  * }
  */
@@ -22,8 +23,17 @@ export default (state = {
       return Object.assign({}, {
         notes: action.payload.slice(),
         selectedNotes: {},
-        filteredNotes: action.payload.slice()
+        filteredNotes: action.payload.slice(),
+        searchKey: ''
       })
+    case 'ADD_NOTE':
+      return {
+        ...state,
+        notes: [action.payload, ...state.notes],
+        filteredNotes: [action.payload, ...state.notes].filter(target => {
+          return target.title.toLowerCase().indexOf(state.searchKey.toLowerCase()) !== -1
+        })
+      }
     case 'SET_NOTES':
       return {
         ...state,
@@ -63,7 +73,8 @@ export default (state = {
         ...state,
         filteredNotes: state.notes.filter(target => {
           return target.title.toLowerCase().indexOf(action.payload.toLowerCase()) !== -1
-        })
+        }),
+        searchKey: action.payload
       }
     default:
       return state

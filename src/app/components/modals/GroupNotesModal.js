@@ -5,7 +5,6 @@ import PropTypes from 'prop-types'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import { Scrollbars } from 'react-custom-scrollbars'
@@ -26,7 +25,7 @@ const styles = theme => ({
       fontSize: '18px'
     }
   },
-  content: {
+  textField: {
     fontSize: '14px',
     textAlign: 'left'
   }
@@ -40,10 +39,16 @@ class GroupNotesModal extends React.PureComponent {
     }
 
     this.handleChange = this.handleChange.bind(this)
+    this.submit = this.submit.bind(this)
   }
 
   handleChange (event) {
+    console.log(event.target.value)
     this.setState({ title: event.target.value })
+  }
+
+  submit () {
+    this.props.agreeEvent(this.state.title, this.state.items)
   }
 
   // the render function
@@ -62,24 +67,21 @@ class GroupNotesModal extends React.PureComponent {
             </Grid>
           </DialogTitle>
           <TextField
-            id='bookmode-name'
+            id='group-directory'
             label='Directory Name'
             placeholder='Enter the name here ...'
             value={this.state.title}
-            onChange={this.handelChange}
+            onChange={this.handleChange}
             margin='normal'
             variant='outlined'
             fullWidth
             autoFocus
             InputProps={{
               classes: {
-                input: this.props.classes.content
+                input: this.props.classes.textField
               }
             }}
           />
-          <DialogContentText id='alert-dialog-description' className={this.props.classes.content}>
-            Grouping the following {Object.keys(this.props.selectedItems).length} notes to one directory
-          </DialogContentText>
           <List className={this.props.classes.list}>
             <Scrollbars
               autoHeight
@@ -98,7 +100,7 @@ class GroupNotesModal extends React.PureComponent {
         </DialogContent>
         <DialogActions>
           <Button onClick={this.props.disagreeEvent}> Cancel </Button>
-          <Button onClick={() => { this.props.agreeEvent(this.state.title, this.state.items) }}>
+          <Button onClick={this.submit}>
             {this.props.loading ? <CircularProgress size={14} /> : 'Submit'}
           </Button>
         </DialogActions>

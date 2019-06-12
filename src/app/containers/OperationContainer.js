@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
 import OperationContent from '../components/OperationContent.js'
-import { initList, setNotes, deleteNotes, setSelectedNotes, selectNote, unSelectNote, searchNotes } from '../redux/actions/List.js'
+import { initList, setNotes, deleteNotes, setSelectedNotes, selectNote, unSelectNote, searchNotes, addNote } from '../redux/actions/List.js'
 import { setNewDir } from '../redux/actions/NewDir.js'
 import { setDirCheck, setDirNoteCheck, setDirOpen, newDir, setDir, deleteDir, deleteDirNote } from '../redux/actions/Dir.js'
 
@@ -17,6 +17,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     initList: (target) => dispatch(initList(target)),
     setNotes: (target) => dispatch(setNotes(target)),
+    addNote: (target) => dispatch(addNote(target)),
     deleteNotes: (target) => dispatch(deleteNotes(target)),
     selectNote: (target) => dispatch(selectNote(target)),
     unSelectNote: (target) => dispatch(unSelectNote(target)),

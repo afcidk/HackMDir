@@ -1,3 +1,4 @@
+
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import PropTypes from 'prop-types'
@@ -20,10 +21,6 @@ import Directory from '../../../api/directory.js'
 import ListSubheader from '@material-ui/core/ListSubheader'
 import CustomSnackbar from '../CustomSnackbar.js'
 import { withSnackbar } from 'notistack'
-
-// use memo to enhance the render performance
-const MemoListNoteItem = React.memo(ListNoteItem)
-// const MemoListDirItem = React.memo(ListDirItem)
 
 const styles = theme => ({
   root: {
@@ -53,10 +50,9 @@ const styles = theme => ({
 
 const row = ({ index, style, data }) => {
   const { list, selectNote, unSelectNote } = data
-  console.log(list)
   return (
     <div style={style}>
-      <MemoListNoteItem key={`note-${index}`} selectable title={list.filteredNotes[index].title} href={list.filteredNotes[index].href} displayCheckbox={Object.keys(list.selectedNotes).length > 0} checked={!!list.selectedNotes[list.filteredNotes[index].href.substr(18)]} selectNoteEvent={selectNote} unSelectNoteEvent={unSelectNote} />
+      <ListNoteItem key={`note-${index}`} selectable title={list.filteredNotes[index].title} href={list.filteredNotes[index].href} displayCheckbox={Object.keys(list.selectedNotes).length > 0} checked={!!list.selectedNotes[list.filteredNotes[index].href.substr(18)]} selectNoteEvent={selectNote} unSelectNoteEvent={unSelectNote} />
     </div>
   )
 }

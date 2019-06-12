@@ -81,6 +81,7 @@ class OperationContent extends React.PureComponent {
           window.open(formatUrl, '_target')
           this.props.setSelectedNotes({})
           this.setState({ showBookmode: false, loading: false })
+          this.props.addNote({ title: title, href: resultUrl.split('?')[0] })
         } catch (error) {
           console.log(error)
           this.setState({ showBookmode: false, loading: false })
@@ -106,11 +107,11 @@ class OperationContent extends React.PureComponent {
         break
       case 'Personal':
         title = 'Delete Notes.'
-        text = `Notes will be delete PERMANENTLY!`
+        text = `Notes will be deleted PERMANENTLY!`
         break
       case 'Directory':
         title = 'Delete Directories/Notes.'
-        text = `Directories/Notes will be delete PERMANENTLY`
+        text = `Directories/Notes will be deleted PERMANENTLY`
         break
     }
     this.setState({
@@ -130,7 +131,15 @@ class OperationContent extends React.PureComponent {
               break
             case 'Directory':
               await API.delNote(noteIds)
-              Directory.delNote(noteIds)
+              const targetNotes = Object.values(this.props.list.selectedNotes)
+              for (let i = 0; i < targetNotes.length; ++i) {
+                const note = targetNotes[i]
+                Directory.moveNote(null, null, { dirId: note.dirID, noteId: note.href.substr(18) }, null)
+                const dirData = API.getData('directory')
+                if (dirData[note.dirID].notes.length === 0) {
+                  Directory.delDir(note.dirID)
+                }
+              }
               break
           }
           // direct remove the redux state if the tab is not Directory
@@ -138,12 +147,10 @@ class OperationContent extends React.PureComponent {
             this.props.deleteNotes(Object.values(this.props.list.selectedNotes))
           } else {
             // delete dir note
-            const hrefs = Object.values(this.props.list.selectedNotes).map(target => target.href)
-            Object.values(this.props.dir).forEach(dir => {
-              const note = dir.notes.findIndex(note => hrefs.includes(note.href))
-              if (note) {
-                this.props.deleteDirNote({ dirID: dir.title, href: note.href })
-              }
+            const dirData = Object.values(this.props.dir)
+            Object.values(this.props.list.selectedNotes).forEach(note => {
+              const dir = dirData.find(target => target.loc === note.dirID)
+              this.props.deleteDirNote({ dirID: dir.title, href: note.href })
             })
           }
           this.props.setSelectedNotes({})

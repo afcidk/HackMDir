@@ -77,6 +77,8 @@ class MainMenu extends React.PureComponent {
   changeTab (event) {
     this.props.setPrevTab(this.props.tab.current)
     this.props.setTab(event.target.value)
+    this.props.setSearch('')
+    this.props.searchNotes('')
     API.writeContent('last_tab', event.target.value)
   }
 

@@ -109,9 +109,9 @@ class PermissionModal extends React.PureComponent {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.props.disagreeEvent}> 取消 </Button>
+          <Button onClick={this.props.disagreeEvent}> Cancel </Button>
           <Button onClick={() => this.props.agreeEvent(this.state)}>
-            {this.props.loading ? <CircularProgress size={14} /> : '確定'}
+            {this.props.loading ? <CircularProgress size={14} /> : 'Submit'}
           </Button>
         </DialogActions>
       </Dialog>

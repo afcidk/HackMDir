@@ -25,7 +25,31 @@ window.__HMDIR = {
 
 /* main function */
 const main = async function () {
-  if (!API.isLoggedIn()) return
+  if (!API.isLoggedIn()) {
+    const loginMessage = document.createElement('div')
+    loginMessage.id = 'init-message'
+    document.body.appendChild(loginMessage)
+    ReactDOM.render(
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'center'
+        }}
+        open
+        autoHideDuration={2000}
+        onClose={function () { ReactDOM.unmountComponentAtNode(loginMessage) }}
+        style={{ margin: '16px' }}>
+        <SnackbarContent
+          aria-describedby='client-snackbar'
+          message={
+            <span style={{ fontSize: '14px' }}> You are not logging, please login to use HackMDir! </span>
+          }
+        />
+      </Snackbar>,
+      loginMessage
+    )
+    return
+  }
   // use observer to observe the dom injection
   if (window.location.href === 'https://hackmd.io/') {
     const observer = new window.MutationObserver(function (mutations) {
