@@ -112,7 +112,7 @@ const NoteItem = SortableElement(
 
 const NoteList = SortableContainer(
   ({ state, style, props, handleCheckboxClick, handleListClick }) => {
-    console.log(props)
+    console.log(props.dirContent.notes)
     return (
       <ul className={style.ul}>
         {props.dirContent.notes.map((note, index) => (
@@ -155,7 +155,8 @@ class NoteContainer extends React.Component {
     })
     // select item
     if (event.target.checked) {
-      this.props.selectNoteEvent(this.props.dirContent.notes[index])
+      const temp = Object.assign({}, this.props.dirContent.notes[index], { dirID: this.props.dirContent.loc })
+      this.props.selectNoteEvent(temp)
       console.log(this.props)
       this.props.setNewDir(false)
     } else {

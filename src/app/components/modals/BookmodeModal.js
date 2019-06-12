@@ -81,6 +81,9 @@ class BookmodeModal extends React.PureComponent {
   }
 
   componentWillReceiveProps (nextProps) {
+    if (nextProps.loading) {
+      return
+    }
     this.setState({ items: Object.values(nextProps.selectedItems) })
   }
 

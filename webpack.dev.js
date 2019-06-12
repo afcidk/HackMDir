@@ -22,6 +22,7 @@ module.exports = {
   },
   plugins: [
     new ChromeExtensionReloader({
+      reloadPage: true,
       manifest: SRC_DIR + '/manifest.json'
     }),
     new webpack.optimize.ModuleConcatenationPlugin(),

@@ -335,7 +335,8 @@ class ListDirItem extends React.Component {
     })
     this.props.dir[dirname].notes.forEach(note => {
       if (event.target.checked) {
-        this.props.selectNoteEvent(note)
+        const temp = Object.assign({}, note, { dirID: this.props.dir[dirname].loc })
+        this.props.selectNoteEvent(temp)
         this.props.setNewDir(false)
       } else {
         this.props.unSelectNoteEvent(note)

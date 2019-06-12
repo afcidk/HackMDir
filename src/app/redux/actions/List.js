@@ -4,6 +4,11 @@ export const initList = target => ({
   payload: target
 })
 
+export const addNote = target => ({
+  type: 'ADD_NOTE',
+  payload: target
+})
+
 // [{ title: string, href: string }...]
 export const setNotes = target => ({
   type: 'SET_NOTES',

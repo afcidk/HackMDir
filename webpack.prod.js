@@ -31,7 +31,7 @@ module.exports = {
         extractComments: true,
         cache: true,
         parallel: true,
-        sourceMap: true, // Must be set to true if using source-maps in production
+        sourceMap: true,
         terserOptions: {
           extractComments: 'all',
           compress: {

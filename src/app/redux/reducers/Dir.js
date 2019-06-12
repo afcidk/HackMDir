@@ -7,7 +7,9 @@
  *    notes: [{ title: string, href: string }...]
  *    check: {
  *      dir: boolean,
- *      notes: [boolean]
+ *      notes: {
+ *        'noteID': true, ...
+ *      }
  *    }
  *    open: boolean,
  *    isRenaming: boolean
@@ -92,18 +94,27 @@ export default (state = {}, action) => {
       return Object.assign({}, restDeleteDir)
     case 'DELETE_DIR_NOTE':
       const index = state[action.payload.dirID].notes.findIndex(target => target.href === action.payload.href)
+      console.log([...state[action.payload.dirID].notes.slice(0, index), ...state[action.payload.dirID].notes.slice(index + 1)])
       if (state[action.payload.dirID].notes.length - 1 === 0) {
-        const { [action.payload]: removedDeleteDirNote, ...restDeleteDirNote } = state
-        return restDeleteDirNote
+        console.log('dir empty')
+        const { [action.payload.dirID]: removedDeleteDirNote, ...restDeleteDirNote } = state
+        if (Object.keys(restDeleteDirNote).length > 0) {
+          return restDeleteDirNote
+        }
+        return {}
       }
-      const { [state[action.payload.dirID].notes[index].name]: removedDeleteDirNote2, ...restDeleteDirNote2 } = state[action.payload.dirID].check.notes
+      // remove note check status
+      const { [state[action.payload.dirID].notes[index].name]: removedDeleteDirNote2, ...restNotesCheck } = state[action.payload.dirID].check.notes
       return {
         ...state,
         [action.payload.dirID]: {
           ...state[action.payload.dirID],
-          notes: {
-            ...state[action.payload.dirID].notes,
-            ...restDeleteDirNote2
+          notes: [...state[action.payload.dirID].notes.slice(0, index), ...state[action.payload.dirID].notes.slice(index + 1)],
+          check: {
+            ...state[action.payload.dirID].check,
+            notes: {
+              ...restNotesCheck
+            }
           }
         }
       }
