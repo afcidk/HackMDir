@@ -20,7 +20,12 @@ window.__HMDIR = {
   display: false,
   root: null,
   mousemoving: false,
-  mousePrevX: 0
+  mousePrevX: 0,
+  observer: {
+    injection: null,
+    virtualized: null,
+    pagination: null
+  }
 }
 
 /* main function */
@@ -49,53 +54,6 @@ const main = async function () {
       loginMessage
     )
     return
-  }
-  // use observer to observe the dom injection
-  if (window.location.href === 'https://hackmd.io/') {
-    const observer = new window.MutationObserver(function (mutations) {
-      mutations.forEach(mutation => {
-        if (mutation.type === 'childList') {
-          const noteList = document.querySelectorAll('.item')
-          console.log(noteList)
-          noteList.forEach((element) => {
-            element.draggable = true
-            element.ondragstart = (event) => {
-              event.stopPropagation()
-              while (element.tagName.toLocaleLowerCase() !== 'a') {
-                element = element.parentNode
-              }
-              const title = element.querySelector('.text').textContent
-              event.dataTransfer.setData('href', element.href)
-              event.dataTransfer.setData('title', title)
-            }
-          })
-          observer.disconnect()
-        }
-      })
-    })
-    // observe only child list
-    observer.observe(document.body.querySelector('#overview-page > div'), {
-      attributes: false,
-      childList: true,
-      characterData: false
-    })
-  }
-  // directly add drag attribute if thr url is in '/recent'
-  if (window.location.href === 'https://hackmd.io/recent') {
-    const noteList = document.querySelectorAll('.item')
-    console.log(noteList)
-    noteList.forEach((element) => {
-      element.draggable = true
-      element.ondragstart = (event) => {
-        event.stopPropagation()
-        while (element.tagName.toLocaleLowerCase() !== 'a') {
-          element = element.parentNode
-        }
-        const title = element.querySelector('.text').textContent
-        event.dataTransfer.setData('href', element.href)
-        event.dataTransfer.setData('title', title)
-      }
-    })
   }
   const initMessage = document.createElement('div')
   initMessage.id = 'init-message'
@@ -181,3 +139,106 @@ const main = async function () {
 }
 
 main()
+
+// use observer to observe the dom injection
+if (window.location.href === 'https://hackmd.io/') {
+  window.__HMDIR.observer.injection = new window.MutationObserver(function (mutations) {
+    mutations.forEach(mutation => {
+      // observer dom virtualized
+      window.__HMDIR.observer.virtualized = new window.MutationObserver(function (vMutations) {
+        // observer dom pagnination
+        if (document.body.querySelector('.list')) {
+          window.__HMDIR.observer.pagination = new window.MutationObserver(function (pMutations) {
+            pMutations.forEach(mutation => {
+              if (mutation.type === 'childList') {
+                const noteList = document.querySelectorAll('.item')
+                console.log(noteList)
+                noteList.forEach((element) => {
+                  element.draggable = true
+                  element.ondragstart = (event) => {
+                    event.stopPropagation()
+                    while (element.tagName.toLocaleLowerCase() !== 'a') {
+                      element = element.parentNode
+                    }
+                    const title = element.querySelector('.text').textContent
+                    event.dataTransfer.setData('href', element.href)
+                    event.dataTransfer.setData('title', title)
+                  }
+                })
+              }
+            })
+          })
+          window.__HMDIR.observer.pagination.observe(document.body.querySelector('.list'), {
+            attributes: false,
+            childList: true,
+            characterData: false
+          })
+        }
+        vMutations.forEach(mutation => {
+          if (mutation.type === 'childList') {
+            const noteList = document.querySelectorAll('.item')
+            console.log(noteList)
+            noteList.forEach((element) => {
+              element.draggable = true
+              element.ondragstart = (event) => {
+                event.stopPropagation()
+                while (element.tagName.toLocaleLowerCase() !== 'a') {
+                  element = element.parentNode
+                }
+                const title = element.querySelector('.text').textContent
+                event.dataTransfer.setData('href', element.href)
+                event.dataTransfer.setData('title', title)
+              }
+            })
+          }
+        })
+      })
+      window.__HMDIR.observer.virtualized.observe(document.body.querySelector('.ReactVirtualized__Grid__innerScrollContainer'), {
+        attributes: false,
+        childList: true,
+        characterData: false
+      })
+      if (mutation.type === 'childList') {
+        const noteList = document.querySelectorAll('.item')
+        console.log(noteList)
+        noteList.forEach((element) => {
+          element.draggable = true
+          element.ondragstart = (event) => {
+            event.stopPropagation()
+            while (element.tagName.toLocaleLowerCase() !== 'a') {
+              element = element.parentNode
+            }
+            const title = element.querySelector('.text').textContent
+            event.dataTransfer.setData('href', element.href)
+            event.dataTransfer.setData('title', title)
+          }
+        })
+      }
+    })
+    window.__HMDIR.observer.injection.disconnect()
+  })
+  // observe only child list
+  window.__HMDIR.observer.injection.observe(document.body.querySelector('#overview-page > div'), {
+    attributes: false,
+    childList: true,
+    characterData: false
+  })
+}
+
+// directly add drag attribute if thr url is in '/recent'
+if (window.location.href === 'https://hackmd.io/recent') {
+  const noteList = document.querySelectorAll('.item')
+  console.log(noteList)
+  noteList.forEach((element) => {
+    element.draggable = true
+    element.ondragstart = (event) => {
+      event.stopPropagation()
+      while (element.tagName.toLocaleLowerCase() !== 'a') {
+        element = element.parentNode
+      }
+      const title = element.querySelector('.text').textContent
+      event.dataTransfer.setData('href', element.href)
+      event.dataTransfer.setData('title', title)
+    }
+  })
+}
