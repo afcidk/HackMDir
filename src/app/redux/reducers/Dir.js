@@ -1,24 +1,29 @@
 /**
  *
- * state: {
- *  'dirID': {
- *    loc: int
- *    title: string
- *    notes: [{ title: string, href: string }...]
- *    check: {
- *      dir: boolean,
- *      notes: {
- *        'noteID': true, ...
+ * {
+ *  dirs: {
+ *    'dirID': {
+ *      loc: int
+ *      title: string
+ *      notes: [{ title: string, href: string }...]
+ *      check: {
+ *        dir: boolean,
+ *        notes: {
+ *          'noteID': true, ...
+ *        }
  *      }
- *    }
- *    open: boolean,
- *    isRenaming: boolean
+ *      open: boolean,
+ *      isRenaming: boolean
+ *   }
  *  }
+ *  searchKey: string
  * }
- * SearchText: string
  */
 
-export default (state = {}, action) => {
+export default (state = {
+  dirs: {},
+  searchKey: ''
+}, action) => {
   switch (action.type) {
     case 'SET_DIR':
       const initTemp = {}
@@ -57,63 +62,89 @@ export default (state = {}, action) => {
           })
         }
       })
-      return Object.assign({}, initTemp)
+      console.log(initTemp)
+      return Object.assign({}, {
+        dirs: initTemp,
+        searchKey: ''
+      })
     case 'NEW_DIR':
       Object.values(state).forEach(target => {
         target.loc += +(target.loc >= 0)
       })
       return {
         ...state,
-        [action.payload]: {
-          loc: 0,
-          title: action.payload,
-          notes: [],
-          check: {
-            dir: false,
-            notes: []
-          },
-          open: false,
-          isRenaming: false
+        dirs: {
+          ...state.dirs,
+          [action.payload]: {
+            loc: 0,
+            title: action.payload,
+            notes: [],
+            check: {
+              dir: false,
+              notes: []
+            },
+            open: false,
+            isRenaming: false
+          }
         }
       }
     case 'RENAME_DIR':
-      const { [action.payload.prev]: removedDirValue, ...restRenameDir } = state
+      const { [action.payload.prev]: removedDirValue, ...restRenameDir } = state.dirs
       return {
-        ...restRenameDir,
-        [action.payload.new]: {
-          ...removedDirValue,
-          title: action.payload.new,
-          isRenaming: false
+        ...state,
+        dirs: {
+          ...restRenameDir,
+          [action.payload.new]: {
+            ...removedDirValue,
+            title: action.payload.new,
+            isRenaming: false
+          }
         }
       }
     case 'DELETE_DIR':
-      const { [action.payload]: removedValue, ...restDeleteDir } = state
+      const { [action.payload]: removedValue, ...restDeleteDir } = state.dirs
       Object.values(restDeleteDir).forEach(target => {
         target.loc -= +(target.loc > removedValue.loc)
       })
-      return Object.assign({}, restDeleteDir)
-    case 'DELETE_DIR_NOTE':
-      const index = state[action.payload.dirID].notes.findIndex(target => target.href === action.payload.href)
-      console.log([...state[action.payload.dirID].notes.slice(0, index), ...state[action.payload.dirID].notes.slice(index + 1)])
-      if (state[action.payload.dirID].notes.length - 1 === 0) {
-        console.log('dir empty')
-        const { [action.payload.dirID]: removedDeleteDirNote, ...restDeleteDirNote } = state
-        if (Object.keys(restDeleteDirNote).length > 0) {
-          return restDeleteDirNote
-        }
-        return {}
-      }
-      // remove note check status
-      const { [state[action.payload.dirID].notes[index].name]: removedDeleteDirNote2, ...restNotesCheck } = state[action.payload.dirID].check.notes
       return {
         ...state,
-        [action.payload.dirID]: {
-          ...state[action.payload.dirID],
-          notes: [...state[action.payload.dirID].notes.slice(0, index), ...state[action.payload.dirID].notes.slice(index + 1)],
-          check: {
-            ...state[action.payload.dirID].check,
-            notes: {
-              ...restNotesCheck
+        dirs: {
+          ...restDeleteDir
+        }
+      }
+    case 'DELETE_DIR_NOTE':
+      const index = state.dirs[action.payload.dirID].notes.findIndex(target => target.href === action.payload.href)
+      console.log([...state.dirs[action.payload.dirID].notes.slice(0, index), ...state.dirs[action.payload.dirID].notes.slice(index + 1)])
+      if (state.dirs[action.payload.dirID].notes.length - 1 === 0) {
+        console.log('dir empty')
+        const { [action.payload.dirID]: removedDeleteDirNote, ...restDeleteDirNote } = state.dirs
+        if (Object.keys(restDeleteDirNote).length > 0) {
+          return {
+            ...state,
+            dirs: {
+              ...restDeleteDirNote
+            }
+          }
+        }
+        return {
+          ...state,
+          dirs: {}
+        }
+      }
+      // remove note check status
+      const { [state.dirs[action.payload.dirID].notes[index].name]: removedDeleteDirNote2, ...restNotesCheck } = state.dirs[action.payload.dirID].check.notes
+      return {
+        ...state,
+        dirs: {
+          ...state.dirs,
+          [action.payload.dirID]: {
+            ...state.dirs[action.payload.dirID],
+            notes: [...state.dirs[action.payload.dirID].notes.slice(0, index), ...state.dirs[action.payload.dirID].notes.slice(index + 1)],
+            check: {
+              ...state.dirs[action.payload.dirID].check,
+              notes: {
+                ...restNotesCheck
+              }
             }
           }
         }
@@ -121,81 +152,96 @@ export default (state = {}, action) => {
     case 'SET_DIR_OPEN':
       return {
         ...state,
-        [action.payload.dirID]: {
-          ...state[action.payload.dirID],
-          open: action.payload.status
+        dirs: {
+          ...state.dirs,
+          [action.payload.dirID]: {
+            ...state.dirs[action.payload.dirID],
+            open: action.payload.status
+          }
         }
       }
     case 'SET_DIR_NOTE_CHECK':
       if (!action.payload.status) {
         return {
           ...state,
-          [action.payload.dirID]: {
-            ...state[action.payload.dirID],
-            check: {
-              ...state[action.payload.dirID].check,
-              notes: {
-                ...state[action.payload.dirID].check.notes,
-                [action.payload.noteID]: action.payload.status
-              },
-              dir: false
+          dirs: {
+            ...state.dirs,
+            [action.payload.dirID]: {
+              ...state.dirs[action.payload.dirID],
+              check: {
+                ...state.dirs[action.payload.dirID].check,
+                notes: {
+                  ...state.dirs[action.payload.dirID].check.notes,
+                  [action.payload.noteID]: action.payload.status
+                },
+                dir: false
+              }
             }
           }
         }
       }
-      state[action.payload.dirID].check.notes[action.payload.noteID] = action.payload.status
+      state.dirs[action.payload.dirID].check.notes[action.payload.noteID] = action.payload.status
       let flag = true
-      const keys = Object.keys(state[action.payload.dirID].check.notes)
+      const keys = Object.keys(state.dirs[action.payload.dirID].check.notes)
       for (let i = 0; i < keys.length; ++i) {
-        if (!state[action.payload.dirID].check.notes[keys[i]]) {
+        if (!state.dirs[action.payload.dirID].check.notes[keys[i]]) {
           flag = false
           break
         }
       }
       return {
         ...state,
-        [action.payload.dirID]: {
-          ...state[action.payload.dirID],
-          check: {
-            ...state[action.payload.dirID].check,
-            notes: {
-              ...state[action.payload.dirID].check.notes,
-              [action.payload.noteID]: action.payload.status
-            },
-            dir: flag ? true : state[action.payload.dirID].check.dir
+        dirs: {
+          ...state.dirs,
+          [action.payload.dirID]: {
+            ...state.dirs[action.payload.dirID],
+            check: {
+              ...state.dirs[action.payload.dirID].check,
+              notes: {
+                ...state.dirs[action.payload.dirID].check.notes,
+                [action.payload.noteID]: action.payload.status
+              },
+              dir: flag ? true : state.dirs[action.payload.dirID].check.dir
+            }
           }
         }
       }
     case 'SET_DIR_CHECK':
-      state[action.payload.dirID].check.dir = action.payload.status
+      state.dirs[action.payload.dirID].check.dir = action.payload.status
       const dirCheckTemp = {}
-      Object.keys(state[action.payload.dirID].check.notes).forEach(id => {
+      Object.keys(state.dirs[action.payload.dirID].check.notes).forEach(id => {
         dirCheckTemp[id] = action.payload.status
       })
       return {
         ...state,
-        [action.payload.dirID]: {
-          ...state[action.payload.dirID],
-          check: {
-            ...state[action.payload.dirID].check,
-            notes: Object.assign({}, dirCheckTemp),
-            dir: action.payload.status
-          },
-          open: action.payload.status ? true : state[action.payload.dirID].check.open
+        dirs: {
+          ...state.dirs,
+          [action.payload.dirID]: {
+            ...state.dirs[action.payload.dirID],
+            check: {
+              ...state.dirs[action.payload.dirID].check,
+              notes: Object.assign({}, dirCheckTemp),
+              dir: action.payload.status
+            },
+            open: action.payload.status ? true : state.dirs[action.payload.dirID].check.open
+          }
         }
       }
     case 'SET_ISRENAMING':
       return {
         ...state,
-        [action.payload.dirID]: {
-          ...state[action.payload.dirID],
-          isRenaming: action.payload.status
+        dirs: {
+          ...state.dirs,
+          [action.payload.dirID]: {
+            ...state.dirs[action.payload.dirID],
+            isRenaming: action.payload.status
+          }
         }
       }
-    case 'SET_SEARCHTEXT':
+    case 'SET_searchKey':
       return {
         ...state,
-        searchText: action.payload
+        searchKey: action.payload
       }
     default:
       return state

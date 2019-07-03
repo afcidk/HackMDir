@@ -63,6 +63,7 @@ class ListContent extends React.PureComponent {
 
     this.state = {
       changingTab: false,
+      currentTab: props.tab.current,
       newDirName: ''
     }
 
@@ -100,24 +101,24 @@ class ListContent extends React.PureComponent {
       result = API.getData('directory')
     }
     // deal with the transition delay
-    const enterDelay = result.length > 0 ? 100 : 0
-    const leaveDealy = this.props.tab.prev === 'Directory' ? (Object.keys(this.props.dir).length > 0 ? 100 : 0)
-      : (this.props.list.length > 0 ? 100 : 0)
+    const dirNumber = Object.keys(this.props.dir.dirs).filter(target => target.toLocaleLowerCase().indexOf(this.props.dir.searchKey) !== -1).length
+    const delay = this.props.tab.current === 'Directory' ? (dirNumber > 0 ? 200 : 0)
+      : (this.props.list.filteredNotes.length > 0 ? 200 : 0)
     setTimeout(function () {
-      setTimeout(function () {
-        if (this.props.tab.current === 'Directory') {
-          this.props.setNotes([])
-          // init dir state
-          this.props.setDir({ current: result, prev: {} })
-        } else {
-          this.props.setNotes(result)
-          this.props.setDir({ current: [], prev: {} })
-        }
-        this.setState({
-          changingTab: false
-        })
-      }.bind(this), enterDelay)
-    }.bind(this), leaveDealy)
+      if (tab === 'Directory') {
+        // init dir state
+        this.props.setDir({ current: result, prev: {} })
+        this.props.setNotes([])
+      } else {
+        // init note state
+        this.props.setNotes(result)
+        this.props.setDir({ current: [], prev: {} })
+      }
+      this.setState({
+        currentTab: tab,
+        changingTab: false
+      })
+    }.bind(this), delay)
   }
 
   handleChange (event) {
@@ -129,7 +130,7 @@ class ListContent extends React.PureComponent {
     const status = Directory.newDir(this.state.newDirName.toString())
     if (status) {
       const result = API.getData('directory')
-      this.props.setDir({ current: result, prev: this.props.dir })
+      this.props.setDir({ current: result, prev: this.props.dir.dirs })
       this.props.newDir(this.state.newDirName)
       this.props.setNewDir(false)
     } else {
@@ -159,17 +160,17 @@ class ListContent extends React.PureComponent {
     let filteredDir
     console.log('searching', search)
     if (search) {
-      let dirKeys = Object.keys(dir)
+      let dirKeys = Object.keys(dir.dirs)
       let matchingKeys = dirKeys.filter((key) => {
         return key.toString().toLocaleLowerCase().indexOf(search) !== -1
       })
       filteredDir = matchingKeys.reduce((obj, key) => {
-        obj[key] = dir[key]
+        obj[key] = dir.dirs[key]
         return obj
       }, {})
       console.log(filteredDir)
     } else {
-      filteredDir = dir
+      filteredDir = dir.dirs
     }
 
     return (
@@ -191,7 +192,7 @@ class ListContent extends React.PureComponent {
                   <OperationContainer tab={this.props.tab} />
                 </Collapse>
               </ListSubheader>
-              {this.props.tab.current === 'Directory' ? (
+              {this.state.currentTab === 'Directory' ? (
                 <div>
                   <Collapse
                     in={this.props.newdir}
